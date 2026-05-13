@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Мои викторины - Quiz Platform{% endblock %}
+
+{% block content %}
+<div class="profile-main">
+    <div class="container">
+        <!-- Заголовок -->
+        <div class="profile-header">
+            <h1 class="profile-title">Мои викторины <span class="quiz-count">(0)</span></h1>
+            <p class="profile-subtitle">Выберите викторину для редактирования, просмотра и управления.</p>
+            <button type="button" id="createQuizBtn" class="btn btn-blue create-quiz-btn" onclick="window.location.href='/quiz/create'">+ Создать викторину</button>
+        </div>
+
+        <!-- Фильтр по режимам -->
+        <div class="mode-filter">
+            <button class="mode-filter__btn active" data-mode="all">Все</button>
+            <button class="mode-filter__btn" data-mode="multiplayer">Мультиплеер</button>
+            <button class="mode-filter__btn" data-mode="team">Командный</button>
+            <button class="mode-filter__btn" data-mode="solo">Одиночный</button>
+        </div>
+
+        <!-- Поиск -->
+        <div class="search-bar">
+            <input type="text" id="searchInput" class="search-input" placeholder="Введите поисковой запрос">
+            <button class="search-btn">🔍</button>
+        </div>
+
+        <!-- Список викторин -->
+        <div class="quizzes-list">
+            <div class="empty-state" id="emptyState">
+                <div class="empty-state__icon">📋</div>
+                <h3 class="empty-state__title">У вас пока нет викторин</h3>
+                <p class="empty-state__text">Создайте свою первую викторину, чтобы начать</p>
+                <button type="button" class="btn btn-red" id="emptyCreateBtn" onclick="window.location.href='/quiz/create'">+ Создать викторину</button>
+            </div>
+        </div>
+
+        <!-- Информация о тарифах -->
+        <div class="tariff-info">
+            <div class="tariff-card">
+                <div class="tariff-card__badge">Бесплатный тариф</div>
+                <div class="tariff-card__content">
+                    <span class="tariff-card__icon">🎮</span>
+                    <span class="tariff-card__text">до <strong>35</strong> игроков</span>
+                </div>
+                <div class="tariff-card__note">
+                    Для увеличения лимитов доступны платные тарифы
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Переключение фильтра по режимам
+    const filterBtns = document.querySelectorAll('.mode-filter__btn');
+    if (filterBtns.length) {
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const mode = btn.getAttribute('data-mode');
+                console.log('Фильтр по режиму:', mode);
+            });
+        });
+    }
+
+    // Поиск
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.querySelector('.search-btn');
+    
+    if (searchBtn) {
+        searchBtn.addEventListener('click', () => {
+            const query = searchInput?.value.toLowerCase() || '';
+            console.log('Поиск:', query);
+        });
+    }
+    
+    if (searchInput) {
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const query = searchInput.value.toLowerCase();
+                console.log('Поиск:', query);
+            }
+        });
+    }
+</script>
+{% endblock %}

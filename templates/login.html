@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Вход - Quiz Platform{% endblock %}
+
+{% block body_class %}auth-page{% endblock %}
+
+{% block main_class %}auth-main{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h1 class="auth-title">Вход</h1>
+        
+        <form id="loginForm" class="auth-form">
+            <div class="form-group">
+                <label for="nickname">Никнейм</label>
+                <input type="text" id="nickname" name="nickname" class="form-input" required autofocus>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" name="password" class="form-input" required>
+            </div>
+            
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+            
+            <button type="submit" class="btn btn-blue btn-block">Войти</button>
+        </form>
+        
+        <p class="auth-footer">
+            Нет аккаунта? <a href="/register">Зарегистрируйтесь</a>
+        </p>
+        
+        <div class="auth-back">
+            <a href="/" class="btn-link">← На главную</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const nickname = document.getElementById('nickname').value.trim();
+        const password = document.getElementById('password').value;
+        const errorDiv = document.getElementById('errorMessage');
+        
+        errorDiv.style.display = 'none';
+        
+        try {
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ nickname, password })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                window.location.href = '/profile';
+            } else {
+                errorDiv.textContent = data.error;
+                errorDiv.style.display = 'block';
+            }
+        } catch (error) {
+            errorDiv.textContent = 'Ошибка сервера. Попробуйте позже.';
+            errorDiv.style.display = 'block';
+        }
+    });
+</script>
+{% endblock %}

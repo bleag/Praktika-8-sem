@@ -1,0 +1,591 @@
+{% extends "base.html" %}
+
+{% block title %}Редактор викторины - Quiz Platform{% endblock %}
+
+{% block content %}
+<div class="editor-container">
+    <div class="editor-sidebar">
+        <div class="sidebar-nav">
+            <button class="sidebar-nav__btn active" data-tab="settings">НАСТРОЙКИ</button>
+            <button class="sidebar-nav__btn" data-tab="questions">ВОПРОСЫ</button>
+        </div>
+    </div>
+
+    <div class="editor-main">
+        <!-- Вкладка НАСТРОЙКИ -->
+        <div id="settingsTab" class="editor-tab active">
+            <form id="quizSettingsForm">
+                <!-- ЧТО -->
+                <div class="settings-section">
+                    <h3 class="section-title">ЧТО</h3>
+                    <p class="section-desc">Добавьте название, описание и обложку вашей викторины</p>
+                    
+                    <div class="form-group">
+                        <label>Название викторины *</label>
+                        <input type="text" id="quizTitle" class="form-input" maxlength="150" required>
+                        <span class="char-counter">0/150</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Описание викторины</label>
+                        <textarea id="quizDescription" class="form-textarea" rows="4" maxlength="800"></textarea>
+                        <span class="char-counter">0/800</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Обложка викторины</label>
+                        <div class="cover-upload">
+                            <div class="cover-preview" id="coverPreview">
+                                <span class="cover-placeholder">📷</span>
+                            </div>
+                            <input type="file" id="coverImage" accept="image/*" style="display: none;">
+                            <button type="button" id="uploadCoverBtn" class="btn-outline-new">Загрузить обложку</button>
+                            <button type="button" id="removeCoverBtn" class="btn-outline-new" style="display: none;">Удалить</button>
+                        </div>
+                        <small class="form-hint">Рекомендуемый размер: 1280x720px (16:9)</small>
+                    </div>
+                </div>
+
+                <!-- КОГДА -->
+                <div class="settings-section">
+                    <h3 class="section-title">КОГДА</h3>
+                    <p class="section-desc">Установите дату и время или оставьте для немедленного запуска</p>
+                    
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label>Дата начала</label>
+                            <input type="date" id="startDate" class="form-input">
+                        </div>
+                        <div class="form-group half">
+                            <label>Время начала</label>
+                            <input type="time" id="startTime" class="form-input">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="autoStart"> Автоматический запуск
+                        </label>
+                    </div>
+
+                    <!-- Настройка обратного отсчёта перед стартом -->
+                    <div class="form-group">
+                        <label class="label-with-icon">
+                            <span>Настройка обратного отсчёта перед стартом игры</span>
+                            <span class="tooltip" title="Показывать таймер перед началом игры">ⓘ</span>
+                        </label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="countdown" value="yes"> Да
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="countdown" value="no" checked> Нет
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" id="countdownDurationGroup" style="display: none;">
+                        <label>Длительность, сек</label>
+                        <input type="number" id="countdownDuration" class="form-input" value="6" min="3" max="30">
+                    </div>
+
+                    <!-- Настройка времени показа вопросов -->
+                    <hr class="section-divider">
+                    <h4 class="subsection-title">Настройка времени показа вопросов</h4>
+                    
+                    <div class="form-group">
+                        <label>Время ответа на вопрос, сек *</label>
+                        <input type="number" id="timePerQuestion" class="form-input" value="25" min="5" max="300">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Время на показ ответа, сек *</label>
+                        <input type="number" id="timeShowAnswer" class="form-input" value="10" min="3" max="60">
+                    </div>
+                </div>
+
+                <!-- ДЛЯ КОГО -->
+                <div class="settings-section">
+                    <h3 class="section-title">ДЛЯ КОГО</h3>
+                    <p class="section-desc">Настройте доступ к викторине</p>
+                    
+                    <div class="form-group">
+                        <label class="radio-label">
+                            <input type="radio" name="access" value="public" checked> Публичная (доступ по коду)
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="access" value="password"> Приватная (доступ по коду + пароль)
+                        </label>
+                    </div>
+                    
+                    <div class="form-group" id="quizPasswordGroup" style="display: none;">
+                        <label>Пароль для входа</label>
+                        <input type="password" id="quizPassword" class="form-input" placeholder="Введите пароль">
+                        <small class="form-hint">Игроки будут вводить этот пароль вместе с кодом</small>
+                    </div>
+                </div>
+
+                <!-- КАК -->
+                <div class="settings-section">
+                    <h3 class="section-title">КАК</h3>
+                    <p class="section-desc">Настройте правила и дополнительные возможности</p>
+                    
+                    <div class="form-group">
+                        <label>Режим игры</label>
+                        <select id="gameMode" class="form-input">
+                            <option value="multiplayer">Мультиплеер</option>
+                            <option value="team">Командный</option>
+                            <option value="solo">Одиночный (турнирная таблица)</option>
+                        </select>
+                    </div>
+
+                    <!-- ===== БЛОК 1: ПРИЗЫ ===== -->
+                    <div class="sub-block">
+                        <h4 class="sub-block__title">🎁 Призы</h4>
+                        
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="hasPrizes"> Планируете ли вы разыгрывать призы?
+                            </label>
+                        </div>
+                        
+                        <div id="prizeSettings" style="display: none;">
+                            <div class="form-group indent">
+                                <label>Сколько лучших игроков получат призы?</label>
+                                <input type="number" id="prizeWinnersCount" class="form-input" value="1" min="1" max="35">
+                                <small class="form-hint">Максимум 35 (лимит бесплатного тарифа)</small>
+                            </div>
+                            <div class="form-group indent">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="givePrizesToAll"> Раздайте призы всем игрокам
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ===== БЛОК 2: СИСТЕМА ПОДСЧЁТА БАЛЛОВ ===== -->
+                    <div class="sub-block">
+                        <h4 class="sub-block__title">📊 Система подсчёта баллов</h4>
+                        
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="customScoring"> Выбрать систему подсчёта баллов
+                            </label>
+                        </div>
+                        
+                        <div id="scoringSettings" style="display: none;">
+                            <div class="form-group indent">
+                                <label class="radio-label">
+                                    <input type="radio" name="scoringSystem" value="same_reward"> Установить одинаковое вознаграждение на каждый вопрос
+                                </label>
+                                <div id="sameRewardInput" style="display: none;">
+                                    <input type="number" id="sameRewardValue" class="form-input" placeholder="Количество баллов" value="100">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group indent">
+                                <label class="radio-label">
+                                    <input type="radio" name="scoringSystem" value="speed_bonus"> Начислять баллы в зависимости от скорости ответа
+                                    <span class="tooltip-icon" data-tooltip="
+                                        <strong>Подсчёт скорости:</strong><br>
+                                        • Игрок получает 100 баллов, если были выбраны все правильные варианты (без ошибок)<br>
+                                        • За выбор всех правильных вариантов игрок дополнительно получает до 50 баллов в зависимости от скорости выбора<br>
+                                        • Если игрок выбирает и правильные, и неправильные варианты, а также не выбирает все правильные, он получает 20 баллов за каждый правильный вариант<br>
+                                        • Неправильный вариант дает 0 баллов<br>
+                                        • Побеждает тот, кто был быстрее всех
+                                    ">ⓘ</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ===== БЛОК 3: ДОПОЛНИТЕЛЬНЫЕ БАЛЛЫ ПОБЕДИТЕЛЮ ===== -->
+                    <div class="sub-block">
+                        <h4 class="sub-block__title">🏆 Бонусы</h4>
+                        
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="extraPointsForWinner"> Добавить дополнительные баллы победителю
+                            </label>
+                        </div>
+                        
+                        <div id="winnerCountGroup" style="display: none;">
+                            <div class="form-group indent">
+                                <label>Количество победителей</label>
+                                <input type="number" id="winnerCount" class="form-input" value="1" min="1" max="10">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ===== БЛОК 4: ТАБЛИЦА ЛИДЕРОВ ===== -->
+                    <div class="sub-block">
+                        <h4 class="sub-block__title">📋 Таблица лидеров</h4>
+                        
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="hideLeaderboard"> Скрыть финальную таблицу лидеров
+                            </label>
+                        </div>
+                        
+                        <div id="hideLeaderboardOptions" style="display: none;">
+                            <div class="form-group indent">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="hideFromOrganizer"> Скрыть для организатора
+                                </label>
+                            </div>
+                            <div class="form-group indent">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="hideFromPlayers"> Скрыть для игроков
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ===== БЛОК 5: СЛОЖНОСТЬ И ПОРЯДОК ===== -->
+                    <div class="sub-block">
+                        <h4 class="sub-block__title">🎲 Сложность и порядок</h4>
+                        
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="randomQuestions"> Случайный порядок отображения вопросов
+                            </label>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="randomOptions"> Случайный порядок отображения вариантов ответов
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- ===== БЛОК 6: ПРОМО-КОНТЕНТ И МАРКЕТИНГ ===== -->
+                    <div class="sub-block">
+                        <h4 class="sub-block__title">📢 Промо-контент и маркетинг</h4>
+                        
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="partOfCampaign"> Сделать викторину частью своей маркетинговой кампании
+                            </label>
+                        </div>
+                        
+                        <div id="promoSettings" style="display: none;">
+                            <div class="form-group indent">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="promoOnWaiting"> Добавьте промо-контент на экран ожидания
+                                </label>
+                            </div>
+                            <div class="form-group indent">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="promoModalOnWaiting"> Добавьте промо-контент в модальном окне на экран ожидания
+                                </label>
+                            </div>
+                            <div class="form-group indent">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="promoOnLeaderboard"> Добавьте промо-контент на экран таблицы лидеров
+                                </label>
+                            </div>
+                            <div class="form-group indent">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="promoModalOnLeaderboard"> Добавьте промо-контент в модальном окне на экран таблицы лидеров
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                <!-- Блок с тарифом -->
+                <div class="tariff-banner">
+                    <p>🔵 <strong>Бесплатный тариф</strong> — до 35 одновременных игроков</p>
+                    <p>🟢 Для увеличения лимитов доступны платные тарифы</p>
+                </div>
+
+                <div class="editor-actions">
+                    <button type="button" id="saveSettingsBtn" class="btn btn-blue">Сохранить настройки</button>
+                    <button type="button" id="nextToQuestionsBtn" class="btn btn-red">Далее → Вопросы</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Вкладка ВОПРОСЫ -->
+        <div id="questionsTab" class="editor-tab">
+            <div class="empty-state">
+                <div class="empty-state__icon">📝</div>
+                <h3 class="empty-state__title">Добавьте вопросы</h3>
+                <p class="empty-state__text">Начните создавать вопросы для вашей викторины</p>
+                <button id="addQuestionBtn" class="btn btn-blue">+ Добавить вопрос</button>
+                <div class="question-types-preview">
+                    <p>Типы вопросов:</p>
+                    <div class="types-grid">
+                        <span class="type-badge">Выбор варианта</span>
+                        <span class="type-badge">Открытый вопрос</span>
+                        <span class="type-badge">Облако слов</span>
+                        <span class="type-badge">Голосование</span>
+                        <span class="type-badge">Изображения</span>
+                        <span class="type-badge">Рисование</span>
+                        <span class="type-badge">Слайд</span>
+                        <span class="type-badge">Танцы</span>
+                        <span class="type-badge">Раунд</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="editor-actions">
+                <button type="button" id="backToSettingsBtn" class="btn-outline-new">← Назад к настройкам</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Переключение вкладок
+    const settingsTab = document.getElementById('settingsTab');
+    const questionsTab = document.getElementById('questionsTab');
+    const settingsBtn = document.querySelector('[data-tab="settings"]');
+    const questionsBtn = document.querySelector('[data-tab="questions"]');
+    const nextBtn = document.getElementById('nextToQuestionsBtn');
+    const backBtn = document.getElementById('backToSettingsBtn');
+    
+    function showTab(tabName) {
+        if (tabName === 'settings') {
+            settingsTab.classList.add('active');
+            questionsTab.classList.remove('active');
+            settingsBtn.classList.add('active');
+            questionsBtn.classList.remove('active');
+        } else {
+            settingsTab.classList.remove('active');
+            questionsTab.classList.add('active');
+            settingsBtn.classList.remove('active');
+            questionsBtn.classList.add('active');
+        }
+    }
+    
+    if (nextBtn) nextBtn.addEventListener('click', () => showTab('questions'));
+    if (backBtn) backBtn.addEventListener('click', () => showTab('settings'));
+    if (settingsBtn) settingsBtn.addEventListener('click', () => showTab('settings'));
+    if (questionsBtn) questionsBtn.addEventListener('click', () => showTab('questions'));
+    
+    // Счётчики символов
+    const titleInput = document.getElementById('quizTitle');
+    const descTextarea = document.getElementById('quizDescription');
+    const titleCounter = titleInput?.nextElementSibling;
+    const descCounter = descTextarea?.nextElementSibling;
+    
+    if (titleInput) {
+        titleInput.addEventListener('input', () => {
+            titleCounter.textContent = titleInput.value.length + '/150';
+        });
+    }
+    
+    if (descTextarea) {
+        descTextarea.addEventListener('input', () => {
+            descCounter.textContent = descTextarea.value.length + '/800';
+        });
+    }
+    
+    // Обложка
+    const uploadBtn = document.getElementById('uploadCoverBtn');
+    const coverInput = document.getElementById('coverImage');
+    const coverPreview = document.getElementById('coverPreview');
+    const removeCoverBtn = document.getElementById('removeCoverBtn');
+    let coverData = null;
+    
+    if (uploadBtn) {
+        uploadBtn.addEventListener('click', () => coverInput.click());
+        coverInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    coverData = event.target.result;
+                    coverPreview.innerHTML = `<img src="${coverData}" class="cover-image">`;
+                    removeCoverBtn.style.display = 'inline-block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        removeCoverBtn?.addEventListener('click', () => {
+            coverData = null;
+            coverPreview.innerHTML = '<span class="cover-placeholder">📷</span>';
+            coverInput.value = '';
+            removeCoverBtn.style.display = 'none';
+        });
+    }
+    
+    // Показать/скрыть длительность обратного отсчёта
+    const countdownYes = document.querySelector('input[name="countdown"][value="yes"]');
+    const countdownNo = document.querySelector('input[name="countdown"][value="no"]');
+    const countdownDurationGroup = document.getElementById('countdownDurationGroup');
+    
+    if (countdownYes && countdownNo) {
+        countdownYes.addEventListener('change', () => {
+            countdownDurationGroup.style.display = 'block';
+        });
+        countdownNo.addEventListener('change', () => {
+            countdownDurationGroup.style.display = 'none';
+        });
+    }
+    
+    // Показать/скрыть поле пароля
+    const accessPublic = document.querySelector('input[name="access"][value="public"]');
+    const accessPassword = document.querySelector('input[name="access"][value="password"]');
+    const passwordGroup = document.getElementById('quizPasswordGroup');
+    
+    if (accessPublic && accessPassword) {
+        accessPassword.addEventListener('change', () => {
+            passwordGroup.style.display = 'block';
+        });
+        accessPublic.addEventListener('change', () => {
+            passwordGroup.style.display = 'none';
+        });
+    }
+    
+    // Показать/скрыть настройки баллов
+    const customScoring = document.getElementById('customScoring');
+    const scoringSettings = document.getElementById('scoringSettings');
+    
+    if (customScoring) {
+        customScoring.addEventListener('change', () => {
+            scoringSettings.style.display = customScoring.checked ? 'block' : 'none';
+        });
+    }
+    
+    // Показать/скрыть настройки призов
+    const hasPrizes = document.getElementById('hasPrizes');
+    const prizeSettings = document.getElementById('prizeSettings');
+    
+    if (hasPrizes) {
+        hasPrizes.addEventListener('change', () => {
+            prizeSettings.style.display = hasPrizes.checked ? 'block' : 'none';
+        });
+    }
+    
+    // Система подсчёта баллов - выбор одного варианта (radio)
+    const scoringRadios = document.querySelectorAll('input[name="scoringSystem"]');
+    const sameRewardInput = document.getElementById('sameRewardInput');
+
+    if (scoringRadios.length) {
+        scoringRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                // Скрываем дополнительные поля
+                if (sameRewardInput) sameRewardInput.style.display = 'none';
+                
+                // Показываем нужное
+                if (radio.value === 'same_reward' && sameRewardInput) {
+                    sameRewardInput.style.display = 'block';
+                }
+            });
+        });
+    }
+    
+    // Показать/скрыть количество победителей
+    const extraPoints = document.getElementById('extraPointsForWinner');
+    const winnerCountGroup = document.getElementById('winnerCountGroup');
+    
+    if (extraPoints) {
+        extraPoints.addEventListener('change', () => {
+            winnerCountGroup.style.display = extraPoints.checked ? 'block' : 'none';
+        });
+    }
+    
+    // Показать/скрыть опции таблицы лидеров
+    const hideLeaderboard = document.getElementById('hideLeaderboard');
+    const hideOptions = document.getElementById('hideLeaderboardOptions');
+    
+    if (hideLeaderboard) {
+        hideLeaderboard.addEventListener('change', () => {
+            hideOptions.style.display = hideLeaderboard.checked ? 'block' : 'none';
+        });
+    }
+    
+    // Показать/скрыть промо-настройки
+    const partOfCampaign = document.getElementById('partOfCampaign');
+    const promoSettings = document.getElementById('promoSettings');
+    
+    if (partOfCampaign) {
+        partOfCampaign.addEventListener('change', () => {
+            promoSettings.style.display = partOfCampaign.checked ? 'block' : 'none';
+        });
+    }
+    
+    // Добавление вопроса (заглушка)
+    const addQuestionBtn = document.getElementById('addQuestionBtn');
+    if (addQuestionBtn) {
+        addQuestionBtn.addEventListener('click', () => {
+            alert('Редактор вопросов будет реализован позже.\n\nТипы вопросов:\n• Выбор варианта\n• Открытый вопрос\n• Облако слов\n• Голосование\n• Изображения\n• Рисование\n• Слайд\n• Танцы\n• Раунды');
+        });
+    }
+    
+    // Сохранение настроек
+    const saveBtn = document.getElementById('saveSettingsBtn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', async () => {
+            // Получаем выбранную систему подсчёта баллов
+            let scoringSystem = null;
+            const selectedRadio = document.querySelector('input[name="scoringSystem"]:checked');
+            if (selectedRadio) {
+                scoringSystem = selectedRadio.value;
+            }
+            
+            const data = {
+                title: document.getElementById('quizTitle')?.value || '',
+                description: document.getElementById('quizDescription')?.value || '',
+                coverImage: coverData,
+                startDate: document.getElementById('startDate')?.value || '',
+                startTime: document.getElementById('startTime')?.value || '',
+                autoStart: document.getElementById('autoStart')?.checked || false,
+                showCountdown: document.querySelector('input[name="countdown"]:checked')?.value === 'yes',
+                countdownDuration: document.getElementById('countdownDuration')?.value || 6,
+                timePerQuestion: document.getElementById('timePerQuestion')?.value || 25,
+                timeShowAnswer: document.getElementById('timeShowAnswer')?.value || 10,
+                accessType: document.querySelector('input[name="access"]:checked')?.value || 'public',
+                accessPassword: document.getElementById('quizPassword')?.value || '',
+                gameMode: document.getElementById('gameMode')?.value || 'multiplayer',
+                // Призы
+                hasPrizes: document.getElementById('hasPrizes')?.checked || false,
+                prizeWinnersCount: document.getElementById('prizeWinnersCount')?.value || 1,
+                givePrizesToAll: document.getElementById('givePrizesToAll')?.checked || false,
+                // Система баллов
+                customScoring: document.getElementById('customScoring')?.checked || false,
+                scoringSystem: scoringSystem,
+                sameRewardValue: document.getElementById('sameRewardValue')?.value || 100,
+                // Бонусы
+                extraPointsForWinner: document.getElementById('extraPointsForWinner')?.checked || false,
+                winnerCount: document.getElementById('winnerCount')?.value || 1,
+                // Таблица лидеров
+                hideLeaderboard: document.getElementById('hideLeaderboard')?.checked || false,
+                hideFromOrganizer: document.getElementById('hideFromOrganizer')?.checked || false,
+                hideFromPlayers: document.getElementById('hideFromPlayers')?.checked || false,
+                // Сложность
+                randomQuestions: document.getElementById('randomQuestions')?.checked || false,
+                randomOptions: document.getElementById('randomOptions')?.checked || false,
+                // Промо
+                partOfCampaign: document.getElementById('partOfCampaign')?.checked || false,
+                promoOnWaiting: document.getElementById('promoOnWaiting')?.checked || false,
+                promoModalOnWaiting: document.getElementById('promoModalOnWaiting')?.checked || false,
+                promoOnLeaderboard: document.getElementById('promoOnLeaderboard')?.checked || false,
+                promoModalOnLeaderboard: document.getElementById('promoModalOnLeaderboard')?.checked || false
+            };
+            
+            if (!data.title) {
+                alert('Введите название викторины');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/quiz/save', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert('Настройки сохранены!');
+                } else {
+                    alert('Ошибка: ' + result.error);
+                }
+            } catch (error) {
+                alert('Ошибка сохранения');
+            }
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,1419 @@
+/* Общие стили */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #1F2937;
+    line-height: 1.5;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* КОРПОРАТИВНЫЕ ЦВЕТА СОВКОМБАНКА */
+:root {
+    --sovcombank-blue: #013791;    /* ТЕМНО-СИНИЙ - основной */
+    --sovcombank-red: #FF4963;     /* ЯРКО-РОЗОВО-КРАСНЫЙ - акцентный */
+    --blue-light: #0a4bb5;         /* светлее синего для ховера */
+    --red-dark: #e63e56;           /* темнее красного для ховера */
+    --gray-light: #F9FAFB;
+    --gray-border: #E5E7EB;
+    --text-dark: #1F2937;
+    --text-gray: #6B7280;
+}
+
+/* Кнопки */
+.btn {
+    display: inline-block;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+}
+
+/* СИНЯЯ кнопка (основное действие) - цвет Совкомбанка */
+.btn-blue {
+    background-color: var(--sovcombank-blue);
+    color: white;
+}
+
+.btn-blue:hover {
+    background-color: var(--blue-light);
+}
+
+/* КРАСНАЯ кнопка (важное действие, удаление, старт) - цвет Совкомбанка */
+.btn-red {
+    background-color: var(--sovcombank-red);
+    color: white;
+}
+
+.btn-red:hover {
+    background-color: var(--red-dark);
+}
+
+.btn-large {
+    padding: 14px 32px;
+    font-size: 18px;
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid var(--gray-border);
+    padding: 8px 16px;
+    border-radius: 8px;
+    color: var(--text-dark);
+    text-decoration: none;
+    margin-left: 12px;
+}
+
+.btn-outline:hover {
+    border-color: var(--sovcombank-blue);
+    color: var(--sovcombank-blue);
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: var(--sovcombank-blue);
+    cursor: pointer;
+    font-size: 16px;
+    text-decoration: underline;
+}
+
+.btn-link:hover {
+    color: var(--sovcombank-red);
+}
+
+/* Кнопка создания квиза */
+.btn-create {
+    background: transparent;
+    border: 2px solid white;
+    color: white;
+    padding: 12px 28px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 40px;
+    cursor: pointer;
+    transition: all 0.3s;
+    backdrop-filter: blur(4px);
+}
+
+.btn-create:hover {
+    background: white;
+    color: var(--sovcombank-blue);
+    border-color: white;
+    transform: scale(1.02);
+}
+
+/* Шапка */
+.header {
+    border-bottom: 2px solid var(--sovcombank-blue);
+    padding: 16px 0;
+}
+
+.header__inner {
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Герой-блок (вход по коду) с градиентом синий → красный */
+.hero {
+    text-align: center;
+    padding: 80px 0;
+    background: linear-gradient(135deg, var(--sovcombank-blue) 0%, var(--sovcombank-red) 100%);
+    color: white;
+}
+
+.hero__title {
+    font-size: 36px;
+    margin-bottom: 40px;
+}
+
+.code-input {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+}
+
+.code-input__field {
+    padding: 14px 20px;
+    font-size: 18px;
+    border: none;
+    border-radius: 8px;
+    width: 200px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.hero__footer {
+    margin-top: 20px;
+}
+
+/* Секции */
+.section-title {
+    font-size: 32px;
+    text-align: center;
+    margin-bottom: 48px;
+    color: var(--text-dark);
+    position: relative;
+}
+
+/* Акцентная полоска под заголовком (синяя и красная) */
+.section-title::after {
+    content: '';
+    display: block;
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--sovcombank-blue), var(--sovcombank-red));
+    margin: 12px auto 0;
+    border-radius: 2px;
+}
+
+.features {
+    padding: 80px 0;
+    background-color: var(--gray-light);
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+}
+
+.feature-card {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+    border-top: 3px solid var(--sovcombank-blue);
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    border-top-color: var(--sovcombank-red);
+}
+
+.feature-card__icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.feature-card__title {
+    font-size: 20px;
+    margin-bottom: 12px;
+    color: var(--sovcombank-blue);
+}
+
+.feature-card__text {
+    color: var(--text-gray);
+}
+
+/* Преимущества */
+.advantages {
+    padding: 80px 0;
+}
+
+.advantages-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 40px;
+}
+
+.advantage-card {
+    background: white;
+    padding: 32px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-left: 4px solid var(--sovcombank-blue);
+}
+
+.advantage-card:last-child {
+    border-left-color: var(--sovcombank-red);
+}
+
+.advantage-card__title {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: var(--sovcombank-blue);
+}
+
+.advantage-card:last-child .advantage-card__title {
+    color: var(--sovcombank-red);
+}
+
+.advantage-card__text {
+    color: var(--text-gray);
+    line-height: 1.6;
+}
+
+.advantage-card__list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.advantage-card__list li {
+    padding: 8px 0;
+    padding-left: 24px;
+    position: relative;
+    color: var(--text-gray);
+}
+
+.advantage-card__list li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: var(--sovcombank-blue);
+    font-weight: bold;
+}
+
+.advantage-card:last-child .advantage-card__list li::before {
+    color: var(--sovcombank-red);
+}
+
+/* Режимы игры */
+.modes {
+    padding: 80px 0;
+    background-color: var(--gray-light);
+}
+
+.modes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.mode-card {
+    background: white;
+    padding: 32px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: all 0.3s;
+    border-bottom: 3px solid var(--sovcombank-blue);
+}
+
+.mode-card:hover {
+    border-bottom-color: var(--sovcombank-red);
+    transform: translateY(-5px);
+}
+
+.mode-card__icon {
+    font-size: 52px;
+    margin-bottom: 16px;
+}
+
+.mode-card__title {
+    font-size: 24px;
+    margin-bottom: 16px;
+    color: var(--sovcombank-red);
+}
+
+.mode-card__text {
+    color: var(--text-gray);
+}
+
+/* Масштабирование */
+.scaling {
+    padding: 60px 0;
+}
+
+.scaling-card {
+    background: linear-gradient(135deg, var(--sovcombank-blue), var(--sovcombank-red));
+    color: white;
+    padding: 60px 40px;
+    border-radius: 16px;
+    text-align: center;
+}
+
+.scaling-card__title {
+    font-size: 36px;
+    margin-bottom: 20px;
+}
+
+.scaling-card__text {
+    font-size: 18px;
+    opacity: 0.95;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+/* Призыв к действию */
+.cta {
+    padding: 80px 0;
+    background-color: var(--gray-light);
+}
+
+.cta-card {
+    background: white;
+    padding: 60px 40px;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border: 2px solid transparent;
+    background: linear-gradient(white, white) padding-box,
+                linear-gradient(135deg, var(--sovcombank-blue), var(--sovcombank-red)) border-box;
+}
+
+.cta-card__title {
+    font-size: 32px;
+    margin-bottom: 32px;
+    color: var(--text-dark);
+}
+
+/* Подвал */
+.footer {
+    background-color: #1F2937;
+    color: white;
+    padding: 40px 0;
+    text-align: center;
+}
+
+.footer__links {
+    margin-bottom: 20px;
+}
+
+.footer__links a {
+    color: #9CA3AF;
+    text-decoration: none;
+    margin: 0 16px;
+    font-size: 14px;
+}
+
+.footer__links a:hover {
+    color: var(--sovcombank-blue);
+}
+
+.footer__copyright {
+    color: #6B7280;
+    font-size: 14px;
+}
+
+/* Адаптив */
+@media (max-width: 768px) {
+    .hero__title {
+        font-size: 28px;
+    }
+    
+    .code-input {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .code-input__field {
+        width: 80%;
+    }
+    
+    .section-title {
+        font-size: 28px;
+    }
+    
+    .advantages-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .modes-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .scaling-card__title {
+        font-size: 28px;
+    }
+    
+    .cta-card__title {
+        font-size: 24px;
+    }
+    
+    .footer__links a {
+        display: inline-block;
+        margin: 8px 12px;
+    }
+}
+
+/* ========== СТРАНИЦЫ АВТОРИЗАЦИИ (ЛОГИН/РЕГИСТРАЦИЯ) ========== */
+body.auth-page {
+    background: linear-gradient(135deg, var(--sovcombank-blue) 0%, var(--sovcombank-red) 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.auth-main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+}
+
+.auth-card {
+    background: white;
+    border-radius: 24px;
+    padding: 40px 32px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.auth-title {
+    font-size: 28px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 32px;
+    color: var(--sovcombank-blue);
+}
+
+.auth-form {
+    margin-bottom: 24px;
+}
+
+.auth-form .form-group {
+    margin-bottom: 20px;
+}
+
+.auth-form .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.auth-form .form-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--gray-border);
+    border-radius: 12px;
+    font-size: 16px;
+    transition: all 0.3s;
+}
+
+.auth-form .form-input:focus {
+    outline: none;
+    border-color: var(--sovcombank-blue);
+    box-shadow: 0 0 0 3px rgba(1, 55, 145, 0.1);
+}
+
+.auth-form .form-hint {
+    display: block;
+    font-size: 12px;
+    color: var(--text-gray);
+    margin-top: 6px;
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 14px;
+    color: var(--text-gray);
+}
+
+.auth-footer a {
+    color: var(--sovcombank-blue);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
+}
+
+.auth-back {
+    text-align: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--gray-border);
+}
+
+.btn-block {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 12px;
+}
+
+.error-message {
+    background-color: #FEE2E2;
+    color: var(--sovcombank-red);
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 14px;
+}
+
+/* ========== СТРАНИЦА ПРОФИЛЯ (МОИ ВИКТОРИНЫ) ========== */
+.profile-main {
+    min-height: calc(100vh - 200px);
+    padding: 40px 0;
+    background-color: var(--gray-light);
+}
+
+.profile-header {
+    margin-bottom: 40px;
+}
+
+.profile-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+}
+
+.quiz-count {
+    font-size: 24px;
+    color: var(--sovcombank-blue);
+    font-weight: 500;
+}
+
+.profile-subtitle {
+    color: var(--text-gray);
+    margin-bottom: 24px;
+}
+
+.create-quiz-btn {
+    padding: 12px 24px;
+    font-size: 16px;
+}
+
+/* Список викторин */
+.quizzes-list {
+    margin-bottom: 48px;
+}
+
+/* Пустое состояние */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.empty-state__icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+}
+
+.empty-state__title {
+    font-size: 24px;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+}
+
+.empty-state__text {
+    color: var(--text-gray);
+    margin-bottom: 24px;
+}
+
+/* Карточка тарифа */
+.tariff-info {
+    margin-top: 40px;
+    padding-top: 40px;
+    border-top: 1px solid var(--gray-border);
+}
+
+.tariff-card {
+    background: linear-gradient(135deg, #FFF5F5 0%, #FFFFFF 100%);
+    border: 1px solid var(--gray-border);
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    position: relative;
+}
+
+.tariff-card__badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--sovcombank-blue);
+    color: white;
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.tariff-card__title {
+    font-size: 20px;
+    color: var(--sovcombank-red);
+    margin-bottom: 8px;
+    margin-top: 8px;
+}
+
+.tariff-card__text {
+    color: var(--text-gray);
+    margin-bottom: 16px;
+}
+
+.tariff-card__note {
+    font-size: 14px;
+    color: var(--text-gray);
+    background: #FEF3C7;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+/* Активная кнопка в шапке */
+.btn-outline.active {
+    border-color: var(--sovcombank-blue);
+    color: var(--sovcombank-blue);
+    background-color: rgba(1, 55, 145, 0.1);
+}
+
+/* ========== ШАПКА ========== */
+.header-new {
+    background: white;
+    border-bottom: 1px solid var(--gray-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.header-new__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    gap: 32px;
+    flex-wrap: wrap;
+}
+
+/* Логотип (ссылка на главную) */
+.logo__link {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--sovcombank-blue);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.logo__link:hover {
+    color: var(--sovcombank-red);
+}
+
+/* Навигация */
+.nav {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.nav__link {
+    text-decoration: none;
+    color: var(--text-dark);
+    font-weight: 500;
+    transition: color 0.3s;
+    padding: 8px 0;
+}
+
+.nav__link:hover {
+    color: var(--sovcombank-blue);
+}
+
+.nav__link--active {
+    color: var(--sovcombank-blue);
+    font-weight: 600;
+}
+
+/* Правая часть */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+/* Кнопки */
+.btn-primary {
+    background-color: var(--sovcombank-blue);
+    color: white;
+    padding: 8px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: background 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: var(--blue-light);
+}
+
+.btn-outline-new {
+    background: transparent;
+    border: 1px solid var(--gray-border);
+    padding: 8px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text-dark);
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.btn-outline-new:hover {
+    border-color: var(--sovcombank-blue);
+    color: var(--sovcombank-blue);
+}
+
+.user-greeting-new {
+    color: var(--sovcombank-blue);
+    font-weight: 500;
+    font-size: 14px;
+}
+
+/* Адаптив */
+@media (max-width: 768px) {
+    .header-new__inner {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+    }
+    
+    .nav {
+        justify-content: center;
+        gap: 20px;
+    }
+    
+    .header-actions {
+        justify-content: center;
+    }
+}
+
+/* ========== РЕДАКТОР ВИКТОРИН ========== */
+.editor-container {
+    display: flex;
+    min-height: calc(100vh - 140px);
+    background: var(--gray-light);
+}
+
+/* Боковая панель */
+.editor-sidebar {
+    width: 200px;
+    background: white;
+    border-right: 1px solid var(--gray-border);
+    padding: 24px 0;
+}
+
+.sidebar-nav__btn {
+    display: block;
+    width: 100%;
+    padding: 12px 24px;
+    background: none;
+    border: none;
+    text-align: left;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.sidebar-nav__btn:hover {
+    background: var(--gray-light);
+}
+
+.sidebar-nav__btn.active {
+    background: var(--sovcombank-blue);
+    color: white;
+}
+
+/* Основная область */
+.editor-main {
+    flex: 1;
+    padding: 32px 40px;
+    overflow-y: auto;
+}
+
+.editor-tab {
+    display: none;
+}
+
+.editor-tab.active {
+    display: block;
+}
+
+/* Секции настроек */
+.settings-section {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.section-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--sovcombank-blue);
+    margin-bottom: 8px;
+}
+
+.section-desc {
+    font-size: 14px;
+    color: var(--text-gray);
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--gray-border);
+}
+
+.form-row {
+    display: flex;
+    gap: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group.half {
+    flex: 1;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.form-input, .form-textarea, .form-input select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--gray-border);
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.form-input:focus, .form-textarea:focus {
+    outline: none;
+    border-color: var(--sovcombank-blue);
+}
+
+.form-textarea {
+    resize: vertical;
+    font-family: inherit;
+}
+
+.char-counter {
+    display: block;
+    text-align: right;
+    font-size: 12px;
+    color: var(--text-gray);
+    margin-top: 4px;
+}
+
+/* Чекбоксы и радио */
+.checkbox-label, .radio-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    margin-bottom: 12px;
+    font-weight: normal;
+}
+
+.checkbox-label input, .radio-label input {
+    width: auto;
+    margin: 0;
+}
+
+/* Баннер тарифа */
+.tariff-banner {
+    background: linear-gradient(135deg, #FFF5F5, white);
+    border: 1px solid var(--gray-border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+}
+
+.tariff-banner p {
+    margin: 4px 0;
+    font-size: 14px;
+}
+
+/* Кнопки редактора */
+.editor-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--gray-border);
+}
+
+/* Пустое состояние для вопросов */
+.empty-state__note {
+    font-size: 13px;
+    color: var(--text-gray);
+    margin-top: 16px;
+    padding: 12px;
+    background: var(--gray-light);
+    border-radius: 8px;
+}
+
+/* Адаптив */
+@media (max-width: 768px) {
+    .editor-container {
+        flex-direction: column;
+    }
+    
+    .editor-sidebar {
+        width: 100%;
+        display: flex;
+        border-right: none;
+        border-bottom: 1px solid var(--gray-border);
+        padding: 0;
+    }
+    
+    .sidebar-nav__btn {
+        text-align: center;
+        flex: 1;
+    }
+    
+    .editor-main {
+        padding: 20px;
+    }
+    
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+}
+
+/* ========== ФИЛЬТР РЕЖИМОВ ========== */
+.mode-filter {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.mode-filter__btn {
+    background: white;
+    border: 1px solid var(--gray-border);
+    padding: 8px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.mode-filter__btn:hover {
+    border-color: var(--sovcombank-blue);
+    color: var(--sovcombank-blue);
+}
+
+.mode-filter__btn.active {
+    background: var(--sovcombank-blue);
+    border-color: var(--sovcombank-blue);
+    color: white;
+}
+
+/* ========== ПОИСК ========== */
+.search-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 32px;
+}
+
+.search-input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid var(--gray-border);
+    border-radius: 12px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--sovcombank-blue);
+}
+
+.search-btn {
+    background: white;
+    border: 1px solid var(--gray-border);
+    padding: 0 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: all 0.3s;
+}
+
+.search-btn:hover {
+    border-color: var(--sovcombank-blue);
+}
+
+/* ========== СЕТКА КАРТОЧЕК ВИКТОРИН ========== */
+.quizzes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.quiz-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+
+.quiz-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+.quiz-card__title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+}
+
+.quiz-card__date {
+    font-size: 12px;
+    color: var(--text-gray);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.quiz-card__code {
+    font-family: monospace;
+    font-size: 14px;
+    background: var(--gray-light);
+    padding: 4px 8px;
+    border-radius: 6px;
+    display: inline-block;
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+}
+
+.quiz-card__mode {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.quiz-card__mode--multiplayer {
+    background: #E0F2FE;
+    color: #0284C7;
+}
+
+.quiz-card__mode--team {
+    background: #FCE7F3;
+    color: #DB2777;
+}
+
+.quiz-card__mode--solo {
+    background: #DCFCE7;
+    color: #16A34A;
+}
+
+.quiz-card__actions {
+    margin-top: 16px;
+    display: flex;
+    gap: 12px;
+    border-top: 1px solid var(--gray-border);
+    padding-top: 16px;
+}
+
+.quiz-card__btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+
+.quiz-card__btn--edit {
+    color: var(--sovcombank-blue);
+}
+
+.quiz-card__btn--edit:hover {
+    background: rgba(1, 55, 145, 0.1);
+}
+
+.quiz-card__btn--play {
+    color: var(--sovcombank-red);
+}
+
+.quiz-card__btn--play:hover {
+    background: rgba(255, 73, 99, 0.1);
+}
+
+.quiz-card__btn--delete {
+    color: var(--text-gray);
+}
+
+.quiz-card__btn--delete:hover {
+    background: #FEE2E2;
+    color: var(--sovcombank-red);
+}
+
+/* Карточка тарифа (обновлённая) */
+.tariff-card {
+    background: linear-gradient(135deg, #FFF5F5, white);
+    border: 1px solid var(--gray-border);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+}
+
+.tariff-card__content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 12px 0;
+}
+
+.tariff-card__icon {
+    font-size: 28px;
+}
+
+.tariff-card__text {
+    font-size: 18px;
+    color: var(--text-dark);
+}
+
+.tariff-card__text strong {
+    color: var(--sovcombank-red);
+    font-size: 24px;
+}
+
+.tariff-card__note {
+    font-size: 13px;
+    color: var(--text-gray);
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--gray-border);
+}
+
+/* Обложка */
+.cover-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.cover-preview {
+    width: 100%;
+    max-width: 400px;
+    height: 225px;
+    background: var(--gray-light);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px dashed var(--gray-border);
+}
+
+.cover-placeholder {
+    font-size: 48px;
+    color: var(--text-gray);
+}
+
+.cover-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Разделители */
+.section-divider {
+    margin: 24px 0;
+    border: none;
+    border-top: 1px solid var(--gray-border);
+}
+
+.subsection-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--sovcombank-red);
+    margin-bottom: 16px;
+}
+
+/* Инструменты */
+.label-with-icon {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-weight: 500;
+}
+
+.tooltip {
+    cursor: help;
+    color: var(--text-gray);
+    font-size: 14px;
+}
+
+.radio-group {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 16px;
+}
+
+.indent {
+    margin-left: 24px;
+}
+
+/* Типы вопросов */
+.question-types-preview {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--gray-border);
+}
+
+.question-types-preview p {
+    margin-bottom: 12px;
+    font-weight: 500;
+}
+
+.types-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.type-badge {
+    background: var(--gray-light);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    color: var(--text-dark);
+}
+
+/* Подблоки в настройках */
+.sub-block {
+    background: var(--gray-light);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.sub-block__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--sovcombank-blue);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--sovcombank-blue);
+    display: inline-block;
+}
+
+.indent {
+    margin-left: 24px;
+    margin-top: 12px;
+    margin-bottom: 12px;
+}
+
+/* Информационный блок */
+.info-box {
+    background: white;
+    border-left: 4px solid var(--sovcombank-blue);
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-top: 8px;
+    font-size: 13px;
+}
+
+.info-box p {
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.info-box ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.info-box li {
+    margin: 4px 0;
+    color: var(--text-gray);
+}
+
+/* Всплывающая подсказка (tooltip) */
+.tooltip-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    background: var(--sovcombank-blue);
+    color: white;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: 8px;
+    position: relative;
+}
+
+.tooltip-icon:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1F2937;
+    color: white;
+    font-size: 12px;
+    font-weight: normal;
+    padding: 10px 14px;
+    border-radius: 8px;
+    white-space: nowrap;
+    z-index: 100;
+    margin-bottom: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    white-space: normal;
+    width: 300px;
+    text-align: left;
+    line-height: 1.4;
+}
+
+.tooltip-icon:hover::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #1F2937;
+    margin-bottom: 2px;
+}

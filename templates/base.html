@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Quiz Platform{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="{% block body_class %}{% endblock %}">
+
+    <!-- Шапка -->
+    <header class="header-new">
+        <div class="container header-new__inner">
+            <!-- Главная страница (вместо логотипа) -->
+            <div class="logo">
+                <a href="/" class="logo__link">Главная страница</a>
+            </div>
+            
+            <!-- Навигация -->
+            <nav class="nav">
+                <a href="/play/demo" class="nav__link" onclick="alert('Игра будет доступна позже'); return false;">Играть</a>
+                <a href="/prices" class="nav__link" onclick="alert('Страница цен будет позже'); return false;">Цены</a>
+                {% if user %}
+                    <a href="/profile" class="nav__link nav__link--active">Мои викторины</a>
+                {% endif %}
+            </nav>
+            
+            <!-- Кнопки -->
+            <div class="header-actions">
+                {% if user %}
+                    <span class="user-greeting-new">Привет, {{ user.nickname }}!</span>
+                    <a href="/logout" class="btn-outline-new">Выйти</a>
+                {% else %}
+                    <a href="/register" class="btn-primary">Попробовать сейчас</a>
+                    <a href="/login" class="btn-outline-new">Войти</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <!-- Основной контент -->
+    <main class="{% block main_class %}main{% endblock %}">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Подвал -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer__copyright">
+                © 2026 Quiz Platform
+            </div>
+        </div>
+    </footer>
+
+    <script src="/static/js/main.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

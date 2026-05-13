@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}Главная - Quiz Platform{% endblock %}
+
+{% block content %}
+    <!-- Главный блок: вход по коду -->
+    <section class="hero">
+        <div class="container">
+            <h1 class="hero__title">Введите код для участия в игре</h1>
+            
+            <div class="code-input">
+                <input type="text" id="quizCode" class="code-input__field" placeholder="КВИЗ КОД" maxlength="6">
+                <button id="joinBtn" class="btn btn-blue btn-large">ПОДКЛЮЧИТЬСЯ</button>
+            </div>
+            
+            <div class="hero__footer">
+                <button id="createQuizBtn" class="btn-create">Создайте свой квиз бесплатно</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Блок: возможности платформы -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Используйте нашу платформу для</h2>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-card__icon">🎮</div>
+                    <h3 class="feature-card__title">Спорта и киберспорта</h3>
+                    <p class="feature-card__text">Проводите викторины для болельщиков и фанатов</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-card__icon">📢</div>
+                    <h3 class="feature-card__title">Рекламы бренда</h3>
+                    <p class="feature-card__text">Вовлекайте аудиторию в интерактивном формате</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-card__icon">🎯</div>
+                    <h3 class="feature-card__title">Лидогенерации</h3>
+                    <p class="feature-card__text">Собирайте контакты через игровые механики</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-card__icon">🎪</div>
+                    <h3 class="feature-card__title">Уникальных мероприятий</h3>
+                    <p class="feature-card__text">Создавайте незабываемые впечатления для гостей</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-card__icon">🏛️</div>
+                    <h3 class="feature-card__title">Конференций и выставок</h3>
+                    <p class="feature-card__text">Оживляйте деловые мероприятия</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-card__icon">💼</div>
+                    <h3 class="feature-card__title">HR-коммуникаций</h3>
+                    <p class="feature-card__text">Обучайте и сплачивайте сотрудников</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-card__icon">📚</div>
+                    <h3 class="feature-card__title">Тренингов и вебинаров</h3>
+                    <p class="feature-card__text">Проверяйте знания в интерактивном формате</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-card__icon">🎓</div>
+                    <h3 class="feature-card__title">Обучения</h3>
+                    <p class="feature-card__text">Превращайте скучные тесты в увлекательные викторины</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Блок: преимущества -->
+    <section class="advantages">
+        <div class="container">
+            <h2 class="section-title">Преимущества нашей платформы</h2>
+            
+            <div class="advantages-grid">
+                <div class="advantage-card">
+                    <h3 class="advantage-card__title">📝 Интуитивно понятный редактор</h3>
+                    <p class="advantage-card__text">Продвинутый редактор викторин разделен на две секции: настройки викторины и настройки вопросов. Контролируйте ЧТО, КОГДА, ДЛЯ КОГО и КАК вы будете проводить.</p>
+                </div>
+                
+                <div class="advantage-card">
+                    <h3 class="advantage-card__title">🎯 Разные типы вопросов, раунды и слайды</h3>
+                    <ul class="advantage-card__list">
+                        <li>Вопросы с выбором варианта ответа</li>
+                        <li>Открытые вопросы</li>
+                        <li>Интерактивные опросы</li>
+                        <li>Вопросы с картинкой в качестве ответа</li>
+                        <li>Танцы</li>
+                        <li>Презентации и слайды (импорт из Google Slides)</li>
+                        <li>Облако слов</li>
+                        <li>Вопросы, где ответ нужно нарисовать</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Блок: режимы игры -->
+    <section class="modes">
+        <div class="container">
+            <h2 class="section-title">Три режима игры</h2>
+            
+            <div class="modes-grid">
+                <div class="mode-card">
+                    <div class="mode-card__icon">👥</div>
+                    <h3 class="mode-card__title">Мультиплеер</h3>
+                    <p class="mode-card__text">В викторине одновременно участвуют много игроков, играя друг против друга</p>
+                </div>
+                
+                <div class="mode-card">
+                    <div class="mode-card__icon">🏆</div>
+                    <h3 class="mode-card__title">Командный режим</h3>
+                    <p class="mode-card__text">Для проведения командных соревнований. Побеждает команда, ответившая на большее число вопросов и затратившая меньше всего времени</p>
+                </div>
+                
+                <div class="mode-card">
+                    <div class="mode-card__icon">📊</div>
+                    <h3 class="mode-card__title">Одиночный режим</h3>
+                    <p class="mode-card__text">Игроки соревнуются друг с другом в викторине, которая доступна определенный промежуток времени (день, неделя, месяц)</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Блок: масштабирование -->
+    <section class="scaling">
+        <div class="container">
+            <div class="scaling-card">
+                <h2 class="scaling-card__title">До 100 000 участников</h2>
+                <p class="scaling-card__text">Проводите мероприятия до 100 000 одновременных участников. Платформа использует облачные технологии, которые позволяют эффективно масштабировать сервис в соответствии с нагрузкой.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Призыв к действию -->
+    <section class="cta">
+        <div class="container">
+            <div class="cta-card">
+                <h2 class="cta-card__title">Создайте первую интерактивную викторину прямо сейчас!</h2>
+                <button id="ctaCreateBtn" class="btn btn-red btn-large">Попробовать бесплатно</button>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Вход по коду
+    const joinBtn = document.getElementById('joinBtn');
+    const quizCodeInput = document.getElementById('quizCode');
+    
+    if (joinBtn) {
+        joinBtn.addEventListener('click', function() {
+            const code = quizCodeInput.value.trim();
+            if (code.length === 6) {
+                window.location.href = '/play/' + code;
+            } else {
+                alert('Пожалуйста, введите 6-значный код викторины');
+            }
+        });
+    }
+    
+    if (quizCodeInput) {
+        quizCodeInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') joinBtn.click();
+        });
+    }
+    
+    // Создание викторины
+    const createQuizBtn = document.getElementById('createQuizBtn');
+    const ctaCreateBtn = document.getElementById('ctaCreateBtn');
+    
+    function handleCreateQuiz() {
+        const isLoggedIn = {{ 'true' if user else 'false' }};
+        if (isLoggedIn) {
+            window.location.href = '/quiz/create';
+        } else {
+            window.location.href = '/login';
+        }
+    }
+    
+    if (createQuizBtn) createQuizBtn.addEventListener('click', handleCreateQuiz);
+    if (ctaCreateBtn) ctaCreateBtn.addEventListener('click', handleCreateQuiz);
+</script>
+{% endblock %}
