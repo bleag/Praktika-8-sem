@@ -7,10 +7,9 @@
     <div class="container">
         <!-- Заголовок -->
         <div class="profile-header">
-            <h1 class="profile-title">Мои викторины <span class="quiz-count">(0)</span></h1>
+            <h1 class="profile-title">Мои викторины <span class="quiz-count">({{ quizzes|length }})</span></h1>
             <p class="profile-subtitle">Выберите викторину для редактирования, просмотра и управления.</p>
-            <button type="button" id="createQuizBtn" class="btn btn-blue create-quiz-btn" onclick="window.location.href='/quiz/create'">+ Создать викторину</button>
-        </div>
+            <button type="button" class="btn btn-blue create-quiz-btn" onclick="window.location.href='/quiz/create'">+ Создать викторину</button>
 
         <!-- Фильтр по режимам -->
         <div class="mode-filter">
@@ -27,13 +26,52 @@
         </div>
 
         <!-- Список викторин -->
-        <div class="quizzes-list">
-            <div class="empty-state" id="emptyState">
-                <div class="empty-state__icon">📋</div>
-                <h3 class="empty-state__title">У вас пока нет викторин</h3>
-                <p class="empty-state__text">Создайте свою первую викторину, чтобы начать</p>
-                <button type="button" class="btn btn-red" id="emptyCreateBtn" onclick="window.location.href='/quiz/create'">+ Создать викторину</button>
-            </div>
+        <div class="quizzes-list" id="quizzesList">
+            {% if quizzes and quizzes|length > 0 %}
+                {% for quiz in quizzes %}
+                <div class="quiz-card" data-quiz-id="{{ quiz.id }}" data-mode="{{ quiz.settings.gameMode if quiz.settings else 'multiplayer' }}">
+                    <div class="quiz-card__cover">
+                        {% if quiz.cover_data %}
+                            <img src="{{ quiz.cover_data }}" class="quiz-card__image">
+                        {% else %}
+                            <div class="quiz-card__placeholder">🎮</div>
+                        {% endif %}
+                    </div>
+                    <div class="quiz-card__info">
+                        <h3 class="quiz-card__title">{{ quiz.title }}</h3>
+                        <p class="quiz-card__desc">{{ quiz.description[:80] }}{% if quiz.description and quiz.description|length > 80 %}...{% endif %}</p>
+                        <div class="quiz-card__meta">
+                            <span class="quiz-card__code">🔑 Код: {{ quiz.quiz_code }}</span>
+                            <span class="quiz-card__mode">
+                                {% set mode = quiz.settings.gameMode if quiz.settings else 'multiplayer' %}
+                                {% if mode == 'multiplayer' %}👥 Мультиплеер
+                                {% elif mode == 'team' %}🏆 Командный
+                                {% else %}📊 Одиночный{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="quiz-card__actions">
+                        <a href="/quiz/edit/{{ quiz.id }}" class="btn-small btn-edit">✏️ Редактировать</a>
+                        {% set mode = quiz.settings.gameMode if quiz.settings else 'multiplayer' %}
+                        {% if mode == 'solo' %}
+                            <a href="/solo/{{ quiz.id }}" class="btn-small btn-play">🎮 Играть (соло)</a>
+                        {% elif mode == 'team' %}
+                            <a href="/team/{{ quiz.id }}" class="btn-small btn-play">🏆 Команда</a>
+                        {% else %}
+                            <a href="/play/{{ quiz.quiz_code }}" class="btn-small btn-play">👥 Играть</a>
+                        {% endif %}
+                        <button class="btn-small btn-delete" data-id="{{ quiz.id }}">🗑️ Удалить</button>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-state__icon">📋</div>
+                    <h3 class="empty-state__title">У вас пока нет викторин</h3>
+                    <p class="empty-state__text">Создайте свою первую викторину, чтобы начать</p>
+                    <button type="button" class="btn btn-red" id="emptyCreateBtn" onclick="window.location.href='/quiz/create'">+ Создать викторину</button>
+                </div>
+            {% endif %}
         </div>
 
         <!-- Информация о тарифах -->
@@ -63,7 +101,21 @@
                 filterBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 const mode = btn.getAttribute('data-mode');
-                console.log('Фильтр по режиму:', mode);
+                
+                // Фильтрация карточек
+                const cards = document.querySelectorAll('.quiz-card');
+                cards.forEach(card => {
+                    if (mode === 'all') {
+                        card.style.display = 'flex';
+                    } else {
+                        const cardMode = card.getAttribute('data-mode');
+                        if (cardMode === mode) {
+                            card.style.display = 'flex';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    }
+                });
             });
         });
     }
@@ -72,20 +124,50 @@
     const searchInput = document.getElementById('searchInput');
     const searchBtn = document.querySelector('.search-btn');
     
-    if (searchBtn) {
-        searchBtn.addEventListener('click', () => {
-            const query = searchInput?.value.toLowerCase() || '';
-            console.log('Поиск:', query);
+    function filterBySearch() {
+        const query = searchInput?.value.toLowerCase() || '';
+        const cards = document.querySelectorAll('.quiz-card');
+        cards.forEach(card => {
+            const title = card.querySelector('.quiz-card__title')?.innerText.toLowerCase() || '';
+            const desc = card.querySelector('.quiz-card__desc')?.innerText.toLowerCase() || '';
+            if (title.includes(query) || desc.includes(query)) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
         });
+    }
+    
+    if (searchBtn) {
+        searchBtn.addEventListener('click', filterBySearch);
     }
     
     if (searchInput) {
         searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                const query = searchInput.value.toLowerCase();
-                console.log('Поиск:', query);
+                filterBySearch();
             }
         });
     }
+    
+    // Удаление викторины
+    document.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const quizId = btn.getAttribute('data-id');
+            if (confirm('Удалить викторину? Это действие нельзя отменить.')) {
+                try {
+                    const response = await fetch(`/api/quiz/${quizId}`, { method: 'DELETE' });
+                    const data = await response.json();
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Ошибка удаления: ' + (data.error || 'Неизвестная ошибка'));
+                    }
+                } catch (error) {
+                    alert('Ошибка сервера');
+                }
+            }
+        });
+    });
 </script>
 {% endblock %}

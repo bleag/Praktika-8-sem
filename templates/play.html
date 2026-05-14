@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Выбор викторины - Quiz Platform{% endblock %}
+
+{% block body_class %}play-page{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1200px; margin: 0 auto; padding: 40px 20px;">
+    
+    <div class="play-header">
+        <h1>🎮 Выберите викторину</h1>
+        <p>Играйте в одиночку или приглашайте друзей</p>
+    </div>
+
+    {% if quizzes %}
+        <div class="quizzes-grid">
+            {% for quiz in quizzes %}
+            <div class="quiz-card">
+                <div class="quiz-card__cover">
+                    {% if quiz.cover_data %}
+                        <img src="{{ quiz.cover_data }}" alt="{{ quiz.title }}">
+                    {% else %}
+                        <div class="quiz-card__placeholder">🎯</div>
+                    {% endif %}
+                </div>
+                
+                <div class="quiz-card__content">
+                    <h3 class="quiz-card__title">{{ quiz.title }}</h3>
+                    <p class="quiz-card__desc">{{ quiz.description[:100] or 'Описание отсутствует' }}{% if quiz.description and quiz.description|length > 100 %}...{% endif %}</p>
+                    
+                    <div class="quiz-card__meta">
+                        {% set mode = quiz.settings.gameMode if quiz.settings else 'multiplayer' %}
+                        {% if mode == 'solo' %}
+                            <span class="quiz-card__mode solo">🎮 Одиночный</span>
+                        {% elif mode == 'team' %}
+                            <span class="quiz-card__mode team">🏆 Командный</span>
+                        {% else %}
+                            <span class="quiz-card__mode multi">👥 Мультиплеер</span>
+                        {% endif %}
+                        
+                        {% if mode != 'solo' %}
+                            <span class="quiz-card__code">🔑 {{ quiz.quiz_code }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="quiz-card__actions">
+                        {% set mode = quiz.settings.gameMode if quiz.settings else 'multiplayer' %}
+                        {% if mode == 'solo' %}
+                            <a href="/solo/{{ quiz.id }}" class="btn-play-solo">🎮 Играть соло</a>
+                        {% elif mode == 'team' %}
+                            <a href="/team/{{ quiz.id }}" class="btn-play-multi">🏆 Играть командой</a>
+                            <button class="btn-copy-code" onclick="copyCode('{{ quiz.quiz_code }}')">📋 Код</button>
+                        {% else %}
+                            <a href="/play/{{ quiz.quiz_code }}" class="btn-play-multi">👥 Играть</a>
+                            <button class="btn-copy-code" onclick="copyCode('{{ quiz.quiz_code }}')">📋 Код</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state__icon">📋</div>
+            <h3 class="empty-state__title">Нет доступных викторин</h3>
+            <p class="empty-state__text">
+                {% if user %}
+                    Создайте свою первую викторину!
+                {% else %}
+                    <a href="/register">Зарегистрируйтесь</a> или <a href="/login">войдите</a>, чтобы создавать викторины
+                {% endif %}
+            </p>
+            {% if user %}
+                <a href="/quiz/create" class="btn btn-blue" style="background: #2196F3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px;">➕ Создать викторину</a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function copyCode(code) {
+    navigator.clipboard.writeText(code);
+    alert('Код скопирован: ' + code);
+}
+</script>
+{% endblock %}

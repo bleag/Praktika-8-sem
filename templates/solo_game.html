@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Одиночная игра - {{ quiz.title }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 50px auto; text-align: center;">
+    <h1>🎮 {{ quiz.title }}</h1>
+    
+    <div id="startDiv">
+        <div style="background: #f5f5f5; padding: 30px; border-radius: 20px; margin: 30px 0;">
+            <h3>Правила:</h3>
+            <p>✅ 25 секунд на вопрос</p>
+            <p>✅ 100 баллов за правильный ответ</p>
+            <p>✅ В конце - твой результат</p>
+        </div>
+        <button id="playBtn" style="background: #4CAF50; color: white; padding: 15px 40px; font-size: 18px; border: none; border-radius: 10px; cursor: pointer;">▶ Начать игру</button>
+    </div>
+    
+    <div id="gameDiv" style="display: none;">
+        <div id="questionDiv" style="background: #f5f5f5; padding: 30px; border-radius: 20px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                <span>Вопрос <span id="currentQ">1</span>/<span id="totalQ">0</span></span>
+                <span>💰 <span id="score">0</span> баллов</span>
+            </div>
+            <h3 id="questionText" style="margin: 30px 0;"></h3>
+            <div id="optionsDiv" style="margin-top: 30px;"></div>
+            <div id="timerDiv" style="margin-top: 20px; font-size: 24px; color: #2196F3;"></div>
+        </div>
+    </div>
+    
+    <div id="resultDiv" style="display: none;">
+        <h1>🎉 Игра окончена!</h1>
+        <div style="background: #f5f5f5; padding: 30px; border-radius: 20px; margin: 30px 0;">
+            <h2>Твой счёт:</h2>
+            <h1 style="color: #4CAF50; font-size: 64px;" id="scoreSpan">0</h1>
+        </div>
+        <button onclick="location.reload()" style="background: #2196F3; color: white; padding: 10px 20px; border: none; border-radius: 8px; margin: 5px;">🔄 Сыграть ещё</button>
+        <a href="/profile" style="display: inline-block; background: #666; color: white; padding: 10px 20px; text-decoration: none; border-radius: 8px; margin: 5px;">📋 Мои викторины</a>
+    </div>
+</div>
+
+<script>
+const quizId = {{ quiz.id }};
+let questions = [];
+let current = 0;
+let score = 0;
+let timer = null;
+
+document.getElementById('playBtn').onclick = async () => {
+    const res = await fetch(`/api/quiz/${quizId}/questions`);
+    const data = await res.json();
+    if (data.success && data.questions.length) {
+        questions = data.questions;
+        document.getElementById('totalQ').innerText = questions.length;
+        document.getElementById('startDiv').style.display = 'none';
+        document.getElementById('gameDiv').style.display = 'block';
+        showQuestion();
+    } else {
+        alert('В этой викторине нет вопросов!');
+    }
+};
+
+function showQuestion() {
+    if (current >= questions.length) {
+        endGame();
+        return;
+    }
+    const q = questions[current];
+    document.getElementById('currentQ').innerText = current + 1;
+    document.getElementById('questionText').innerHTML = q.text;
+    document.getElementById('score').innerHTML = score;
+    
+    const opts = document.getElementById('optionsDiv');
+    opts.innerHTML = '';
+    q.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.innerHTML = opt;
+        btn.style.cssText = 'display: block; width: 100%; margin: 10px 0; padding: 12px; background: white; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; font-size: 16px;';
+        btn.onmouseenter = () => btn.style.background = '#f0f0f0';
+        btn.onmouseleave = () => btn.style.background = 'white';
+        btn.onclick = () => checkAnswer(opt);
+        opts.appendChild(btn);
+    });
+    startTimer();
+}
+
+function checkAnswer(answer) {
+    clearInterval(timer);
+    const q = questions[current];
+    if (q.correct_answer && q.correct_answer.includes(answer)) {
+        score += 100;
+        showMessage('✅ Правильно! +100 баллов', '#4CAF50');
+    } else {
+        showMessage(`❌ Неправильно! Правильный ответ: ${q.correct_answer?.join(', ') || '?'}`, '#f44336');
+    }
+    current++;
+    setTimeout(() => showQuestion(), 1500);
+}
+
+function showMessage(text, color) {
+    const opts = document.getElementById('optionsDiv');
+    const msg = document.createElement('div');
+    msg.innerHTML = text;
+    msg.style.cssText = `text-align: center; padding: 20px; font-size: 20px; font-weight: bold; color: ${color};`;
+    opts.innerHTML = '';
+    opts.appendChild(msg);
+}
+
+function startTimer() {
+    let time = 25;
+    const timerDiv = document.getElementById('timerDiv');
+    timer = setInterval(() => {
+        timerDiv.innerHTML = `⏱️ ${time} сек`;
+        if (time <= 0) {
+            clearInterval(timer);
+            showMessage('⏰ Время вышло!', '#ff9800');
+            current++;
+            setTimeout(() => showQuestion(), 1500);
+        }
+        time--;
+    }, 1000);
+}
+
+function endGame() {
+    clearInterval(timer);
+    document.getElementById('gameDiv').style.display = 'none';
+    document.getElementById('resultDiv').style.display = 'block';
+    document.getElementById('scoreSpan').innerHTML = score;
+}
+</script>
+{% endblock %}

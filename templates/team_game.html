@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block title %}Командная игра - {{ quiz.title }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 50px auto; text-align: center;">
+    <h1>🏆 Командная игра: {{ quiz.title }}</h1>
+    
+    <!-- Экран создания команды -->
+    <div id="createTeamDiv">
+        <div style="background: #f5f5f5; padding: 30px; border-radius: 20px; margin: 30px 0;">
+            <h3>Создать команду</h3>
+            <input type="text" id="teamName" placeholder="Название команды" style="padding: 10px; width: 200px; margin: 10px;">
+            <br>
+            <button id="createTeamBtn" style="background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer;">➕ Создать команду</button>
+        </div>
+        
+        <div style="background: #f5f5f5; padding: 30px; border-radius: 20px;">
+            <h3>Присоединиться к команде</h3>
+            <input type="text" id="joinCode" placeholder="Код команды" style="padding: 10px; width: 200px; margin: 10px;">
+            <br>
+            <button id="joinTeamBtn" style="background: #2196F3; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer;">🔗 Присоединиться</button>
+        </div>
+    </div>
+    
+    <!-- Экран ожидания -->
+    <div id="waitingDiv" style="display: none;">
+        <h2>Команда: <span id="teamNameSpan"></span></h2>
+        <div style="background: #f5f5f5; padding: 30px; border-radius: 20px; margin: 30px 0;">
+            <h3>Код для подключения:</h3>
+            <h1 style="color: #2196F3; font-size: 48px;" id="teamCodeSpan"></h1>
+            <button onclick="navigator.clipboard.writeText(document.getElementById('teamCodeSpan').innerText)" style="background: #666; color: white; padding: 5px 15px; border: none; border-radius: 5px; cursor: pointer;">📋 Копировать</button>
+        </div>
+        <p>Ожидаем начала игры...</p>
+        <div id="membersList" style="margin-top: 20px;"></div>
+        
+        <button id="startTeamGameBtn" style="background: #4CAF50; color: white; padding: 15px 40px; font-size: 18px; border: none; border-radius: 10px; cursor: pointer; margin-top: 30px;">🚀 Начать игру</button>
+    </div>
+    
+    <!-- Экран игры -->
+    <div id="gameDiv" style="display: none;">
+        <div id="questionDiv" style="background: #f5f5f5; padding: 30px; border-radius: 20px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                <span>Вопрос <span id="currentQ">1</span>/<span id="totalQ">0</span></span>
+                <span>🏆 Команда: <span id="teamNameGame"></span></span>
+            </div>
+            <h3 id="questionText" style="margin: 30px 0;"></h3>
+            <div id="optionsDiv" style="margin-top: 30px;"></div>
+            <div id="timerDiv" style="margin-top: 20px; font-size: 24px; color: #2196F3;"></div>
+        </div>
+    </div>
+    
+    <!-- Экран результата -->
+    <div id="resultDiv" style="display: none;">
+        <h1>🏆 Игра окончена!</h1>
+        <div style="background: #f5f5f5; padding: 30px; border-radius: 20px; margin: 30px 0;">
+            <h2>Таблица лидеров:</h2>
+            <div id="leaderboardList"></div>
+        </div>
+        <a href="/profile" style="background: #666; color: white; padding: 10px 20px; text-decoration: none; border-radius: 8px;">📋 К викторинам</a>
+    </div>
+</div>
+
+<script>
+const quizId = {{ quiz.id }};
+let questions = [];
+let currentTeam = null;
+let currentQuestion = 0;
+let teamScore = 0;
+let timer = null;
+let gameInterval = null;
+
+// Создание команды
+document.getElementById('createTeamBtn').onclick = async () => {
+    const teamName = document.getElementById('teamName').value.trim();
+    if (!teamName) {
+        alert('Введите название команды');
+        return;
+    }
+    
+    const response = await fetch('/api/team/create', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            quiz_id: quizId,
+            team_name: teamName
+        })
+    });
+    const data = await response.json();
+    
+    if (data.success) {
+        currentTeam = data.team;
+        document.getElementById('teamNameSpan').innerText = currentTeam.name;
+        document.getElementById('teamCodeSpan').innerText = currentTeam.code;
+        document.getElementById('createTeamDiv').style.display = 'none';
+        document.getElementById('waitingDiv').style.display = 'block';
+        loadQuestions();
+        updateMembers();
+        setInterval(updateMembers, 2000);
+    } else {
+        alert(data.error);
+    }
+};
+
+// Присоединение к команде
+document.getElementById('joinTeamBtn').onclick = async () => {
+    const teamCode = document.getElementById('joinCode').value.trim().toUpperCase();
+    if (!teamCode) {
+        alert('Введите код команды');
+        return;
+    }
+    
+    const response = await fetch('/api/team/join', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            quiz_id: quizId,
+            team_code: teamCode,
+            player_name: 'Участник'
+        })
+    });
+    const data = await response.json();
+    
+    if (data.success) {
+        currentTeam = data.team;
+        document.getElementById('teamNameSpan').innerText = currentTeam.name;
+        document.getElementById('teamCodeSpan').innerText = currentTeam.code;
+        document.getElementById('createTeamDiv').style.display = 'none';
+        document.getElementById('waitingDiv').style.display = 'block';
+        updateMembers();
+        setInterval(updateMembers, 2000);
+    } else {
+        alert(data.error);
+    }
+};
+
+function updateMembers() {
+    if (!currentTeam) return;
+    fetch(`/api/team/${currentTeam.code}/members`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const membersDiv = document.getElementById('membersList');
+                membersDiv.innerHTML = data.members.map(m => `<div>👤 ${m.name}</div>`).join('');
+            }
+        });
+}
+
+async function loadQuestions() {
+    const res = await fetch(`/api/quiz/${quizId}/questions`);
+    const data = await res.json();
+    if (data.success) {
+        questions = data.questions;
+        document.getElementById('totalQ').innerText = questions.length;
+    }
+}
+
+// Старт игры (для создателя команды)
+document.getElementById('startTeamGameBtn').onclick = async () => {
+    await fetch('/api/team/start', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ team_code: currentTeam.code })
+    });
+    startGame();
+};
+
+function startGame() {
+    document.getElementById('waitingDiv').style.display = 'none';
+    document.getElementById('gameDiv').style.display = 'block';
+    document.getElementById('teamNameGame').innerText = currentTeam.name;
+    currentQuestion = 0;
+    teamScore = 0;
+    showTeamQuestion();
+}
+
+function showTeamQuestion() {
+    if (currentQuestion >= questions.length) {
+        endTeamGame();
+        return;
+    }
+    
+    const q = questions[currentQuestion];
+    document.getElementById('currentQ').innerText = currentQuestion + 1;
+    document.getElementById('questionText').innerHTML = q.text;
+    
+    const opts = document.getElementById('optionsDiv');
+    opts.innerHTML = '';
+    q.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.innerHTML = opt;
+        btn.style.cssText = 'display: block; width: 100%; margin: 10px 0; padding: 12px; background: white; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; font-size: 16px;';
+        btn.onclick = () => checkTeamAnswer(opt);
+        opts.appendChild(btn);
+    });
+    
+    startTeamTimer();
+}
+
+function checkTeamAnswer(answer) {
+    clearInterval(timer);
+    const q = questions[currentQuestion];
+    if (q.correct_answer && q.correct_answer.includes(answer)) {
+        teamScore += 100;
+        showTeamMessage('✅ Правильно! +100 баллов', '#4CAF50');
+    } else {
+        showTeamMessage(`❌ Неправильно! Ответ: ${q.correct_answer?.join(', ') || '?'}`, '#f44336');
+    }
+    
+    currentQuestion++;
+    setTimeout(() => showTeamQuestion(), 1500);
+}
+
+function startTeamTimer() {
+    let time = 25;
+    const timerDiv = document.getElementById('timerDiv');
+    timer = setInterval(() => {
+        timerDiv.innerHTML = `⏱️ ${time} сек`;
+        if (time <= 0) {
+            clearInterval(timer);
+            showTeamMessage('⏰ Время вышло!', '#ff9800');
+            currentQuestion++;
+            setTimeout(() => showTeamQuestion(), 1500);
+        }
+        time--;
+    }, 1000);
+}
+
+function showTeamMessage(text, color) {
+    const opts = document.getElementById('optionsDiv');
+    const msg = document.createElement('div');
+    msg.innerHTML = text;
+    msg.style.cssText = `text-align: center; padding: 20px; font-size: 20px; font-weight: bold; color: ${color};`;
+    opts.innerHTML = '';
+    opts.appendChild(msg);
+}
+
+async function endTeamGame() {
+    clearInterval(timer);
+    document.getElementById('gameDiv').style.display = 'none';
+    document.getElementById('resultDiv').style.display = 'block';
+    
+    // Отправляем результат
+    await fetch('/api/team/score', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            team_code: currentTeam.code,
+            score: teamScore
+        })
+    });
+    
+    // Получаем всех лидеров
+    const res = await fetch(`/api/team/${currentTeam.code}/leaderboard`);
+    const data = await res.json();
+    
+    if (data.success) {
+        const leaderboard = document.getElementById('leaderboardList');
+        leaderboard.innerHTML = data.teams.map((t, i) => `
+            <div style="background: #f5f5f5; margin: 10px; padding: 15px; border-radius: 10px;">
+                <strong>${i+1}. ${t.name}</strong> - ${t.score} баллов
+            </div>
+        `).join('');
+    }
+}
+</script>
+{% endblock %}

@@ -8,6 +8,8 @@
 </head>
 <body class="{% block body_class %}{% endblock %}">
 
+
+
     <!-- Шапка -->
     <header class="header-new">
         <div class="container header-new__inner">
@@ -18,11 +20,11 @@
             
             <!-- Навигация -->
             <nav class="nav">
-                <a href="/play/demo" class="nav__link" onclick="alert('Игра будет доступна позже'); return false;">Играть</a>
-                <a href="/prices" class="nav__link" onclick="alert('Страница цен будет позже'); return false;">Цены</a>
+                <a href="/play" class="nav__link">Играть</a>
+                <a href="/prices" class="nav__link">Цены</a>
                 {% if user %}
-                    <a href="/profile" class="nav__link nav__link--active">Мои викторины</a>
-                {% endif %}
+                     <a href="/profile" class="nav__link">Мои викторины</a>
+                 {% endif %}
             </nav>
             
             <!-- Кнопки -->

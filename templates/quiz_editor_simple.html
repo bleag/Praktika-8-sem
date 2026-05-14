@@ -1,0 +1,622 @@
+{% extends "base.html" %}
+
+{% block title %}Редактор викторины - Quiz Platform{% endblock %}
+
+{% block content %}
+<div class="editor-container">
+    <div class="editor-sidebar">
+        <div class="sidebar-nav">
+            <button class="sidebar-nav__btn active" data-tab="settings">НАСТРОЙКИ</button>
+            <button class="sidebar-nav__btn" data-tab="questions">ВОПРОСЫ</button>
+
+        </div>
+    </div>
+
+    <div class="editor-main">
+        <!-- Вкладка НАСТРОЙКИ -->
+        <div id="settingsTab" class="editor-tab active">
+            <form id="quizSettingsForm">
+                <!-- ЧТО -->
+                <div class="settings-section">
+                    <h3 class="section-title">ЧТО</h3>
+                    <p class="section-desc">Добавьте название, описание и обложку вашей викторины</p>
+                    
+                    <div class="form-group">
+                        <label>Название викторины *</label>
+                        <input type="text" id="quizTitle" class="form-input" maxlength="150" required>
+                        <span class="char-counter">0/150</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Описание викторины</label>
+                        <textarea id="quizDescription" class="form-textarea" rows="4" maxlength="800"></textarea>
+                        <span class="char-counter">0/800</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Обложка викторины</label>
+                        <div class="cover-upload">
+                            <div class="cover-preview" id="coverPreview">
+                                <span class="cover-placeholder">📷</span>
+                            </div>
+                            <input type="file" id="coverImage" accept="image/*" style="display: none;">
+                            <button type="button" id="uploadCoverBtn" class="btn-outline-new">Загрузить обложку</button>
+                            <button type="button" id="removeCoverBtn" class="btn-outline-new" style="display: none;">Удалить</button>
+                        </div>
+                        <small class="form-hint">Рекомендуемый размер: 1280x720px (16:9)</small>
+                    </div>
+                </div>
+
+                <!-- КОГДА -->
+                <div class="settings-section">
+                    <h3 class="section-title">КОГДА</h3>
+                    <p class="section-desc">Установите дату и время или оставьте для немедленного запуска</p>
+                    
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label>Дата начала</label>
+                            <input type="date" id="startDate" class="form-input">
+                        </div>
+                        <div class="form-group half">
+                            <label>Время начала</label>
+                            <input type="time" id="startTime" class="form-input">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="autoStart"> Автоматический запуск
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label-with-icon">
+                            <span>Настройка обратного отсчёта перед стартом игры</span>
+                        </label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="countdown" value="yes"> Да
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="countdown" value="no" checked> Нет
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" id="countdownDurationGroup" style="display: none;">
+                        <label>Длительность, сек</label>
+                        <input type="number" id="countdownDuration" class="form-input" value="6" min="3" max="30">
+                    </div>
+
+                    <hr class="section-divider">
+                    <h4 class="subsection-title">Настройка времени показа вопросов</h4>
+                    
+                    <div class="form-group">
+                        <label>Время ответа на вопрос, сек *</label>
+                        <input type="number" id="timePerQuestion" class="form-input" value="25" min="5" max="300">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Время на показ ответа, сек *</label>
+                        <input type="number" id="timeShowAnswer" class="form-input" value="10" min="3" max="60">
+                    </div>
+                </div>
+
+                <!-- ДЛЯ КОГО -->
+                <div class="settings-section">
+                    <h3 class="section-title">ДЛЯ КОГО</h3>
+                    <p class="section-desc">Настройте доступ к викторине</p>
+                    
+                    <div class="form-group">
+                        <label class="radio-label">
+                            <input type="radio" name="access" value="public" checked> Публичная (доступ по коду)
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="access" value="password"> Приватная (доступ по коду + пароль)
+                        </label>
+                    </div>
+                    
+                    <div class="form-group" id="quizPasswordGroup" style="display: none;">
+                        <label>Пароль для входа</label>
+                        <input type="password" id="quizPassword" class="form-input">
+                    </div>
+                </div>
+
+                <!-- КАК -->
+                <div class="settings-section">
+                    <h3 class="section-title">КАК</h3>
+                    <p class="section-desc">Настройте правила и дополнительные возможности</p>
+                    
+                    <div class="form-group">
+                        <label>Режим игры</label>
+                        <select id="gameMode" class="form-input">
+                            <option value="multiplayer">Мультиплеер</option>
+                            <option value="team">Командный</option>
+                            <option value="solo">Одиночный</option>
+                        </select>
+                    </div>
+
+                    <div class="sub-block">
+                        <h4 class="sub-block__title">🎁 Призы</h4>
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="hasPrizes"> Планируете ли вы разыгрывать призы?
+                            </label>
+                        </div>
+                        <div id="prizeSettings" style="display: none;">
+                            <div class="form-group indent">
+                                <label>Сколько лучших игроков получат призы?</label>
+                                <input type="number" id="prizeWinnersCount" class="form-input" value="1" min="1" max="35">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tariff-banner">
+                    <p>🔵 <strong>Бесплатный тариф</strong> — до 35 одновременных игроков</p>
+                </div>
+
+                <div class="editor-actions">
+                    <button type="button" id="saveSettingsBtn" class="btn btn-blue">Сохранить настройки</button>
+                    <button type="button" id="nextToQuestionsBtn" class="btn btn-red">Далее → Вопросы</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Вкладка ВОПРОСЫ -->
+        <div id="questionsTab" class="editor-tab">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3>Вопросы викторины</h3>
+                <button type="button" id="addQuestionBtn" class="btn btn-blue">+ Добавить вопрос</button>
+            </div>
+            
+            <div id="questionsList">
+                <div style="text-align: center; padding: 40px; color: #999;">
+                    📝<p>Нет вопросов. Нажмите «+ Добавить вопрос»</p>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <button type="button" id="backToSettingsBtn" class="btn-outline-new">← Назад к настройкам</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно -->
+<div id="questionModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Добавить вопрос</h3>
+            <span class="modal-close">&times;</span>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="editQuestionId">
+            
+            <div class="form-group">
+                <label>Тип вопроса</label>
+                <select id="questionType" class="form-input">
+                    <option value="choice">Выбор варианта</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Текст вопроса *</label>
+                <textarea id="questionText" class="form-textarea" rows="3"></textarea>
+            </div>
+            
+            <div id="choiceBlock">
+                <label>Варианты ответов</label>
+                <div id="optionsList">
+                    <div class="option-row">
+                        <input type="text" class="form-input option-input" placeholder="Вариант 1">
+                        <input type="radio" name="correctOption" value="0"> Правильный
+                    </div>
+                    <div class="option-row">
+                        <input type="text" class="form-input option-input" placeholder="Вариант 2">
+                        <input type="radio" name="correctOption" value="1"> Правильный
+                    </div>
+                </div>
+                <button type="button" id="addOptionBtn" class="btn-small">+ Добавить вариант</button>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button id="saveQuestionBtn" class="btn btn-blue">Сохранить</button>
+            <button id="cancelModalBtn" class="btn-outline-new">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentQuizId = null;
+{% if quiz %}
+currentQuizId = {{ quiz.id }};
+{% endif %}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Переключение вкладок
+    const settingsTab = document.getElementById('settingsTab');
+    const questionsTab = document.getElementById('questionsTab');
+    const settingsBtn = document.querySelector('[data-tab="settings"]');
+    const questionsBtn = document.querySelector('[data-tab="questions"]');
+    const nextBtn = document.getElementById('nextToQuestionsBtn');
+    const backBtn = document.getElementById('backToSettingsBtn');
+    
+    function showTab(tabName) {
+        if (tabName === 'settings') {
+            settingsTab.classList.add('active');
+            questionsTab.classList.remove('active');
+            settingsBtn.classList.add('active');
+            questionsBtn.classList.remove('active');
+        } else {
+            settingsTab.classList.remove('active');
+            questionsTab.classList.add('active');
+            settingsBtn.classList.remove('active');
+            questionsBtn.classList.add('active');
+            if (currentQuizId) loadQuestions();
+        }
+    }
+    
+    if (nextBtn) nextBtn.onclick = () => showTab('questions');
+    if (backBtn) backBtn.onclick = () => showTab('settings');
+    if (settingsBtn) settingsBtn.onclick = () => showTab('settings');
+    if (questionsBtn) questionsBtn.onclick = () => showTab('questions');
+    
+    // Счётчики
+    const titleInput = document.getElementById('quizTitle');
+    const descTextarea = document.getElementById('quizDescription');
+    if (titleInput) {
+        titleInput.addEventListener('input', () => {
+            titleInput.nextElementSibling.textContent = titleInput.value.length + '/150';
+        });
+    }
+    if (descTextarea) {
+        descTextarea.addEventListener('input', () => {
+            descTextarea.nextElementSibling.textContent = descTextarea.value.length + '/800';
+        });
+    }
+    
+    // Обложка
+    const uploadBtn = document.getElementById('uploadCoverBtn');
+    const coverInput = document.getElementById('coverImage');
+    const coverPreview = document.getElementById('coverPreview');
+    const removeCoverBtn = document.getElementById('removeCoverBtn');
+    let coverData = null;
+    
+    if (uploadBtn) {
+        uploadBtn.onclick = () => coverInput.click();
+        coverInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    coverData = event.target.result;
+                    coverPreview.innerHTML = `<img src="${coverData}" style="max-width: 200px;">`;
+                    removeCoverBtn.style.display = 'inline-block';
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+        if (removeCoverBtn) {
+            removeCoverBtn.onclick = () => {
+                coverData = null;
+                coverPreview.innerHTML = '<span class="cover-placeholder">📷</span>';
+                coverInput.value = '';
+                removeCoverBtn.style.display = 'none';
+            };
+        }
+    }
+    
+    // Сохранение настроек
+    const saveBtn = document.getElementById('saveSettingsBtn');
+    if (saveBtn) {
+        saveBtn.onclick = async () => {
+            const data = {
+                quiz_id: currentQuizId,
+                title: document.getElementById('quizTitle')?.value || '',
+                description: document.getElementById('quizDescription')?.value || '',
+                coverImage: coverData,
+                timePerQuestion: document.getElementById('timePerQuestion')?.value || 25,
+                gameMode: document.getElementById('gameMode')?.value || 'multiplayer'
+            };
+            
+            if (!data.title) {
+                alert('Введите название');
+                return;
+            }
+            
+            const response = await fetch('/api/quiz/save', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            if (result.success) {
+                if (!currentQuizId && result.quiz_id) currentQuizId = result.quiz_id;
+                const gameMode = document.getElementById('gameMode')?.value || 'solo';
+                const quizCode = result.quiz_code;
+                
+                if (gameMode === 'solo') {
+                    alert(`✅ Викторина сохранена!\n\nОдиночный режим: /solo/${result.quiz_id}\n\nСразу играй по этой ссылке!`);
+                } else {
+                    alert(`✅ Викторина сохранена!\n\nКод для игроков: ${quizCode}\nСсылка: /play/${quizCode}`);
+                }
+            } else {
+                alert('Ошибка: ' + result.error);
+            }
+        };  // <-- ТУТ ТОЧКА С ЗАПЯТОЙ И ЗАКРЫВАЕМ if (saveBtn)
+    }
+    // РАБОТА С ВОПРОСАМИ
+    window.loadQuestions = function() {
+        if (!currentQuizId) return;
+        fetch(`/api/quiz/${currentQuizId}/questions`)
+            .then(res => res.json())
+            .then(data => {
+                const container = document.getElementById('questionsList');
+                if (!container) return;
+                if (data.success && data.questions && data.questions.length) {
+                    container.innerHTML = '';
+                    data.questions.forEach(q => {
+                        container.innerHTML += `
+                            <div style="background: #f5f5f5; border-radius: 12px; padding: 15px; margin-bottom: 12px; display: flex; justify-content: space-between;">
+                                <div><strong>${escapeHtml(q.text)}</strong></div>
+                                <div>
+                                    <button onclick="editQuestion(${q.id})" style="margin-right: 5px;">✏️</button>
+                                    <button onclick="deleteQuestion(${q.id})">🗑️</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    container.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">📝<p>Нет вопросов. Нажмите «+ Добавить вопрос»</p></div>';
+                }
+            });
+    };
+    
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    // Модальное окно
+    const modal = document.getElementById('questionModal');
+    const addBtn = document.getElementById('addQuestionBtn');
+    
+    window.openModal = function(questionId = null) {
+        modal.style.display = 'flex';
+        document.getElementById('questionText').value = '';
+        document.getElementById('optionsList').innerHTML = `
+            <div class="option-row">
+                <input type="text" class="form-input option-input" placeholder="Вариант 1">
+                <input type="radio" name="correctOption" value="0"> Правильный
+            </div>
+            <div class="option-row">
+                <input type="text" class="form-input option-input" placeholder="Вариант 2">
+                <input type="radio" name="correctOption" value="1"> Правильный
+            </div>
+        `;
+        document.getElementById('modalTitle').textContent = 'Добавить вопрос';
+        document.getElementById('editQuestionId').value = '';
+    };
+    
+    window.closeModal = function() {
+        modal.style.display = 'none';
+    };
+    
+    if (addBtn) addBtn.onclick = () => openModal();
+    document.querySelector('.modal-close')?.addEventListener('click', closeModal);
+    document.getElementById('cancelModalBtn')?.addEventListener('click', closeModal);
+    
+    // Сохранение вопроса
+    document.getElementById('saveQuestionBtn')?.addEventListener('click', async () => {
+        if (!currentQuizId) {
+            alert('Сначала сохраните настройки');
+            return;
+        }
+        
+        const text = document.getElementById('questionText').value;
+        if (!text) {
+            alert('Введите текст вопроса');
+            return;
+        }
+        
+        const options = [];
+        document.querySelectorAll('.option-input').forEach(input => {
+            if (input.value.trim()) options.push(input.value.trim());
+        });
+        
+        let correctIndex = -1;
+        document.querySelectorAll('input[name="correctOption"]').forEach((radio, i) => {
+            if (radio.checked) correctIndex = i;
+        });
+        
+        const response = await fetch(`/api/quiz/${currentQuizId}/question`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                type: 'choice',
+                text: text,
+                options: options,
+                correct_answer: correctIndex >= 0 ? [options[correctIndex]] : null,
+                order: 0
+            })
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            closeModal();
+            loadQuestions();
+        } else {
+            alert('Ошибка: ' + result.error);
+        }
+    });
+    
+    document.getElementById('addOptionBtn')?.addEventListener('click', () => {
+        const list = document.getElementById('optionsList');
+        const idx = list.children.length;
+        const div = document.createElement('div');
+        div.className = 'option-row';
+        div.innerHTML = `
+            <input type="text" class="form-input option-input" placeholder="Вариант ${idx + 1}">
+            <input type="radio" name="correctOption" value="${idx}"> Правильный
+            <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; cursor:pointer;">❌</button>
+        `;
+        list.appendChild(div);
+    });
+    
+    window.editQuestion = async function(questionId) {
+        const response = await fetch(`/api/question/${questionId}`);
+        const data = await response.json();
+        if (data.success) {
+            const q = data.question;
+            document.getElementById('questionText').value = q.text;
+            const list = document.getElementById('optionsList');
+            list.innerHTML = '';
+            q.options.forEach((opt, idx) => {
+                const isCorrect = q.correct_answer && q.correct_answer.includes(opt);
+                const div = document.createElement('div');
+                div.className = 'option-row';
+                div.innerHTML = `
+                    <input type="text" class="form-input option-input" value="${escapeHtml(opt)}">
+                    <input type="radio" name="correctOption" value="${idx}" ${isCorrect ? 'checked' : ''}> Правильный
+                    <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; cursor:pointer;">❌</button>
+                `;
+                list.appendChild(div);
+            });
+            document.getElementById('modalTitle').textContent = 'Редактировать вопрос';
+            document.getElementById('editQuestionId').value = questionId;
+            modal.style.display = 'flex';
+        }
+    };
+    
+    window.deleteQuestion = async function(questionId) {
+        if (confirm('Удалить вопрос?')) {
+            await fetch(`/api/question/${questionId}`, { method: 'DELETE' });
+            loadQuestions();
+        }
+    };
+});
+</script>
+
+<style>
+/* Быстрые стили для красоты */
+.editor-container {
+    display: flex;
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+.editor-sidebar {
+    width: 200px;
+}
+.sidebar-nav__btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    background: #f0f0f0;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+.sidebar-nav__btn.active {
+    background: #2196F3;
+    color: white;
+}
+.editor-main {
+    flex: 1;
+}
+.editor-tab {
+    display: none;
+}
+.editor-tab.active {
+    display: block;
+}
+.settings-section {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.section-title {
+    margin-bottom: 10px;
+    color: #333;
+}
+.form-group {
+    margin-bottom: 15px;
+}
+.form-input, .form-textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.btn-blue {
+    background: #2196F3;
+    color: white;
+}
+.btn-red {
+    background: #f44336;
+    color: white;
+}
+.btn-outline-new {
+    background: none;
+    border: 1px solid #ddd;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.modal-content {
+    background: white;
+    width: 500px;
+    border-radius: 12px;
+    padding: 20px;
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.modal-close {
+    font-size: 24px;
+    cursor: pointer;
+}
+.option-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+.option-row .form-input {
+    flex: 1;
+}
+.editor-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Игра{% endblock %}
+
+{% block content %}
+<div id="gameContainer" style="max-width: 800px; margin: 0 auto; padding: 20px; text-align: center;">
+    
+    <!-- Экран загрузки -->
+    <div id="loadingScreen">
+        <h2>Загрузка вопросов...</h2>
+    </div>
+    
+    <!-- Экран игры -->
+    <div id="questionScreen" style="display: none;">
+        <div style="background: #f5f5f5; border-radius: 20px; padding: 30px;">
+            <h3>Вопрос <span id="questionNum">1</span> / <span id="totalQuestions">0</span></h3>
+            <h2 id="questionText" style="margin: 30px 0;"></h2>
+            <div id="optionsContainer"></div>
+            <div id="timer" style="margin-top: 30px; font-size: 28px; font-weight: bold; color: #2196F3;"></div>
+        </div>
+    </div>
+    
+    <!-- Экран результата -->
+    <div id="resultScreen" style="display: none; background: #f5f5f5; border-radius: 20px; padding: 30px;">
+        <h1>🎉 Игра окончена!</h1>
+        <h2>Твой счёт: <span id="finalScore">0</span></h2>
+        <div style="margin-top: 30px;">
+            <button onclick="location.reload()" style="background: #2196F3; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer;">🔄 Играть снова</button>
+            <a href="/" style="display: inline-block; margin-left: 10px; background: #666; color: white; padding: 10px 20px; text-decoration: none; border-radius: 8px;">🏠 На главную</a>
+        </div>
+    </div>
+</div>
+
+<script>
+// Получаем ID викторины из URL
+const quizId = {{ quiz.id }};
+console.log('ID викторины:', quizId);
+
+let questions = [];
+let currentIndex = 0;
+let score = 0;
+let timerInterval = null;
+
+// Загружаем вопросы
+async function loadQuestions() {
+    try {
+        const response = await fetch(`/api/quiz/${quizId}/questions`);
+        const data = await response.json();
+        console.log('Ответ сервера:', data);
+        
+        if (data.success && data.questions && data.questions.length > 0) {
+            questions = data.questions;
+            document.getElementById('totalQuestions').innerText = questions.length;
+            document.getElementById('loadingScreen').style.display = 'none';
+            document.getElementById('questionScreen').style.display = 'block';
+            showQuestion();
+        } else {
+            document.getElementById('loadingScreen').innerHTML = '<h2>❌ В викторине нет вопросов!</h2><a href="/">На главную</a>';
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+        document.getElementById('loadingScreen').innerHTML = '<h2>❌ Ошибка загрузки вопросов</h2><a href="/">На главную</a>';
+    }
+}
+
+function showQuestion() {
+    if (currentIndex >= questions.length) {
+        showResult();
+        return;
+    }
+    
+    const q = questions[currentIndex];
+    document.getElementById('questionNum').innerText = currentIndex + 1;
+    document.getElementById('questionText').innerHTML = q.text;
+    
+    // Очищаем и заполняем варианты
+    const container = document.getElementById('optionsContainer');
+    container.innerHTML = '';
+    
+    if (q.type === 'choice' && q.options) {
+        q.options.forEach((option, idx) => {
+            const btn = document.createElement('button');
+            btn.innerHTML = option;
+            btn.style.cssText = `
+                display: block;
+                width: 100%;
+                margin: 10px 0;
+                padding: 15px;
+                background: white;
+                border: 2px solid #ddd;
+                border-radius: 10px;
+                cursor: pointer;
+                font-size: 16px;
+                text-align: left;
+            `;
+            btn.onmouseover = () => btn.style.background = '#f0f0f0';
+            btn.onmouseout = () => btn.style.background = 'white';
+            btn.onclick = () => checkAnswer(option);
+            container.appendChild(btn);
+        });
+    }
+    
+    startTimer();
+}
+
+function checkAnswer(selected) {
+    stopTimer();
+    
+    const q = questions[currentIndex];
+    const isCorrect = q.correct_answer && q.correct_answer.includes(selected);
+    
+    if (isCorrect) {
+        score += 100;
+        alert('✅ Правильно! +100 баллов');
+    } else {
+        alert(`❌ Неправильно!\nПравильный ответ: ${q.correct_answer?.join(', ') || '?'}`);
+    }
+    
+    currentIndex++;
+    showQuestion();
+}
+
+function startTimer() {
+    let timeLeft = 25;
+    const timerEl = document.getElementById('timer');
+    
+    timerInterval = setInterval(() => {
+        timerEl.innerHTML = `⏱️ ${timeLeft} сек`;
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            alert('⏰ Время вышло!');
+            currentIndex++;
+            showQuestion();
+        }
+        timeLeft--;
+    }, 1000);
+}
+
+function stopTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+}
+
+function showResult() {
+    stopTimer();
+    document.getElementById('questionScreen').style.display = 'none';
+    document.getElementById('resultScreen').style.display = 'block';
+    document.getElementById('finalScore').innerHTML = score;
+}
+
+// Запускаем загрузку
+loadQuestions();
+</script>
+{% endblock %}
