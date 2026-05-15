@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Панель ведущего - {{ quiz.title }}{% endblock %}
+
+{% block content %}
+<div class="quizmaster-container">
+    <div class="container">
+        <div class="quizmaster-header">
+            <h1>🎮 Панель ведущего (Одиночный режим)</h1>
+            <h2>{{ quiz.title }}</h2>
+            <div class="quiz-code-box">
+                <span>ID викторины:</span>
+                <strong>{{ quiz.id }}</strong>
+                <span>Код: {{ quiz.quiz_code }}</span>
+            </div>
+        </div>
+
+        <div class="quizmaster-grid">
+            <div class="quizmaster-controls">
+                <div class="control-card">
+                    <h3>Управление игрой</h3>
+                    
+                    <div class="game-status">
+                        <span class="status-label">Статус:</span>
+                        <span id="gameStatus" class="status-badge active">Игра активна</span>
+                    </div>
+                    
+                    <div class="control-buttons">
+                        <button id="stopGameBtn" class="btn btn-red">⏹️ Завершить игру (закрыть доступ)</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="quizmaster-players">
+                <div class="players-card">
+                    <h3>Таблица лидеров <span id="playersCount">0</span></h3>
+                    <div id="playersList" class="players-list">
+                        <div class="empty-players">Нет результатов</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="quizmaster-actions">
+            <a href="/profile" class="btn-outline-new">← К моим викторинам</a>
+        </div>
+    </div>
+</div>
+
+<script>
+const quizId = {{ quiz.id }};
+let updateInterval = null;
+
+const stopBtn = document.getElementById('stopGameBtn');
+const gameStatusSpan = document.getElementById('gameStatus');
+const playersListDiv = document.getElementById('playersList');
+const playersCountSpan = document.getElementById('playersCount');
+
+async function updateStatus() {
+    try {
+        // Получаем таблицу лидеров
+        const leaderRes = await fetch(`/api/solo/${quizId}/leaderboard`);
+        const leaderData = await leaderRes.json();
+        if (leaderData.success && leaderData.leaderboard.length > 0) {
+            playersListDiv.innerHTML = leaderData.leaderboard.map((p, i) => `
+                <div class="player-item">
+                    <span class="player-name">${i+1}. ${escapeHtml(p.player_name)}</span>
+                    <span class="player-score">${p.score} баллов</span>
+                    <span class="player-detail">${p.correct_answers}/${p.total_questions}</span>
+                </div>
+            `).join('');
+            playersCountSpan.textContent = leaderData.leaderboard.length;
+        } else {
+            playersListDiv.innerHTML = '<div class="empty-players">Нет результатов</div>';
+            playersCountSpan.textContent = '0';
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+    }
+}
+
+stopBtn.onclick = async () => {
+    if (confirm('Закрыть доступ к викторине? Игроки больше не смогут начать новую игру.')) {
+        const response = await fetch(`/api/solo/${quizId}/close`, { method: 'POST' });
+        const data = await response.json();
+        if (data.success) {
+            alert('Доступ закрыт');
+        } else {
+            alert(data.error || 'Ошибка');
+        }
+    }
+};
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+updateStatus();
+updateInterval = setInterval(updateStatus, 3000);
+</script>
+{% endblock %}

@@ -44,7 +44,7 @@ let timerInterval = null;
 // Загружаем вопросы
 async function loadQuestions() {
     try {
-        const response = await fetch(`/api/quiz/${quizId}/questions`);
+        const response = await fetch(`/api/public/quiz/${quizId}/questions`);
         const data = await response.json();
         console.log('Ответ сервера:', data);
         

@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, timezone
 
 db = SQLAlchemy()
 
@@ -9,7 +9,7 @@ class User(db.Model):
     nickname = db.Column(db.String(50), unique=True, nullable=False)
     password_hash = db.Column(db.String(200), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
 class Quiz(db.Model):
     __tablename__ = 'quizzes'
@@ -20,23 +20,36 @@ class Quiz(db.Model):
     description = db.Column(db.String(800), nullable=True)
     cover_data = db.Column(db.Text, nullable=True)
     settings = db.Column(db.JSON, default=dict)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     
     owner = db.relationship('User', backref='quizzes')
-
 
 class Question(db.Model):
     __tablename__ = 'questions'
     id = db.Column(db.Integer, primary_key=True)
     quiz_id = db.Column(db.Integer, db.ForeignKey('quizzes.id'), nullable=False)
-    round_id = db.Column(db.Integer, nullable=True)  # для группировки в раунды
-    type = db.Column(db.String(30), nullable=False)  # choice, open, wordcloud и т.д.
-    text = db.Column(db.Text, nullable=False)  # текст вопроса
-    options = db.Column(db.JSON, nullable=True)  # варианты ответов (для choice)
-    correct_answer = db.Column(db.JSON, nullable=True)  # правильный ответ
-    media_url = db.Column(db.String(500), nullable=True)  # картинка/видео
-    order = db.Column(db.Integer, default=0)  # порядок показа
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    round_id = db.Column(db.Integer, nullable=True)
+    type = db.Column(db.String(30), nullable=False)
+    text = db.Column(db.Text, nullable=False)
+    options = db.Column(db.JSON, nullable=True)
+    correct_answer = db.Column(db.JSON, nullable=True)
+    media_url = db.Column(db.String(500), nullable=True)
+    order = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     
     quiz = db.relationship('Quiz', backref='questions')
+
+class GameResult(db.Model):
+    __tablename__ = 'game_results'
+    id = db.Column(db.Integer, primary_key=True)
+    quiz_id = db.Column(db.Integer, db.ForeignKey('quizzes.id'), nullable=False)
+    quiz_code = db.Column(db.String(6), nullable=False)
+    player_name = db.Column(db.String(50), nullable=False)
+    score = db.Column(db.Integer, default=0)
+    correct_answers = db.Column(db.Integer, default=0)
+    total_questions = db.Column(db.Integer, default=0)
+    mode = db.Column(db.String(20), default='multiplayer')
+    finished_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    quiz = db.relationship('Quiz', backref='game_results')

@@ -51,6 +51,11 @@
                         </div>
                     </div>
                     <div class="quiz-card__actions">
+                        {% if mode == 'solo' %}
+                            <a href="/quizmaster/solo/{{ quiz.id }}" class="btn-small btn-master">🎮 Панель ведущего</a>
+                        {% else %}
+                            <a href="/quizmaster/{{ quiz.quiz_code }}" class="btn-small btn-master">🎮 Панель ведущего</a>
+                        {% endif %}
                         <a href="/quiz/edit/{{ quiz.id }}" class="btn-small btn-edit">✏️ Редактировать</a>
                         {% set mode = quiz.settings.gameMode if quiz.settings else 'multiplayer' %}
                         {% if mode == 'solo' %}

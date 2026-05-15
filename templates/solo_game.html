@@ -3,129 +3,268 @@
 {% block title %}Одиночная игра - {{ quiz.title }}{% endblock %}
 
 {% block content %}
-<div style="max-width: 800px; margin: 50px auto; text-align: center;">
-    <h1>🎮 {{ quiz.title }}</h1>
+<div class="game-container">
+    <h1>{{ quiz.title }}</h1>
     
-    <div id="startDiv">
-        <div style="background: #f5f5f5; padding: 30px; border-radius: 20px; margin: 30px 0;">
-            <h3>Правила:</h3>
-            <p>✅ 25 секунд на вопрос</p>
-            <p>✅ 100 баллов за правильный ответ</p>
-            <p>✅ В конце - твой результат</p>
-        </div>
-        <button id="playBtn" style="background: #4CAF50; color: white; padding: 15px 40px; font-size: 18px; border: none; border-radius: 10px; cursor: pointer;">▶ Начать игру</button>
+    <div id="startScreen" class="game-panel">
+        <h3>Введите ваше имя</h3>
+        <input type="text" id="playerName" class="form-input" placeholder="Ваше имя" maxlength="30" style="width: 250px;">
+        <br>
+        <button id="startBtn" class="btn btn-blue" style="margin-top: 20px;">🎮 Начать игру</button>
     </div>
     
-    <div id="gameDiv" style="display: none;">
-        <div id="questionDiv" style="background: #f5f5f5; padding: 30px; border-radius: 20px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-                <span>Вопрос <span id="currentQ">1</span>/<span id="totalQ">0</span></span>
-                <span>💰 <span id="score">0</span> баллов</span>
+    <div id="gameScreen" class="game-panel" style="display: none;">
+        <div class="game-header">
+            <span>Вопрос <span id="currentQ">1</span>/<span id="totalQ">0</span></span>
+            <span>💰 <span id="score">0</span> баллов</span>
+        </div>
+        <h3 id="questionText" class="question-text"></h3>
+        <div id="optionsDiv" class="options-list"></div>
+        <div id="timerDiv" class="timer"></div>
+    </div>
+    
+    <div id="resultScreen" class="game-panel" style="display: none;">
+        <h2>🎉 Игра окончена!</h2>
+        <div class="player-result">
+            <div class="player-name-large" id="resultName"></div>
+            <div class="player-stats">
+                <span id="resultScore" class="result-score-value">0</span>
+                <span>баллов</span>
             </div>
-            <h3 id="questionText" style="margin: 30px 0;"></h3>
-            <div id="optionsDiv" style="margin-top: 30px;"></div>
-            <div id="timerDiv" style="margin-top: 20px; font-size: 24px; color: #2196F3;"></div>
+            <div>Правильных ответов: <span id="resultCorrect">0</span> / <span id="resultTotal">0</span></div>
         </div>
-    </div>
-    
-    <div id="resultDiv" style="display: none;">
-        <h1>🎉 Игра окончена!</h1>
-        <div style="background: #f5f5f5; padding: 30px; border-radius: 20px; margin: 30px 0;">
-            <h2>Твой счёт:</h2>
-            <h1 style="color: #4CAF50; font-size: 64px;" id="scoreSpan">0</h1>
+        
+        <div id="replayButtonDiv" style="display: none; margin: 20px 0;">
+            <button id="replaySoloBtn" class="btn btn-purple">🔄 Пройти викторину заново</button>
         </div>
-        <button onclick="location.reload()" style="background: #2196F3; color: white; padding: 10px 20px; border: none; border-radius: 8px; margin: 5px;">🔄 Сыграть ещё</button>
-        <a href="/profile" style="display: inline-block; background: #666; color: white; padding: 10px 20px; text-decoration: none; border-radius: 8px; margin: 5px;">📋 Мои викторины</a>
+        
+        <div id="leaderboardSection" style="margin-top: 30px;">
+            <h3>🏆 Таблица лидеров</h3>
+            <div id="leaderboardList" class="leaderboard-list"></div>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <a href="/" class="btn-outline-new">🏠 На главную</a>
+        </div>
     </div>
 </div>
 
 <script>
 const quizId = {{ quiz.id }};
 let questions = [];
-let current = 0;
+let currentIndex = 0;
 let score = 0;
-let timer = null;
+let correctCount = 0;
+let playerName = '';
+let timerInterval = null;
+let allowReplaySolo = false;
+let timeShowAnswer = 10;
+let randomQuestions = false;
+let randomOptions = false;
+let pointsPerQuestion = 100;
 
-document.getElementById('playBtn').onclick = async () => {
-    const res = await fetch(`/api/quiz/${quizId}/questions`);
+document.getElementById('startBtn').onclick = async () => {
+    playerName = document.getElementById('playerName').value.trim();
+    if (!playerName) {
+        alert('Введите ваше имя');
+        return;
+    }
+    
+    // Загружаем настройки викторины и проверяем доступ
+    const settingsRes = await fetch(`/api/public/quiz/${quizId}/status`);
+    const settingsData = await settingsRes.json();
+    if (settingsData.success) {
+        timeShowAnswer = settingsData.timeShowAnswer || 10;
+        allowReplaySolo = settingsData.allowReplaySolo || false;
+        randomQuestions = settingsData.randomQuestions || false;
+        randomOptions = settingsData.randomOptions || false;
+        pointsPerQuestion = settingsData.pointsPerQuestion || 100;
+        
+        if (settingsData.is_closed) {
+            alert('Доступ к викторине закрыт организатором');
+            return;
+        }
+    }
+    
+    const res = await fetch(`/api/public/quiz/${quizId}/questions`);
     const data = await res.json();
-    if (data.success && data.questions.length) {
+    
+    if (data.success && data.questions && data.questions.length > 0) {
         questions = data.questions;
+        
+        if (randomQuestions) {
+            for (let i = questions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [questions[i], questions[j]] = [questions[j], questions[i]];
+            }
+        }
+                
         document.getElementById('totalQ').innerText = questions.length;
-        document.getElementById('startDiv').style.display = 'none';
-        document.getElementById('gameDiv').style.display = 'block';
+        document.getElementById('startScreen').style.display = 'none';
+        document.getElementById('gameScreen').style.display = 'block';
         showQuestion();
     } else {
-        alert('В этой викторине нет вопросов!');
+        alert('В викторине нет вопросов');
     }
 };
 
 function showQuestion() {
-    if (current >= questions.length) {
+    if (currentIndex >= questions.length) {
         endGame();
         return;
     }
-    const q = questions[current];
-    document.getElementById('currentQ').innerText = current + 1;
-    document.getElementById('questionText').innerHTML = q.text;
-    document.getElementById('score').innerHTML = score;
     
-    const opts = document.getElementById('optionsDiv');
-    opts.innerHTML = '';
-    q.options.forEach(opt => {
-        const btn = document.createElement('button');
-        btn.innerHTML = opt;
-        btn.style.cssText = 'display: block; width: 100%; margin: 10px 0; padding: 12px; background: white; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; font-size: 16px;';
-        btn.onmouseenter = () => btn.style.background = '#f0f0f0';
-        btn.onmouseleave = () => btn.style.background = 'white';
-        btn.onclick = () => checkAnswer(opt);
-        opts.appendChild(btn);
-    });
-    startTimer();
-}
-
-function checkAnswer(answer) {
-    clearInterval(timer);
-    const q = questions[current];
-    if (q.correct_answer && q.correct_answer.includes(answer)) {
-        score += 100;
-        showMessage('✅ Правильно! +100 баллов', '#4CAF50');
-    } else {
-        showMessage(`❌ Неправильно! Правильный ответ: ${q.correct_answer?.join(', ') || '?'}`, '#f44336');
-    }
-    current++;
-    setTimeout(() => showQuestion(), 1500);
-}
-
-function showMessage(text, color) {
-    const opts = document.getElementById('optionsDiv');
-    const msg = document.createElement('div');
-    msg.innerHTML = text;
-    msg.style.cssText = `text-align: center; padding: 20px; font-size: 20px; font-weight: bold; color: ${color};`;
-    opts.innerHTML = '';
-    opts.appendChild(msg);
-}
-
-function startTimer() {
-    let time = 25;
-    const timerDiv = document.getElementById('timerDiv');
-    timer = setInterval(() => {
-        timerDiv.innerHTML = `⏱️ ${time} сек`;
-        if (time <= 0) {
-            clearInterval(timer);
-            showMessage('⏰ Время вышло!', '#ff9800');
-            current++;
-            setTimeout(() => showQuestion(), 1500);
+    const q = questions[currentIndex];
+    document.getElementById('currentQ').innerText = currentIndex + 1;
+    document.getElementById('score').innerText = score;
+    document.getElementById('questionText').innerHTML = q.text;
+    
+    const optionsDiv = document.getElementById('optionsDiv');
+    optionsDiv.innerHTML = '';
+    
+    if (q.type === 'choice' && q.options) {
+        let options = [...q.options];
+        if (randomOptions) {
+            for (let i = options.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [options[i], options[j]] = [options[j], options[i]];
+            }
         }
-        time--;
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.innerHTML = opt;
+            btn.className = 'option-btn';
+            btn.onclick = () => checkAnswer(opt, btn);
+            optionsDiv.appendChild(btn);
+        });
+    }
+    
+    startTimer(25);
+}
+
+function checkAnswer(answer, btnElement) {
+    document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
+    
+    const q = questions[currentIndex];
+    const isCorrect = q.correct_answer && q.correct_answer.includes(answer);
+    
+    if (isCorrect) {
+        score += pointsPerQuestion;
+        correctCount++;
+        document.getElementById('score').innerText = score;
+        btnElement.style.background = '#4caf50';
+    } else {
+        btnElement.style.background = '#f44336';
+        document.querySelectorAll('.option-btn').forEach(btn => {
+            if (q.correct_answer && q.correct_answer.includes(btn.innerHTML)) {
+                btn.style.background = '#4caf50';
+            }
+        });
+    }
+    
+    // Останавливаем таймер вопроса
+    if (timerInterval) clearInterval(timerInterval);
+    document.getElementById('timerDiv').style.display = 'none';
+    
+    // Показываем блок с правильным ответом
+    const optionsDiv = document.getElementById('optionsDiv');
+    const correctAnswer = q.correct_answer ? q.correct_answer.join(', ') : '?';
+    const oldResult = document.querySelector('.answer-result');
+    if (oldResult) oldResult.remove();
+    
+    const resultBlock = document.createElement('div');
+    resultBlock.className = 'answer-result';
+    resultBlock.innerHTML = `<strong>✅ Правильный ответ: ${correctAnswer}</strong><br>Следующий вопрос через <span id="answerTimer">${timeShowAnswer}</span> сек...`;
+    resultBlock.style.cssText = 'margin-top: 20px; padding: 15px; background: #e8f5e9; border-radius: 12px; text-align: center;';
+    optionsDiv.appendChild(resultBlock);
+    
+    // Запускаем таймер показа ответа
+    let answerTimeLeft = timeShowAnswer;
+    const answerTimerSpan = document.getElementById('answerTimer');
+    const answerTimer = setInterval(() => {
+        answerTimeLeft--;
+        if (answerTimerSpan) answerTimerSpan.innerText = answerTimeLeft;
+        if (answerTimeLeft <= 0) {
+            clearInterval(answerTimer);
+            currentIndex++;
+            showQuestion();
+        }
     }, 1000);
 }
 
-function endGame() {
-    clearInterval(timer);
-    document.getElementById('gameDiv').style.display = 'none';
-    document.getElementById('resultDiv').style.display = 'block';
-    document.getElementById('scoreSpan').innerHTML = score;
+function startTimer(seconds) {
+    let timeLeft = seconds;
+    const timerDiv = document.getElementById('timerDiv');
+    if (timerInterval) clearInterval(timerInterval);
+    
+    timerInterval = setInterval(() => {
+        timerDiv.innerHTML = `⏱️ ${timeLeft} сек`;
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            timerDiv.innerHTML = '⏰ Время вышло!';
+            setTimeout(() => {
+                currentIndex++;
+                showQuestion();
+            }, 1500);
+        }
+        timeLeft--;
+    }, 1000);
+}
+
+async function endGame() {
+    clearInterval(timerInterval);
+    document.getElementById('gameScreen').style.display = 'none';
+    document.getElementById('resultScreen').style.display = 'block';
+    document.getElementById('resultName').innerText = playerName;
+    document.getElementById('resultScore').innerText = score;
+    document.getElementById('resultCorrect').innerText = correctCount;
+    document.getElementById('resultTotal').innerText = questions.length;
+    
+    // Сохраняем результат
+    await fetch(`/api/solo/${quizId}/save`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            player_name: playerName,
+            score: score,
+            total_questions: questions.length,
+            correct_answers: correctCount
+        })
+    });
+    
+    if (allowReplaySolo) {
+        document.getElementById('replayButtonDiv').style.display = 'block';
+    }
+    
+    // Загружаем таблицу лидеров
+    const res = await fetch(`/api/solo/${quizId}/leaderboard`);
+    const data = await res.json();
+    if (data.success && data.leaderboard.length > 0) {
+        const leaderboardList = document.getElementById('leaderboardList');
+        leaderboardList.innerHTML = data.leaderboard.map((item, idx) => `
+            <div class="leaderboard-row ${idx === 0 ? 'winner' : ''}">
+                <span class="place">${idx + 1}</span>
+                <span class="player-name">${escapeHtml(item.player_name)}</span>
+                <span class="player-score">${item.score} баллов</span>
+                <span class="player-detail">${item.correct_answers}/${item.total_questions}</span>
+            </div>
+        `).join('');
+    }
+}
+
+document.getElementById('replaySoloBtn')?.addEventListener('click', async () => {
+    await fetch(`/api/solo/${quizId}/reset`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ player_name: playerName })
+    });
+    location.reload();
+});
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 </script>
 {% endblock %}

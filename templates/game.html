@@ -3,46 +3,279 @@
 {% block title %}Игра: {{ quiz.title }}{% endblock %}
 
 {% block content %}
-<div style="max-width: 800px; margin: 50px auto; text-align: center;">
+<div class="game-container">
     <h1>{{ quiz.title }}</h1>
-    <p>{{ quiz.description or 'Добро пожаловать в викторину!' }}</p>
-    
-    <div style="background: #f5f5f5; padding: 30px; border-radius: 20px; margin-top: 30px;">
-        <h2>Код для входа: <span style="color: #2196F3; font-size: 32px;">{{ quiz.quiz_code }}</span></h2>
-        <p style="margin-top: 20px;">Дай этот код игрокам, чтобы они могли подключиться</p>
-        <button onclick="navigator.clipboard.writeText('{{ quiz.quiz_code }}')" style="background: #2196F3; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer;">
-            📋 Скопировать код
-        </button>
+
+    <div id="joinScreen" class="game-panel">
+        <h3>Введите ваш никнейм</h3>
+        <div id="passwordField" style="display: none;">
+            <input type="password" id="passwordInput" placeholder="Пароль">
+        </div>
+        <input type="text" id="nicknameInput" placeholder="Никнейм">
+        <button id="joinGameBtn">Присоединиться</button>
     </div>
-    
-    <div style="margin-top: 30px; display: flex; gap: 20px; justify-content: center;">
-        <button id="startGameBtn" style="background: #4CAF50; color: white; padding: 15px 30px; font-size: 18px; border: none; border-radius: 10px; cursor: pointer;">
-            🎮 Начать игру
-        </button>
-        <a href="/" style="background: #666; color: white; padding: 15px 30px; text-decoration: none; border-radius: 10px;">
-            🏠 На главную
-        </a>
+
+    <div id="waitingScreen" class="game-panel" style="display: none;">
+        <h2>Ожидание начала...</h2>
+        <p>Вы <strong id="playerNickname"></strong></p>
+        <p>Старт: <span id="startDateTimeText"></span></p>
+    </div>
+
+    <div id="gameScreen" class="game-panel" style="display: none;">
+        <div class="game-header">
+            <span>Вопрос <span id="currentQ">1</span>/<span id="totalQ">0</span></span>
+            <span>💰 <span id="score">0</span> баллов</span>
+        </div>
+        <h3 id="questionText"></h3>
+        <div id="optionsDiv"></div>
+        <div id="timerDiv" class="timer"></div>
+        <div id="resultBlock" style="display: none; margin-top: 20px; padding: 15px; border-radius: 12px;"></div>
+    </div>
+
+    <div id="resultScreen" class="game-panel" style="display: none;">
+        <h2>Ваш результат</h2>
+        <div id="playerResult">
+            <div id="resultPlayerName"></div>
+            <div id="resultScore"></div>
+            <div id="resultPlace"></div>
+        </div>
+        <div id="leaderboardSection">
+            <h3>Таблица лидеров</h3>
+            <div id="leaderboardList"></div>
+        </div>
+        <a href="/">На главную</a>
     </div>
 </div>
 
 <script>
-// Простейшая логика игры
-const startBtn = document.getElementById('startGameBtn');
-if (startBtn) {
-    startBtn.onclick = async function() {
-        // Получаем вопросы
-        const response = await fetch(`/api/quiz/{{ quiz.id }}/questions`);
-        const data = await response.json();
-        
-        if (data.success && data.questions.length > 0) {
-            // Сохраняем вопросы в localStorage и переходим в игру
-            localStorage.setItem('game_questions', JSON.stringify(data.questions));
-            localStorage.setItem('quiz_title', '{{ quiz.title }}');
-            window.location.href = `/play/{{ quiz.quiz_code }}/game`;
+const quizCode = '{{ quiz.quiz_code }}';
+let nickname = null;
+let intervalId = null;
+let currentQuestionIndex = -1;
+let totalScore = 0;
+let hasAnswered = false;
+let pointsPerQuestion = 100;
+let awaitingResult = false;
+let selectedAnswer = null;
+let countdownInterval = null;
+
+async function checkNeedPassword() {
+    try {
+        const res = await fetch(`/api/quizmaster/${quizCode}/status`);
+        const data = await res.json();
+        console.log('Status response (need_password check):', data);  // отладка
+        if (data.need_password) {
+            console.log('Показываем поле пароля');  // отладка
+            document.getElementById('passwordField').style.display = 'block';
         } else {
-            alert('Нет вопросов в викторине! Сначала добавь вопросы.');
+            console.log('Поле пароля не нужно');  // отладка
         }
-    };
+    } catch (error) {
+        console.error('Ошибка проверки пароля:', error);
+    }
+}
+
+async function checkNeedPassword() {
+    try {
+        const res = await fetch(`/api/quizmaster/${quizCode}/status`);
+        const data = await res.json();
+        console.log('Status response:', data);  // отладка
+        if (data.need_password) {
+            document.getElementById('passwordField').style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Ошибка проверки пароля:', error);
+    }
+}
+checkNeedPassword();
+
+document.getElementById('joinGameBtn').onclick = async () => {
+    nickname = document.getElementById('nicknameInput').value.trim();
+    const password = document.getElementById('passwordInput')?.value || '';
+    if (!nickname) return alert('Введите ник');
+    const res = await fetch(`/api/quizmaster/${quizCode}/join`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ nickname, password })
+    });
+    const data = await res.json();
+    if (data.success) {
+        document.getElementById('joinScreen').style.display = 'none';
+        document.getElementById('waitingScreen').style.display = 'block';
+        document.getElementById('playerNickname').innerText = nickname;
+        startPolling();
+    } else {
+        alert(data.error);
+    }
+};
+
+function startPolling() {
+    intervalId = setInterval(async () => {
+        const res = await fetch(`/api/quizmaster/${quizCode}/status`);
+        const data = await res.json();
+        if (!data.success) return;
+
+        pointsPerQuestion = data.points_per_question || 100;
+        if (data.start_datetime && data.status !== 'active') {
+            document.getElementById('startDateTimeText').innerText = data.start_datetime;
+        }
+
+        if (data.status === 'active') {
+            document.getElementById('waitingScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+
+            if (currentQuestionIndex !== data.question_index) {
+                currentQuestionIndex = data.question_index;
+                hasAnswered = false;
+                awaitingResult = false;
+                selectedAnswer = null;
+                document.getElementById('resultBlock').style.display = 'none';
+                renderQuestion(data);
+            }
+
+            if (data.time_left !== null && !awaitingResult) {
+                const timerDiv = document.getElementById('timerDiv');
+                timerDiv.innerHTML = `⏱️ ${data.time_left} сек`;
+                timerDiv.style.display = 'block';
+                timerDiv.style.color = data.time_left <= 5 ? '#f44336' : '#2196F3';
+            }
+
+            if (data.show_answer && !awaitingResult) {
+                awaitingResult = true;
+                document.getElementById('timerDiv').style.display = 'none';
+                showAnswerResult(data);
+            }
+        } else if (data.status === 'finished') {
+            clearInterval(intervalId);
+            document.getElementById('gameScreen').style.display = 'none';
+            showResults(data);
+        }
+    }, 500);
+}
+
+function renderQuestion(data) {
+    const q = data.current_question;
+    if (!q) return;
+    document.getElementById('totalQ').innerText = data.total_questions;
+    document.getElementById('currentQ').innerText = data.question_index + 1;
+    document.getElementById('score').innerText = totalScore;
+    document.getElementById('questionText').innerHTML = q.text;
+
+    const optionsDiv = document.getElementById('optionsDiv');
+    optionsDiv.innerHTML = '';
+    if (q.options && !data.show_answer) {
+        q.options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.innerText = opt;
+            btn.classList.add('option-btn');
+            if (hasAnswered) btn.disabled = true;
+            btn.onclick = () => submitAnswer(opt, btn);
+            optionsDiv.appendChild(btn);
+        });
+    } else {
+        optionsDiv.innerHTML = '<p>Ожидание...</p>';
+    }
+}
+
+async function submitAnswer(answer, btnElement) {
+    if (hasAnswered) return;
+    hasAnswered = true;
+    selectedAnswer = answer;
+    document.querySelectorAll('.option-btn').forEach(btn => {
+        btn.disabled = true;
+        if (btn.innerText === answer) {
+            btn.style.background = '#e0e0e0';
+            btn.style.border = '2px solid #ff9800';
+        }
+    });
+    await fetch(`/api/quizmaster/${quizCode}/answer`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ nickname, answer })
+    });
+}
+
+function startCountdown(seconds, onTick, onComplete) {
+    let remaining = seconds;
+    if (countdownInterval) clearInterval(countdownInterval);
+    countdownInterval = setInterval(() => {
+        if (remaining <= 0) {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+            if (onComplete) onComplete();
+        } else {
+            remaining--;
+            if (onTick) onTick(remaining);
+        }
+    }, 1000);
+}
+
+function showAnswerResult(data) {
+    const q = data.current_question;
+    if (!q) return;
+    const correctAnswer = q.correct_answer ? q.correct_answer[0] : '?';
+    const isUserCorrect = (selectedAnswer === correctAnswer);
+
+    const optionsDiv = document.getElementById('optionsDiv');
+    const buttons = optionsDiv.querySelectorAll('.option-btn');
+    buttons.forEach(btn => {
+        const opt = btn.innerText;
+        if (opt === correctAnswer) {
+            btn.style.background = '#4caf50';
+            btn.style.color = 'white';
+        }
+        if (opt === selectedAnswer && opt !== correctAnswer) {
+            btn.style.background = '#f44336';
+            btn.style.color = 'white';
+        }
+    });
+
+    const resultBlock = document.getElementById('resultBlock');
+    resultBlock.style.display = 'block';
+    let message = '';
+    if (selectedAnswer === null) {
+        message = `⏰ Время вышло! Правильный ответ: ${correctAnswer}`;
+    } else if (isUserCorrect) {
+        message = `✅ Правильно! Вы получаете ${pointsPerQuestion} баллов`;
+        totalScore += pointsPerQuestion;
+        document.getElementById('score').innerText = totalScore;
+    } else {
+        message = `❌ Неправильно! Правильный ответ: ${correctAnswer}`;
+    }
+    
+    const isLastQuestion = (data.question_index + 1 >= data.total_questions);
+    
+    if (isLastQuestion) {
+        resultBlock.innerHTML = `<strong>${message}</strong><br><span id="resultCountdown">Результаты игры через ${data.time_show_answer} сек...</span>`;
+        startCountdown(data.time_show_answer, (remaining) => {
+            const span = document.getElementById('resultCountdown');
+            if (span) span.innerText = `Результаты игры через ${remaining} сек...`;
+        }, () => {});
+    } else {
+        resultBlock.innerHTML = `<strong>${message}</strong><br><span id="resultCountdown">Следующий вопрос через ${data.time_show_answer} сек...</span>`;
+        startCountdown(data.time_show_answer, (remaining) => {
+            const span = document.getElementById('resultCountdown');
+            if (span) span.innerText = `Следующий вопрос через ${remaining} сек...`;
+        }, () => {});
+    }
+}
+
+function showResults(data) {
+    document.getElementById('resultScreen').style.display = 'block';
+    const players = data.sorted_players || [];
+    const player = players.find(p => p.nickname === nickname);
+    const idx = players.findIndex(p => p.nickname === nickname);
+    if (player) {
+        document.getElementById('resultPlayerName').innerText = player.nickname;
+        document.getElementById('resultScore').innerText = player.score;
+        let place = idx === 0 ? '1 место!' : idx === 1 ? '2 место' : idx === 2 ? '3 место' : `${idx+1} место`;
+        document.getElementById('resultPlace').innerText = place;
+    }
+    if (data.show_leaderboard_to_players) {
+        const winners = (data.winners || []).map(w => w.nickname);
+        const html = players.map((p, i) => `<div class="${winners.includes(p.nickname) ? 'winner' : ''}">${i+1}. ${p.nickname} — ${p.score}</div>`).join('');
+        document.getElementById('leaderboardList').innerHTML = html;
+    }
 }
 </script>
 {% endblock %}

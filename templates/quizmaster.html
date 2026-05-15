@@ -1,0 +1,381 @@
+{% extends "base.html" %}
+
+{% block title %}Панель ведущего - {{ quiz.title }}{% endblock %}
+
+{% block content %}
+<div class="quizmaster-container">
+    <div class="container">
+        <div class="quizmaster-header">
+            <h1>🎮 Панель ведущего</h1>
+            <h2>{{ quiz.title }}</h2>
+            <div class="quiz-code-box">
+                <span>Код игры:</span>
+                <strong id="quizCode">{{ code }}</strong>
+                <button onclick="navigator.clipboard.writeText('{{ code }}')" class="btn-small btn-copy">📋</button>
+            </div>
+        </div>
+
+        <div class="quizmaster-grid">
+            <div class="quizmaster-controls">
+                <div class="control-card">
+                    <h3>Управление игрой</h3>
+                    
+                    <div class="game-status">
+                        <span class="status-label">Статус:</span>
+                        <span id="gameStatus" class="status-badge waiting">Ожидание игроков</span>
+                    </div>
+                    
+                    <div class="control-buttons">
+                        <button id="startGameBtn" class="btn btn-green">🚀 Старт игры</button>
+                        <button id="pauseGameBtn" class="btn btn-yellow">⏸️ Пауза</button>
+                        <button id="resumeGameBtn" class="btn btn-green">▶️ Возобновить</button>
+                        <button id="stopGameBtn" class="btn btn-red">⏹️ Завершить игру</button>
+                        <button id="replayGameBtn" class="btn btn-purple" style="display: none;">🔄 Перезапустить игру</button>
+                    </div>
+                    
+                    <div class="question-info">
+                        <h4>Текущий вопрос</h4>
+                        <div id="currentQuestionDisplay" class="current-question">
+                            Ожидание начала игры...
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="quizmaster-players">
+                <div class="players-card">
+                    <h3>Игроки <span id="playersCount">0</span> / 35</h3>
+                    <div id="playersList" class="players-list">
+                        <div class="empty-players">Ожидание подключения игроков...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="quizmaster-actions">
+            <a href="/profile" class="btn-outline-new">← К моим викторинам</a>
+        </div>
+    </div>
+</div>
+
+<style>
+.quizmaster-container {
+    padding: 40px 0;
+    background: var(--gray-light);
+    min-height: calc(100vh - 200px);
+}
+
+.quizmaster-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.quizmaster-header h1 {
+    color: var(--sovcombank-blue);
+    margin-bottom: 10px;
+}
+
+.quizmaster-header h2 {
+    color: var(--text-dark);
+    margin-bottom: 15px;
+}
+
+.quiz-code-box {
+    background: white;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 20px;
+    border-radius: 12px;
+    margin-top: 15px;
+    font-size: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.quiz-code-box strong {
+    font-size: 28px;
+    font-family: monospace;
+    letter-spacing: 2px;
+    color: var(--sovcombank-blue);
+}
+
+.quizmaster-grid {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 30px;
+}
+
+.control-card, .players-card {
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+.control-card h3, .players-card h3 {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--gray-border);
+}
+
+.game-status {
+    margin-bottom: 20px;
+    padding: 12px;
+    background: var(--gray-light);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.status-label {
+    font-weight: 500;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.status-badge.waiting { background: #FF9800; color: white; }
+.status-badge.active { background: #4CAF50; color: white; }
+.status-badge.paused { background: #FFC107; color: #333; }
+.status-badge.finished { background: #9E9E9E; color: white; }
+
+.control-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 30px;
+}
+
+.btn-green { background: #4CAF50; color: white; }
+.btn-green:hover { background: #45a049; }
+.btn-yellow { background: #FFC107; color: #333; }
+.btn-yellow:hover { background: #e0a800; }
+.btn-red { background: var(--sovcombank-red); color: white; }
+.btn-red:hover { background: var(--red-dark); }
+.btn-purple { background: #9C27B0; color: white; }
+.btn-purple:hover { background: #7B1FA2; }
+
+.btn-green:disabled, .btn-yellow:disabled, .btn-red:disabled, .btn-purple:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.question-info {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--gray-border);
+}
+
+.current-question {
+    background: var(--gray-light);
+    padding: 15px;
+    border-radius: 12px;
+    margin-top: 10px;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.players-list {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.player-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid var(--gray-border);
+}
+
+.player-name {
+    font-weight: 500;
+}
+
+.player-score {
+    color: var(--sovcombank-blue);
+    font-weight: bold;
+}
+
+.empty-players {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-gray);
+}
+
+.quizmaster-actions {
+    margin-top: 30px;
+    text-align: center;
+}
+
+.btn-copy {
+    background: var(--gray-light);
+    border: 1px solid var(--gray-border);
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 6px;
+}
+
+@media (max-width: 768px) {
+    .quizmaster-grid {
+        grid-template-columns: 1fr;
+    }
+    .control-buttons {
+        justify-content: center;
+    }
+    .quiz-code-box strong {
+        font-size: 20px;
+    }
+}
+</style>
+
+<script>
+const quizCode = '{{ code }}';
+let updateInterval = null;
+let allowReplay = false;
+
+const startBtn = document.getElementById('startGameBtn');
+const pauseBtn = document.getElementById('pauseGameBtn');
+const resumeBtn = document.getElementById('resumeGameBtn');
+const stopBtn = document.getElementById('stopGameBtn');
+const replayBtn = document.getElementById('replayGameBtn');
+const gameStatusSpan = document.getElementById('gameStatus');
+const playersListDiv = document.getElementById('playersList');
+const playersCountSpan = document.getElementById('playersCount');
+const currentQuestionDiv = document.getElementById('currentQuestionDisplay');
+
+async function updateStatus() {
+    try {
+        const response = await fetch(`/api/quizmaster/${quizCode}/status`);
+        const data = await response.json();
+        
+        if (data.success) {
+            allowReplay = data.allow_replay || false;
+            
+            const statusText = {
+                'waiting': 'Ожидание игроков',
+                'active': 'Игра идёт',
+                'paused': 'На паузе',
+                'finished': 'Игра окончена'
+            };
+            gameStatusSpan.textContent = statusText[data.status] || data.status;
+            gameStatusSpan.className = `status-badge ${data.status}`;
+            
+            // Управление кнопками
+            if (data.status === 'waiting') {
+                startBtn.disabled = false;
+                pauseBtn.disabled = true;
+                resumeBtn.disabled = true;
+                stopBtn.disabled = true;
+                replayBtn.style.display = 'none';
+            } 
+            else if (data.status === 'active') {
+                startBtn.disabled = true;
+                pauseBtn.disabled = false;
+                resumeBtn.disabled = true;
+                stopBtn.disabled = false;
+                replayBtn.style.display = 'none';
+            } 
+            else if (data.status === 'paused') {
+                startBtn.disabled = true;
+                pauseBtn.disabled = true;
+                resumeBtn.disabled = false;
+                stopBtn.disabled = false;
+                replayBtn.style.display = 'none';
+            } 
+            else if (data.status === 'finished') {
+                startBtn.disabled = true;
+                pauseBtn.disabled = true;
+                resumeBtn.disabled = true;
+                stopBtn.disabled = true;
+                if (allowReplay) {
+                    replayBtn.style.display = 'inline-block';
+                } else {
+                    replayBtn.style.display = 'none';
+                }
+            }
+            
+            // Список игроков
+            if (data.players && data.players.length > 0) {
+                playersListDiv.innerHTML = data.players
+                    .sort((a, b) => b.score - a.score)
+                    .map((p, i) => `
+                        <div class="player-item">
+                            <span class="player-name">${i+1}. ${escapeHtml(p.nickname)}</span>
+                            <span class="player-score">${p.score} баллов</span>
+                        </div>
+                    `).join('');
+                playersCountSpan.textContent = data.players.length;
+            } else {
+                playersListDiv.innerHTML = '<div class="empty-players">Ожидание подключения игроков...</div>';
+                playersCountSpan.textContent = '0';
+            }
+            
+            // Текущий вопрос
+            if (data.current_question && data.status === 'active') {
+                const timeLeft = data.time_left !== null ? ` (осталось ${data.time_left} сек)` : '';
+                currentQuestionDiv.innerHTML = `
+                    <strong>Вопрос ${data.question_index + 1}/${data.total_questions}</strong>${timeLeft}<br>
+                    ${escapeHtml(data.current_question.text)}
+                `;
+            } else if (data.status === 'paused') {
+                currentQuestionDiv.innerHTML = '⏸️ Игра на паузе';
+            } else if (data.status === 'finished') {
+                currentQuestionDiv.innerHTML = '🎉 Игра окончена! Результаты показаны игрокам.';
+            } else {
+                currentQuestionDiv.innerHTML = 'Ожидание начала игры...';
+            }
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+    }
+}
+
+startBtn.onclick = async () => {
+    const response = await fetch(`/api/quizmaster/${quizCode}/start`, { method: 'POST' });
+    const data = await response.json();
+    if (!data.success) alert(data.error);
+};
+
+pauseBtn.onclick = async () => {
+    await fetch(`/api/quizmaster/${quizCode}/pause`, { method: 'POST' });
+};
+
+resumeBtn.onclick = async () => {
+    await fetch(`/api/quizmaster/${quizCode}/resume`, { method: 'POST' });
+};
+
+stopBtn.onclick = async () => {
+    if (confirm('Завершить игру и показать результаты?')) {
+        await fetch(`/api/quizmaster/${quizCode}/stop`, { method: 'POST' });
+    }
+};
+
+replayBtn.onclick = async () => {
+    if (confirm('Перезапустить игру? Все результаты будут сброшены. Игроки смогут подключиться заново.')) {
+        const response = await fetch(`/api/quizmaster/${quizCode}/replay`, { method: 'POST' });
+        const data = await response.json();
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Ошибка перезапуска');
+        }
+    }
+};
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+updateStatus();
+updateInterval = setInterval(updateStatus, 1000);
+</script>
+{% endblock %}
