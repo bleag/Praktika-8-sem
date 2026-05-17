@@ -2277,3 +2277,16 @@ body.auth-page {
 .btn-master:hover {
     background: #7B1FA2;
 }
+
+.btn-stats {
+    background: #9C27B0;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 12px;
+    display: inline-block;
+}
+.btn-stats:hover {
+    background: #7B1FA2;
+}

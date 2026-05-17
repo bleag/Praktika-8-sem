@@ -3,17 +3,40 @@
 {% block title %}Главная - Quiz Platform{% endblock %}
 
 {% block content %}
-    <!-- Главный блок: вход по коду -->
+    <!-- Главный блок: выбор режима -->
     <section class="hero">
         <div class="container">
-            <h1 class="hero__title">Введите код для участия в игре</h1>
+            <h1 class="hero__title">Выберите режим игры</h1>
             
-            <div class="code-input">
-                <input type="text" id="quizCode" class="code-input__field" placeholder="КВИЗ КОД" maxlength="6">
-                <button id="joinBtn" class="btn btn-blue btn-large">ПОДКЛЮЧИТЬСЯ</button>
+            <!-- Выбор режима -->
+            <div class="mode-selector" style="display: flex; gap: 15px; justify-content: center; margin-bottom: 40px;">
+                <button id="selectMultiplayer" class="mode-btn active" style="background: #2196F3; color: white; padding: 12px 30px; border: none; border-radius: 30px; cursor: pointer;">👥 Мультиплеер</button>
+                <button id="selectTeam" class="mode-btn" style="background: #9C27B0; color: white; padding: 12px 30px; border: none; border-radius: 30px; cursor: pointer;">🏆 Командный</button>
+                <button id="selectSolo" class="mode-btn" style="background: #4CAF50; color: white; padding: 12px 30px; border: none; border-radius: 30px; cursor: pointer;">🎮 Одиночный</button>
             </div>
             
-            <div class="hero__footer">
+            <!-- Форма для мультиплеера -->
+            <div id="multiplayerForm" class="code-input" style="max-width: 500px; margin: 0 auto;">
+                <h3 style="margin-bottom: 20px;">👥 Введите код игры</h3>
+                <input type="text" id="multiplayerCode" class="code-input__field" placeholder="КВИЗ КОД" maxlength="6" style="width: 100%; padding: 15px; font-size: 18px; text-align: center;">
+                <button id="joinMultiplayerBtn" class="btn btn-blue btn-large" style="margin-top: 15px; width: 100%;">ПОДКЛЮЧИТЬСЯ</button>
+            </div>
+            
+            <!-- Форма для командного режима -->
+            <div id="teamForm" class="code-input" style="display: none; max-width: 500px; margin: 0 auto;">
+                <h3 style="margin-bottom: 20px;">🏆 Введите код игры</h3>
+                <input type="text" id="teamCode" class="code-input__field" placeholder="КВИЗ КОД" maxlength="6" style="width: 100%; padding: 15px; font-size: 18px; text-align: center;">
+                <button id="joinTeamBtn" class="btn btn-purple btn-large" style="margin-top: 15px; width: 100%; background: #9C27B0;">ВОЙТИ В КОМАНДНУЮ ИГРУ</button>
+            </div>
+            
+            <!-- Форма для одиночного режима -->
+            <div id="soloForm" class="code-input" style="display: none; max-width: 500px; margin: 0 auto;">
+                <h3 style="margin-bottom: 20px;">🎮 Введите код игры</h3>
+                <input type="text" id="soloCode" class="code-input__field" placeholder="КВИЗ КОД" maxlength="6" style="width: 100%; padding: 15px; font-size: 18px; text-align: center;">
+                <button id="joinSoloBtn" class="btn btn-green btn-large" style="margin-top: 15px; width: 100%; background: #4CAF50;">ИГРАТЬ ОДИНОЧНО</button>
+            </div>
+            
+            <div class="hero__footer" style="margin-top: 40px;">
                 <button id="createQuizBtn" class="btn-create">Создайте свой квиз бесплатно</button>
             </div>
         </div>
@@ -94,7 +117,6 @@
                         <li>Открытые вопросы</li>
                         <li>Интерактивные опросы</li>
                         <li>Вопросы с картинкой в качестве ответа</li>
-                        <li>Танцы</li>
                         <li>Презентации и слайды (импорт из Google Slides)</li>
                         <li>Облако слов</li>
                         <li>Вопросы, где ответ нужно нарисовать</li>
@@ -125,7 +147,7 @@
                 <div class="mode-card">
                     <div class="mode-card__icon">📊</div>
                     <h3 class="mode-card__title">Одиночный режим</h3>
-                    <p class="mode-card__text">Игроки соревнуются друг с другом в викторине, которая доступна определенный промежуток времени (день, неделя, месяц)</p>
+                    <p class="mode-card__text">Игроки соревнуются друг с другом в викторине, которая доступна определенный промежуток времени</p>
                 </div>
             </div>
         </div>
@@ -154,26 +176,117 @@
 
 {% block extra_js %}
 <script>
-    // Вход по коду
-    const joinBtn = document.getElementById('joinBtn');
-    const quizCodeInput = document.getElementById('quizCode');
+    // Переключение между режимами
+    const multiplayerForm = document.getElementById('multiplayerForm');
+    const teamForm = document.getElementById('teamForm');
+    const soloForm = document.getElementById('soloForm');
     
-    if (joinBtn) {
-        joinBtn.addEventListener('click', function() {
-            const code = quizCodeInput.value.trim();
-            if (code.length === 6) {
-                window.location.href = '/play/' + code;
+    const selectMultiplayer = document.getElementById('selectMultiplayer');
+    const selectTeam = document.getElementById('selectTeam');
+    const selectSolo = document.getElementById('selectSolo');
+    
+    function setActiveMode(active) {
+        [selectMultiplayer, selectTeam, selectSolo].forEach(btn => {
+            btn.classList.remove('active');
+            btn.style.opacity = '0.7';
+        });
+        active.classList.add('active');
+        active.style.opacity = '1';
+    }
+    
+    selectMultiplayer.onclick = () => {
+        setActiveMode(selectMultiplayer);
+        multiplayerForm.style.display = 'block';
+        teamForm.style.display = 'none';
+        soloForm.style.display = 'none';
+    };
+    
+    selectTeam.onclick = () => {
+        setActiveMode(selectTeam);
+        multiplayerForm.style.display = 'none';
+        teamForm.style.display = 'block';
+        soloForm.style.display = 'none';
+    };
+    
+    selectSolo.onclick = () => {
+        setActiveMode(selectSolo);
+        multiplayerForm.style.display = 'none';
+        teamForm.style.display = 'none';
+        soloForm.style.display = 'block';
+    };
+    
+    // Мультиплеер
+    const joinMultiplayerBtn = document.getElementById('joinMultiplayerBtn');
+    const multiplayerCode = document.getElementById('multiplayerCode');
+    
+    joinMultiplayerBtn.onclick = () => {
+        const code = multiplayerCode.value.trim().toUpperCase();
+        if (code.length === 6) {
+            window.location.href = '/play/' + code;
+        } else {
+            alert('Введите 6-значный код');
+        }
+    };
+    
+    multiplayerCode.onkeypress = (e) => {
+        if (e.key === 'Enter') joinMultiplayerBtn.click();
+    };
+    
+    // Командный режим
+    const joinTeamBtn = document.getElementById('joinTeamBtn');
+    const teamCode = document.getElementById('teamCode');
+    
+    joinTeamBtn.onclick = () => {
+        const code = teamCode.value.trim().toUpperCase();
+        if (code.length === 6) {
+            window.location.href = '/team/play/' + code;
+        } else {
+            alert('Введите 6-значный код');
+        }
+    };
+    
+    teamCode.onkeypress = (e) => {
+        if (e.key === 'Enter') joinTeamBtn.click();
+    };
+    
+    // Одиночный режим (С ПРОВЕРКОЙ ДОСТУПНОСТИ)
+    const joinSoloBtn = document.getElementById('joinSoloBtn');
+    const soloCode = document.getElementById('soloCode');
+    
+    joinSoloBtn.onclick = async () => {
+        const code = soloCode.value.trim().toUpperCase();
+        if (code.length !== 6) {
+            alert('Введите 6-значный код');
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/api/quiz/by-code/${code}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                // Проверяем доступность викторины
+                const statusRes = await fetch(`/api/solo/${data.quiz_id}/status`);
+                const statusData = await statusRes.json();
+                
+                if (statusData.success && statusData.is_closed) {
+                    alert('❌ Эта викторина неактивна! Организатор закрыл доступ.');
+                    return;
+                }
+                
+                window.location.href = '/solo/code/' + code;
             } else {
-                alert('Пожалуйста, введите 6-значный код викторины');
+                alert('Викторина не найдена');
             }
-        });
-    }
+        } catch (error) {
+            console.error('Ошибка:', error);
+            alert('Ошибка подключения к серверу');
+        }
+    };
     
-    if (quizCodeInput) {
-        quizCodeInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') joinBtn.click();
-        });
-    }
+    soloCode.onkeypress = (e) => {
+        if (e.key === 'Enter') joinSoloBtn.click();
+    };
     
     // Создание викторины
     const createQuizBtn = document.getElementById('createQuizBtn');

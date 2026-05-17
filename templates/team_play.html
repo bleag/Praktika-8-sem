@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block title %}Командная игра - {{ quiz.title }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 50px auto; text-align: center;">
+    <h1>🏆 {{ quiz.title }}</h1>
+    <p>Код игры: <strong style="font-size: 24px; color: #2196F3;">{{ code }}</strong></p>
+    
+    <!-- Экран выбора -->
+    <div id="actionScreen" style="background: #f5f5f5; padding: 30px; border-radius: 20px;">
+        <div style="display: flex; gap: 20px; justify-content: center;">
+            <button id="createTeamBtn" style="background: #4CAF50; color: white; padding: 15px 30px; border: none; border-radius: 10px; cursor: pointer;">➕ Создать команду</button>
+            <button id="joinTeamBtn" style="background: #2196F3; color: white; padding: 15px 30px; border: none; border-radius: 10px; cursor: pointer;">🔍 Выбрать команду</button>
+        </div>
+    </div>
+    
+    <!-- Создание команды -->
+    <div id="createScreen" style="display: none; background: #f5f5f5; padding: 30px; border-radius: 20px;">
+        <h3>Создать команду</h3>
+        <input type="text" id="newTeamName" placeholder="Название команды" style="padding: 10px; width: 80%; margin: 10px;"><br>
+        <input type="text" id="newPlayerName" placeholder="Ваше имя" style="padding: 10px; width: 80%; margin: 10px;"><br>
+        <button id="confirmCreateBtn" style="background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 8px;">✅ Создать</button>
+        <button id="backCreateBtn" style="background: #666; color: white; padding: 10px 20px; border: none; border-radius: 8px;">← Назад</button>
+    </div>
+    
+    <!-- Выбор команды -->
+    <div id="joinScreen" style="display: none; background: #f5f5f5; padding: 30px; border-radius: 20px;">
+        <h3>Выберите команду</h3>
+        <div id="teamsList" style="margin: 20px 0;"></div>
+        <input type="text" id="joinPlayerName" placeholder="Ваше имя" style="padding: 10px; width: 80%; margin: 10px;"><br>
+        <button id="backJoinBtn" style="background: #666; color: white; padding: 10px 20px; border: none; border-radius: 8px;">← Назад</button>
+    </div>
+    
+    <!-- Ожидание -->
+    <div id="waitingScreen" style="display: none; background: #f5f5f5; padding: 30px; border-radius: 20px;">
+        <h2>Команда: <span id="waitingTeamName"></span></h2>
+        <div id="membersList"></div>
+        <p>⏳ Ожидание начала игры...</p>
+    </div>
+    
+    <!-- Игра -->
+    <div id="gameScreen" style="display: none; background: #f5f5f5; padding: 30px; border-radius: 20px;">
+        <div style="display: flex; justify-content: space-between;">
+            <span>Вопрос <span id="currentQ">1</span>/<span id="totalQ">0</span></span>
+            <span>🏆 <span id="gameTeamScore">0</span> очков</span>
+        </div>
+        <h3 id="questionText" style="margin: 30px 0;"></h3>
+        <div id="optionsDiv"></div>
+    </div>
+    
+    <!-- Результаты -->
+    <div id="resultScreen" style="display: none;">
+        <h1>🏆 Игра окончена!</h1>
+        <div id="finalLeaderboard" style="background: #f5f5f5; padding: 20px; border-radius: 20px;"></div>
+    </div>
+</div>
+
+<script>
+const gameCode = '{{ code }}';
+let currentTeam = null;
+let currentPlayer = null;
+let gameInterval = null;
+
+// Переключение экранов
+document.getElementById('createTeamBtn').onclick = () => {
+    document.getElementById('actionScreen').style.display = 'none';
+    document.getElementById('createScreen').style.display = 'block';
+};
+document.getElementById('joinTeamBtn').onclick = () => {
+    document.getElementById('actionScreen').style.display = 'none';
+    document.getElementById('joinScreen').style.display = 'block';
+    loadTeams();
+};
+document.getElementById('backCreateBtn').onclick = () => {
+    document.getElementById('createScreen').style.display = 'none';
+    document.getElementById('actionScreen').style.display = 'block';
+};
+document.getElementById('backJoinBtn').onclick = () => {
+    document.getElementById('joinScreen').style.display = 'none';
+    document.getElementById('actionScreen').style.display = 'block';
+};
+
+// Создание команды
+document.getElementById('confirmCreateBtn').onclick = async () => {
+    const teamName = document.getElementById('newTeamName').value.trim();
+    const playerName = document.getElementById('newPlayerName').value.trim();
+    
+    if (!teamName || !playerName) {
+        alert('Заполните все поля');
+        return;
+    }
+    
+    const res = await fetch('/api/team/join', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ game_code: gameCode, team_name: teamName, player_name: playerName })
+    });
+    const data = await res.json();
+    
+    if (data.success) {
+        currentTeam = teamName;
+        currentPlayer = playerName;
+        startWaiting();
+    } else {
+        alert(data.error);
+    }
+};
+
+// Загрузка списка команд
+async function loadTeams() {
+    const res = await fetch(`/api/team/leaderboard?game_code=${gameCode}`);
+    const data = await res.json();
+    const container = document.getElementById('teamsList');
+    
+    if (data.success && data.teams && data.teams.length > 0) {
+        container.innerHTML = data.teams.map(team => `
+            <button class="teamSelectBtn" data-team="${team.name}" style="display: block; width: 100%; margin: 10px 0; padding: 12px; background: white; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;">
+                🏆 ${team.name} (${team.members_count} игроков)
+            </button>
+        `).join('');
+        
+        document.querySelectorAll('.teamSelectBtn').forEach(btn => {
+            btn.onclick = () => joinTeam(btn.getAttribute('data-team'));
+        });
+    } else {
+        container.innerHTML = '<p>Нет команд. Создайте первую!</p>';
+    }
+}
+
+// Присоединение к команде
+async function joinTeam(teamName) {
+    const playerName = document.getElementById('joinPlayerName').value.trim();
+    if (!playerName) {
+        alert('Введите ваше имя');
+        return;
+    }
+    
+    const res = await fetch('/api/team/join', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ game_code: gameCode, team_name: teamName, player_name: playerName })
+    });
+    const data = await res.json();
+    
+    if (data.success) {
+        currentTeam = teamName;
+        currentPlayer = playerName;
+        startWaiting();
+    } else {
+        alert(data.error);
+    }
+}
+
+// Ожидание игры
+function startWaiting() {
+    document.getElementById('createScreen').style.display = 'none';
+    document.getElementById('joinScreen').style.display = 'none';
+    document.getElementById('actionScreen').style.display = 'none';
+    document.getElementById('waitingScreen').style.display = 'block';
+    document.getElementById('waitingTeamName').innerText = currentTeam;
+    
+    // Обновляем список участников
+    updateMembers();
+    setInterval(updateMembers, 3000);
+    
+    // Проверяем статус игры
+    gameInterval = setInterval(checkGameStatus, 1000);
+}
+
+async function updateMembers() {
+    const res = await fetch(`/api/team/leaderboard?game_code=${gameCode}`);
+    const data = await res.json();
+    if (data.success && data.teams) {
+        const myTeam = data.teams.find(t => t.name === currentTeam);
+        if (myTeam) {
+            document.getElementById('membersList').innerHTML = `
+                <h4>Участники (${myTeam.members_count}):</h4>
+                ${'👤 '.repeat(myTeam.members_count) || 'Пока никого'}
+            `;
+        }
+    }
+}
+
+// Проверка статуса игры
+async function checkGameStatus() {
+    const res = await fetch(`/api/team/status?game_code=${gameCode}&team_name=${currentTeam}`);
+    const data = await res.json();
+    
+    if (data.success) {
+        if (data.status === 'active') {
+            clearInterval(gameInterval);
+            document.getElementById('waitingScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+            startGame(data);
+        } else if (data.status === 'finished') {
+            clearInterval(gameInterval);
+            showResults();
+        }
+    }
+}
+
+// СТАРТ ИГРЫ - ЭТА ФУНКЦИЯ БЫЛА ОТСУТСТВУЕТ!
+function startGame(data) {
+    let currentIndex = 0;
+    document.getElementById('totalQ').innerText = data.total_questions;
+    
+    function loadQuestion() {
+        if (currentIndex >= data.total_questions) return;
+        
+        fetch(`/api/team/status?game_code=${gameCode}&team_name=${currentTeam}`)
+            .then(res => res.json())
+            .then(newData => {
+                if (newData.current_question) {
+                    document.getElementById('currentQ').innerText = currentIndex + 1;
+                    document.getElementById('questionText').innerHTML = newData.current_question.text;
+                    document.getElementById('gameTeamScore').innerText = newData.team_score;
+                    
+                    const optsDiv = document.getElementById('optionsDiv');
+                    optsDiv.innerHTML = '';
+                    newData.current_question.options.forEach(opt => {
+                        const btn = document.createElement('button');
+                        btn.innerHTML = opt;
+                        btn.style.cssText = 'display: block; width: 100%; margin: 10px 0; padding: 12px; background: white; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;';
+                        btn.onclick = () => sendAnswer(opt, btn);
+                        optsDiv.appendChild(btn);
+                    });
+                }
+                currentIndex++;
+            });
+    }
+    
+    async function sendAnswer(answer, btn) {
+        const res = await fetch('/api/team/answer', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ game_code: gameCode, team_name: currentTeam, answer: answer })
+        });
+        const result = await res.json();
+        
+        if (result.correct) {
+            btn.style.background = '#4CAF50';
+            document.getElementById('gameTeamScore').innerText = result.team_score;
+        } else {
+            btn.style.background = '#f44336';
+            alert('❌ Неправильный ответ!');
+        }
+        
+        loadQuestion();
+    }
+    
+    loadQuestion();
+}
+
+// Показать результаты
+async function showResults() {
+    document.getElementById('gameScreen').style.display = 'none';
+    document.getElementById('resultScreen').style.display = 'block';
+    
+    const res = await fetch(`/api/team/leaderboard?game_code=${gameCode}`);
+    const data = await res.json();
+    
+    if (data.success && data.teams) {
+        document.getElementById('finalLeaderboard').innerHTML = `
+            <h2>🏆 Результаты:</h2>
+            ${data.teams.map((t, i) => `
+                <div style="margin: 10px 0; padding: 12px; background: white; border-radius: 8px;">
+                    <strong>${i+1}. ${t.name}</strong> - ${t.score} очков (${t.members_count} игроков)
+                </div>
+            `).join('')}
+        `;
+    }
+}
+</script>
+{% endblock %}

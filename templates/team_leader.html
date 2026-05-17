@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}Панель ведущего - Командная игра{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 50px auto; text-align: center;">
+    <h1>🏆 Панель ведущего</h1>
+    <h2>{{ quiz.title }}</h2>
+    
+    <div style="background: #f5f5f5; padding: 30px; border-radius: 20px;">
+        <h3>Код игры:</h3>
+        <h1 style="color: #2196F3; font-size: 48px; letter-spacing: 5px;" id="gameCodeDisplay">{{ quiz.quiz_code }}</h1>
+        <button onclick="copyCode()" style="background: #666; color: white; padding: 8px 20px; border: none; border-radius: 5px; cursor: pointer;">📋 Копировать код</button>
+        
+        <div style="margin-top: 20px;">
+            <span class="status-label">Статус:</span>
+            <span id="gameStatus" class="status-badge waiting">Ожидание команд</span>
+        </div>
+        
+        <div id="teamsDiv" style="margin: 30px 0; max-height: 300px; overflow-y: auto;"></div>
+        
+        <div class="control-buttons" style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+            <button id="startBtn" class="btn-green" style="background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer;">🚀 Начать игру</button>
+            <button id="pauseBtn" class="btn-yellow" style="background: #FFC107; color: #333; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer;">⏸️ Пауза</button>
+            <button id="resumeBtn" class="btn-green" style="background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer;">▶️ Возобновить</button>
+            <button id="stopBtn" class="btn-red" style="background: #f44336; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer;">⏹️ Завершить</button>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <h4>Текущий вопрос:</h4>
+            <div id="currentQuestionDiv" style="background: white; padding: 15px; border-radius: 10px; margin-top: 10px;">
+                Ожидание начала игры...
+            </div>
+        </div>
+    </div>
+    
+    <div style="margin-top: 20px;">
+        <a href="/profile" class="btn-outline-new">← К моим викторинам</a>
+    </div>
+</div>
+
+<style>
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+}
+.status-badge.waiting { background: #FF9800; color: white; }
+.status-badge.active { background: #4CAF50; color: white; }
+.status-badge.paused { background: #FFC107; color: #333; }
+.status-badge.finished { background: #9E9E9E; color: white; }
+.btn-green:hover { background: #45a049; }
+.btn-yellow:hover { background: #e0a800; }
+.btn-red:hover { background: #d32f2f; }
+</style>
+
+<script>
+const gameCode = '{{ quiz.quiz_code }}';
+let statusInterval = null;
+
+function copyCode() {
+    const code = document.getElementById('gameCodeDisplay').innerText;
+    navigator.clipboard.writeText(code);
+    alert('Код скопирован: ' + code);
+}
+
+async function updateTeams() {
+    try {
+        const res = await fetch(`/api/team/leaderboard?game_code=${gameCode}`);
+        const data = await res.json();
+        if (data.success && data.teams) {
+            const teamsDiv = document.getElementById('teamsDiv');
+            if (data.teams.length > 0) {
+                teamsDiv.innerHTML = '<h3>🏆 Команды:</h3>' + 
+                    data.teams.map((t, i) => `
+                        <div style="background: white; margin: 10px 0; padding: 12px; border-radius: 10px; display: flex; justify-content: space-between;">
+                            <span><strong>${i+1}. ${t.name}</strong> (${t.members_count} игроков)</span>
+                            <span style="color: #2196F3; font-weight: bold;">${t.score} очков</span>
+                        </div>
+                    `).join('');
+            } else {
+                teamsDiv.innerHTML = '<p>⏳ Ожидание подключения команд...</p>';
+            }
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+    }
+}
+
+async function updateGameStatus() {
+    try {
+        const res = await fetch(`/api/team/status?game_code=${gameCode}&team_name=`);
+        const data = await res.json();
+        
+        if (data.success) {
+            const statusSpan = document.getElementById('gameStatus');
+            const statusText = {
+                'waiting': 'Ожидание команд',
+                'active': 'Игра идёт',
+                'paused': 'На паузе',
+                'finished': 'Игра окончена'
+            };
+            statusSpan.textContent = statusText[data.status] || data.status;
+            statusSpan.className = `status-badge ${data.status}`;
+            
+            // Управление кнопками
+            const startBtn = document.getElementById('startBtn');
+            const pauseBtn = document.getElementById('pauseBtn');
+            const resumeBtn = document.getElementById('resumeBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            
+            if (data.status === 'waiting') {
+                startBtn.disabled = false;
+                pauseBtn.disabled = true;
+                resumeBtn.disabled = true;
+                stopBtn.disabled = true;
+            } else if (data.status === 'active') {
+                startBtn.disabled = true;
+                pauseBtn.disabled = false;
+                resumeBtn.disabled = true;
+                stopBtn.disabled = false;
+            } else if (data.status === 'paused') {
+                startBtn.disabled = true;
+                pauseBtn.disabled = true;
+                resumeBtn.disabled = false;
+                stopBtn.disabled = false;
+            } else if (data.status === 'finished') {
+                startBtn.disabled = true;
+                pauseBtn.disabled = true;
+                resumeBtn.disabled = true;
+                stopBtn.disabled = true;
+                if (statusInterval) clearInterval(statusInterval);
+            }
+            
+            // Текущий вопрос
+            const currentQDiv = document.getElementById('currentQuestionDiv');
+            if (data.current_question && data.status === 'active') {
+                currentQDiv.innerHTML = `
+                    <strong>Вопрос ${data.question_index + 1}/${data.total_questions}</strong><br>
+                    ${data.current_question.text}
+                `;
+            } else if (data.status === 'paused') {
+                currentQDiv.innerHTML = '⏸️ Игра на паузе';
+            } else if (data.status === 'finished') {
+                currentQDiv.innerHTML = '🏆 Игра окончена!';
+            } else {
+                currentQDiv.innerHTML = 'Ожидание начала игры...';
+            }
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+    }
+}
+
+// Старт игры
+document.getElementById('startBtn').onclick = async () => {
+    await fetch('/api/team/start', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ game_code: gameCode })
+    });
+    alert('Игра начата!');
+};
+
+// Пауза
+document.getElementById('pauseBtn').onclick = async () => {
+    await fetch('/api/team/pause', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ game_code: gameCode })
+    });
+};
+
+// Возобновить
+document.getElementById('resumeBtn').onclick = async () => {
+    await fetch('/api/team/resume', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ game_code: gameCode })
+    });
+};
+
+// Завершить игру
+document.getElementById('stopBtn').onclick = async () => {
+    if (confirm('Завершить игру? Результаты будут сохранены.')) {
+        await fetch('/api/team/stop', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ game_code: gameCode })
+        });
+        alert('Игра завершена');
+    }
+};
+
+// Запускаем обновление
+updateTeams();
+updateGameStatus();
+setInterval(updateTeams, 2000);
+setInterval(updateGameStatus, 1000);
+</script>
+{% endblock %}

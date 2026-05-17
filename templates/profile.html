@@ -10,6 +10,7 @@
             <h1 class="profile-title">Мои викторины <span class="quiz-count">({{ quizzes|length }})</span></h1>
             <p class="profile-subtitle">Выберите викторину для редактирования, просмотра и управления.</p>
             <button type="button" class="btn btn-blue create-quiz-btn" onclick="window.location.href='/quiz/create'">+ Создать викторину</button>
+        </div>
 
         <!-- Фильтр по режимам -->
         <div class="mode-filter">
@@ -29,7 +30,8 @@
         <div class="quizzes-list" id="quizzesList">
             {% if quizzes and quizzes|length > 0 %}
                 {% for quiz in quizzes %}
-                <div class="quiz-card" data-quiz-id="{{ quiz.id }}" data-mode="{{ quiz.settings.gameMode if quiz.settings else 'multiplayer' }}">
+                {% set mode = quiz.settings.gameMode if quiz.settings else 'multiplayer' %}
+                <div class="quiz-card" data-quiz-id="{{ quiz.id }}" data-mode="{{ mode }}">
                     <div class="quiz-card__cover">
                         {% if quiz.cover_data %}
                             <img src="{{ quiz.cover_data }}" class="quiz-card__image">
@@ -43,7 +45,6 @@
                         <div class="quiz-card__meta">
                             <span class="quiz-card__code">🔑 Код: {{ quiz.quiz_code }}</span>
                             <span class="quiz-card__mode">
-                                {% set mode = quiz.settings.gameMode if quiz.settings else 'multiplayer' %}
                                 {% if mode == 'multiplayer' %}👥 Мультиплеер
                                 {% elif mode == 'team' %}🏆 Командный
                                 {% else %}📊 Одиночный{% endif %}
@@ -51,20 +52,30 @@
                         </div>
                     </div>
                     <div class="quiz-card__actions">
+                        <!-- Панель ведущего -->
                         {% if mode == 'solo' %}
                             <a href="/quizmaster/solo/{{ quiz.id }}" class="btn-small btn-master">🎮 Панель ведущего</a>
+                        {% elif mode == 'team' %}
+                            <a href="/team/leader/{{ quiz.id }}" class="btn-small btn-master">🏆 Панель ведущего</a>
                         {% else %}
                             <a href="/quizmaster/{{ quiz.quiz_code }}" class="btn-small btn-master">🎮 Панель ведущего</a>
                         {% endif %}
+
+                        <a href="/quiz/stats/{{ quiz.id }}" class="btn-small btn-stats">📊 Аналитика</a>
+                        
+                        <!-- Редактировать -->
                         <a href="/quiz/edit/{{ quiz.id }}" class="btn-small btn-edit">✏️ Редактировать</a>
-                        {% set mode = quiz.settings.gameMode if quiz.settings else 'multiplayer' %}
+                        
+                        <!-- Играть -->
                         {% if mode == 'solo' %}
-                            <a href="/solo/{{ quiz.id }}" class="btn-small btn-play">🎮 Играть (соло)</a>
+                            <a href="/solo/code/{{ quiz.quiz_code }}" class="btn-small btn-play">🎮 Играть</a>
                         {% elif mode == 'team' %}
-                            <a href="/team/{{ quiz.id }}" class="btn-small btn-play">🏆 Команда</a>
+                            <a href="/team/play/{{ quiz.quiz_code }}" class="btn-small btn-play">🏆 Играть командой</a>
                         {% else %}
                             <a href="/play/{{ quiz.quiz_code }}" class="btn-small btn-play">👥 Играть</a>
                         {% endif %}
+                        
+                        <!-- Удалить -->
                         <button class="btn-small btn-delete" data-id="{{ quiz.id }}">🗑️ Удалить</button>
                     </div>
                 </div>

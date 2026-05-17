@@ -1,18 +1,47 @@
 {% extends "base.html" %}
 
-{% block title %}Одиночная игра - {{ quiz.title }}{% endblock %}
+{% block title %}Одиночная игра{% endblock %}
 
 {% block content %}
 <div class="game-container">
-    <h1>{{ quiz.title }}</h1>
+    <h1 id="quizTitle">Одиночная игра</h1>
     
-    <div id="startScreen" class="game-panel">
+    <!-- Экран входа по коду -->
+    <div id="codeEntryScreen" class="game-panel">
+        <h3>Введите код викторины</h3>
+        <input type="text" id="gameCodeInput" class="form-input" placeholder="КВИЗ КОД" maxlength="6" style="width: 250px; text-align: center;">
+        <br>
+        <button id="submitCodeBtn" class="btn btn-blue" style="margin-top: 20px;">🔍 Найти викторину</button>
+    </div>
+    
+    <!-- Экран "игра неактивна" -->
+    <div id="closedScreen" class="game-panel" style="display: none;">
+        <div style="text-align: center; padding: 40px;">
+            <h2>🔒 Игра неактивна</h2>
+            <p>Организатор закрыл доступ к этой викторине.</p>
+            <a href="/" class="btn-outline-new" style="display: inline-block; margin-top: 20px;">На главную</a>
+        </div>
+    </div>
+    
+    <!-- Экран ожидания старта от ведущего -->
+    <div id="waitingScreen" class="game-panel" style="display: none;">
+        <div style="text-align: center; padding: 40px;">
+            <h2>⏳ Ожидание начала игры</h2>
+            <p>Ведущий ещё не начал игру. Пожалуйста, подождите...</p>
+            <div class="spinner" style="margin: 20px auto; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #2196F3; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            <a href="/" class="btn-outline-new" style="display: inline-block; margin-top: 20px;">На главную</a>
+        </div>
+    </div>
+    
+    <!-- Экран ввода имени -->
+    <div id="startScreen" class="game-panel" style="display: none;">
         <h3>Введите ваше имя</h3>
         <input type="text" id="playerName" class="form-input" placeholder="Ваше имя" maxlength="30" style="width: 250px;">
         <br>
         <button id="startBtn" class="btn btn-blue" style="margin-top: 20px;">🎮 Начать игру</button>
     </div>
     
+    <!-- Экран игры -->
     <div id="gameScreen" class="game-panel" style="display: none;">
         <div class="game-header">
             <span>Вопрос <span id="currentQ">1</span>/<span id="totalQ">0</span></span>
@@ -23,6 +52,7 @@
         <div id="timerDiv" class="timer"></div>
     </div>
     
+    <!-- Экран результата -->
     <div id="resultScreen" class="game-panel" style="display: none;">
         <h2>🎉 Игра окончена!</h2>
         <div class="player-result">
@@ -35,7 +65,7 @@
         </div>
         
         <div id="replayButtonDiv" style="display: none; margin: 20px 0;">
-            <button id="replaySoloBtn" class="btn btn-purple">🔄 Пройти викторину заново</button>
+            <button id="replaySoloBtn" class="btn btn-purple">🔄 Пройти заново</button>
         </div>
         
         <div id="leaderboardSection" style="margin-top: 30px;">
@@ -49,8 +79,62 @@
     </div>
 </div>
 
+<style>
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.game-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+.game-panel {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    text-align: center;
+}
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    font-size: 18px;
+    font-weight: bold;
+}
+.question-text {
+    margin: 30px 0;
+    font-size: 24px;
+}
+.options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.option-btn {
+    padding: 15px;
+    background: white;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s;
+}
+.option-btn:hover {
+    background: #f0f0f0;
+    border-color: #2196F3;
+}
+.timer {
+    margin-top: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #2196F3;
+}
+</style>
+
 <script>
-const quizId = {{ quiz.id }};
+let quizId = null;
 let questions = [];
 let currentIndex = 0;
 let score = 0;
@@ -62,50 +146,182 @@ let timeShowAnswer = 10;
 let randomQuestions = false;
 let randomOptions = false;
 let pointsPerQuestion = 100;
+let statusCheckInterval = null;
+let isGameActive = false;
 
+// Проверяем URL на наличие кода
+const urlParts = window.location.pathname.split('/');
+if (urlParts[1] === 'solo' && urlParts[2] === 'code' && urlParts[3]) {
+    loadQuizByCode(urlParts[3]);
+}
+
+// Вход по коду
+document.getElementById('submitCodeBtn').onclick = async () => {
+    const code = document.getElementById('gameCodeInput').value.trim().toUpperCase();
+    if (code.length !== 6) {
+        alert('Введите 6-значный код');
+        return;
+    }
+    await loadQuizByCode(code);
+};
+
+document.getElementById('gameCodeInput').onkeypress = (e) => {
+    if (e.key === 'Enter') document.getElementById('submitCodeBtn').click();
+};
+
+// Загрузка викторины по коду
+async function loadQuizByCode(code) {
+    try {
+        const quizRes = await fetch(`/api/quiz/by-code/${code}`);
+        const quizData = await quizRes.json();
+        
+        if (!quizData.success) {
+            alert('Викторина не найдена');
+            return;
+        }
+        
+        quizId = quizData.quiz_id;
+        
+        // Проверяем доступность
+        const statusRes = await fetch(`/api/solo/${quizId}/status`);
+        const statusData = await statusRes.json();
+        
+        if (statusData.success && statusData.is_closed) {
+            document.getElementById('codeEntryScreen').style.display = 'none';
+            document.getElementById('closedScreen').style.display = 'block';
+            document.getElementById('quizTitle').innerText = statusData.title || 'Викторина';
+            return;
+        }
+        
+        document.getElementById('quizTitle').innerText = statusData.title || 'Одиночная игра';
+        document.getElementById('codeEntryScreen').style.display = 'none';
+        
+        // Показываем экран ожидания и проверяем активность игры
+        document.getElementById('waitingScreen').style.display = 'block';
+        
+        // Загружаем настройки
+        const settingsRes = await fetch(`/api/public/quiz/${quizId}/status`);
+        const settingsData = await settingsRes.json();
+        if (settingsData.success) {
+            timeShowAnswer = settingsData.timeShowAnswer || 10;
+            allowReplaySolo = settingsData.allowReplaySolo || false;
+            randomQuestions = settingsData.randomQuestions || false;
+            randomOptions = settingsData.randomOptions || false;
+            pointsPerQuestion = settingsData.pointsPerQuestion || 100;
+        }
+        
+        // Загружаем вопросы заранее
+        const questionsRes = await fetch(`/api/public/quiz/${quizId}/questions`);
+        const questionsData = await questionsRes.json();
+        if (questionsData.success && questionsData.questions.length > 0) {
+            questions = questionsData.questions;
+            if (randomQuestions) {
+                for (let i = questions.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [questions[i], questions[j]] = [questions[j], questions[i]];
+                }
+            }
+            document.getElementById('totalQ').innerText = questions.length;
+        }
+        
+        // Начинаем проверять статус игры каждую секунду
+        if (statusCheckInterval) clearInterval(statusCheckInterval);
+        statusCheckInterval = setInterval(checkGameStatus, 1000);
+        
+    } catch (error) {
+        console.error('Ошибка:', error);
+        alert('Ошибка загрузки викторины');
+    }
+}
+
+// Проверка статуса игры (начал ли ведущий)
+async function checkGameStatus() {
+    if (!quizId) return;
+    
+    try {
+        const gameRes = await fetch(`/api/solo/${quizId}/current-question`);
+        const gameData = await gameRes.json();
+        
+        if (gameData.has_active_game && gameData.is_active) {
+            // Игра активна - можно начинать
+            clearInterval(statusCheckInterval);
+            document.getElementById('waitingScreen').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'block';
+        } else if (gameData.has_active_game && gameData.is_paused) {
+            // Игра на паузе
+            document.getElementById('waitingScreen').style.display = 'block';
+            const waitingDiv = document.getElementById('waitingScreen');
+            const existingMsg = waitingDiv.querySelector('.pause-msg');
+            if (!existingMsg) {
+                const pauseMsg = document.createElement('p');
+                pauseMsg.className = 'pause-msg';
+                pauseMsg.style.color = '#FF9800';
+                pauseMsg.innerHTML = '⏸️ Игра на паузе. Дождитесь возобновления.';
+                waitingDiv.querySelector('p').after(pauseMsg);
+            }
+        }
+        
+        // Проверяем не закрыли ли игру
+        const statusRes = await fetch(`/api/solo/${quizId}/status`);
+        const statusData = await statusRes.json();
+        if (statusData.success && statusData.is_closed) {
+            clearInterval(statusCheckInterval);
+            document.getElementById('waitingScreen').style.display = 'none';
+            document.getElementById('closedScreen').style.display = 'block';
+        }
+        
+    } catch (error) {
+        console.error('Ошибка проверки статуса:', error);
+    }
+}
+
+// Старт игры (после того как ведущий начал)
 document.getElementById('startBtn').onclick = async () => {
+    if (!quizId) {
+        alert('Ошибка: викторина не найдена');
+        return;
+    }
+    
     playerName = document.getElementById('playerName').value.trim();
     if (!playerName) {
         alert('Введите ваше имя');
         return;
     }
     
-    // Загружаем настройки викторины и проверяем доступ
-    const settingsRes = await fetch(`/api/public/quiz/${quizId}/status`);
-    const settingsData = await settingsRes.json();
-    if (settingsData.success) {
-        timeShowAnswer = settingsData.timeShowAnswer || 10;
-        allowReplaySolo = settingsData.allowReplaySolo || false;
-        randomQuestions = settingsData.randomQuestions || false;
-        randomOptions = settingsData.randomOptions || false;
-        pointsPerQuestion = settingsData.pointsPerQuestion || 100;
-        
-        if (settingsData.is_closed) {
-            alert('Доступ к викторине закрыт организатором');
-            return;
-        }
-    }
+    // Проверяем доступность перед стартом
+    const statusRes = await fetch(`/api/solo/${quizId}/status`);
+    const statusData = await statusRes.json();
     
-    const res = await fetch(`/api/public/quiz/${quizId}/questions`);
-    const data = await res.json();
-    
-    if (data.success && data.questions && data.questions.length > 0) {
-        questions = data.questions;
-        
-        if (randomQuestions) {
-            for (let i = questions.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [questions[i], questions[j]] = [questions[j], questions[i]];
-            }
-        }
-                
-        document.getElementById('totalQ').innerText = questions.length;
+    if (statusData.success && statusData.is_closed) {
+        alert('❌ Игра неактивна! Доступ закрыт организатором.');
         document.getElementById('startScreen').style.display = 'none';
-        document.getElementById('gameScreen').style.display = 'block';
-        showQuestion();
-    } else {
-        alert('В викторине нет вопросов');
+        document.getElementById('closedScreen').style.display = 'block';
+        return;
     }
+    
+    // Проверяем что игра всё ещё активна
+    const gameRes = await fetch(`/api/solo/${quizId}/current-question`);
+    const gameData = await gameRes.json();
+    
+    if (!gameData.has_active_game) {
+        alert('❌ Игра ещё не начата ведущим! Подождите.');
+        return;
+    }
+    
+    if (gameData.is_paused) {
+        alert('⏸️ Игра на паузе! Дождитесь возобновления.');
+        return;
+    }
+    
+    if (questions.length === 0) {
+        alert('В викторине нет вопросов');
+        return;
+    }
+    
+    document.getElementById('totalQ').innerText = questions.length;
+    document.getElementById('startScreen').style.display = 'none';
+    document.getElementById('gameScreen').style.display = 'block';
+    showQuestion();
 };
 
 function showQuestion() {
@@ -162,11 +378,9 @@ function checkAnswer(answer, btnElement) {
         });
     }
     
-    // Останавливаем таймер вопроса
     if (timerInterval) clearInterval(timerInterval);
     document.getElementById('timerDiv').style.display = 'none';
     
-    // Показываем блок с правильным ответом
     const optionsDiv = document.getElementById('optionsDiv');
     const correctAnswer = q.correct_answer ? q.correct_answer.join(', ') : '?';
     const oldResult = document.querySelector('.answer-result');
@@ -178,7 +392,6 @@ function checkAnswer(answer, btnElement) {
     resultBlock.style.cssText = 'margin-top: 20px; padding: 15px; background: #e8f5e9; border-radius: 12px; text-align: center;';
     optionsDiv.appendChild(resultBlock);
     
-    // Запускаем таймер показа ответа
     let answerTimeLeft = timeShowAnswer;
     const answerTimerSpan = document.getElementById('answerTimer');
     const answerTimer = setInterval(() => {
@@ -220,7 +433,6 @@ async function endGame() {
     document.getElementById('resultCorrect').innerText = correctCount;
     document.getElementById('resultTotal').innerText = questions.length;
     
-    // Сохраняем результат
     await fetch(`/api/solo/${quizId}/save`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -236,7 +448,6 @@ async function endGame() {
         document.getElementById('replayButtonDiv').style.display = 'block';
     }
     
-    // Загружаем таблицу лидеров
     const res = await fetch(`/api/solo/${quizId}/leaderboard`);
     const data = await res.json();
     if (data.success && data.leaderboard.length > 0) {
