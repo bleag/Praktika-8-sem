@@ -2290,3 +2290,10 @@ body.auth-page {
 .btn-stats:hover {
     background: #7B1FA2;
 }
+
+
+.question-type-block {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}

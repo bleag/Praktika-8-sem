@@ -28,15 +28,14 @@ class Quiz(db.Model):
 class Question(db.Model):
     __tablename__ = 'questions'
     id = db.Column(db.Integer, primary_key=True)
-    quiz_id = db.Column(db.Integer, db.ForeignKey('quizzes.id'), nullable=False)
-    round_id = db.Column(db.Integer, nullable=True)
-    type = db.Column(db.String(30), nullable=False)
+    quiz_id = db.Column(db.Integer, db.ForeignKey('quizzes.id'))  # ← quizzes, а не quiz
+    type = db.Column(db.String(20), default='choice')
     text = db.Column(db.Text, nullable=False)
-    options = db.Column(db.JSON, nullable=True)
-    correct_answer = db.Column(db.JSON, nullable=True)
-    media_url = db.Column(db.String(500), nullable=True)
+    options = db.Column(db.JSON)
+    correct_answer = db.Column(db.JSON)
+    media_url = db.Column(db.String(500))
     order = db.Column(db.Integer, default=0)
-    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    additional_data = db.Column(db.JSON, default={})
     
     quiz = db.relationship('Quiz', backref='questions')
 

@@ -47,12 +47,23 @@
         </div>
         <h3 id="questionText" style="margin: 30px 0;"></h3>
         <div id="optionsDiv"></div>
+        <div id="timerDiv" style="margin-top: 20px; font-size: 24px; color: #2196F3;"></div>
     </div>
     
     <!-- Результаты -->
     <div id="resultScreen" style="display: none;">
         <h1>🏆 Игра окончена!</h1>
-        <div id="finalLeaderboard" style="background: #f5f5f5; padding: 20px; border-radius: 20px;"></div>
+        <div style="background: #f5f5f5; padding: 30px; border-radius: 20px; margin: 30px 0;">
+            <h2>Твоя команда: <span id="finalTeamName"></span></h2>
+            <h2 style="color: #4CAF50;">Счёт: <span id="finalTeamScore">0</span> очков</h2>
+        </div>
+        <div style="background: white; border-radius: 20px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <h3>🏆 Таблица лидеров команд</h3>
+            <div id="leaderboardList" style="margin-top: 20px;"></div>
+        </div>
+        <div style="margin-top: 20px;">
+            <a href="/" class="btn-outline-new">🏠 На главную</a>
+        </div>
     </div>
 </div>
 
@@ -61,6 +72,9 @@ const gameCode = '{{ code }}';
 let currentTeam = null;
 let currentPlayer = null;
 let gameInterval = null;
+let currentTeamScore = 0;
+let currentQuestionIndex = 0;
+let totalQuestions = 0;
 
 // Переключение экранов
 document.getElementById('createTeamBtn').onclick = () => {
@@ -160,11 +174,9 @@ function startWaiting() {
     document.getElementById('waitingScreen').style.display = 'block';
     document.getElementById('waitingTeamName').innerText = currentTeam;
     
-    // Обновляем список участников
     updateMembers();
     setInterval(updateMembers, 3000);
     
-    // Проверяем статус игры
     gameInterval = setInterval(checkGameStatus, 1000);
 }
 
@@ -176,7 +188,7 @@ async function updateMembers() {
         if (myTeam) {
             document.getElementById('membersList').innerHTML = `
                 <h4>Участники (${myTeam.members_count}):</h4>
-                ${'👤 '.repeat(myTeam.members_count) || 'Пока никого'}
+                ${myTeam.members_count > 0 ? '👤 '.repeat(myTeam.members_count) : 'Пока никого'}
             `;
         }
     }
@@ -192,45 +204,81 @@ async function checkGameStatus() {
             clearInterval(gameInterval);
             document.getElementById('waitingScreen').style.display = 'none';
             document.getElementById('gameScreen').style.display = 'block';
-            startGame(data);
+            totalQuestions = data.total_questions;
+            document.getElementById('totalQ').innerText = totalQuestions;
+            startGameLoop();
         } else if (data.status === 'finished') {
             clearInterval(gameInterval);
+            document.getElementById('gameScreen').style.display = 'none';
             showResults();
         }
     }
 }
 
-// СТАРТ ИГРЫ - ЭТА ФУНКЦИЯ БЫЛА ОТСУТСТВУЕТ!
-function startGame(data) {
-    let currentIndex = 0;
-    document.getElementById('totalQ').innerText = data.total_questions;
+// Игровой цикл
+function startGameLoop() {
+    let isWaitingForNext = false;
     
-    function loadQuestion() {
-        if (currentIndex >= data.total_questions) return;
+    function loadCurrentQuestion() {
+        if (isWaitingForNext) return;
         
         fetch(`/api/team/status?game_code=${gameCode}&team_name=${currentTeam}`)
             .then(res => res.json())
-            .then(newData => {
-                if (newData.current_question) {
-                    document.getElementById('currentQ').innerText = currentIndex + 1;
-                    document.getElementById('questionText').innerHTML = newData.current_question.text;
-                    document.getElementById('gameTeamScore').innerText = newData.team_score;
+            .then(data => {
+                if (data.status === 'finished') {
+                    showResults();
+                    return;
+                }
+                
+                if (data.current_question && data.question_index === currentQuestionIndex) {
+                    isWaitingForNext = false;
+                    document.getElementById('currentQ').innerText = data.question_index + 1;
+                    document.getElementById('questionText').innerHTML = data.current_question.text;
+                    document.getElementById('gameTeamScore').innerText = data.team_score;
+                    currentTeamScore = data.team_score;
                     
                     const optsDiv = document.getElementById('optionsDiv');
                     optsDiv.innerHTML = '';
-                    newData.current_question.options.forEach(opt => {
+                    data.current_question.options.forEach(opt => {
                         const btn = document.createElement('button');
                         btn.innerHTML = opt;
-                        btn.style.cssText = 'display: block; width: 100%; margin: 10px 0; padding: 12px; background: white; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;';
+                        btn.style.cssText = 'display: block; width: 100%; margin: 10px 0; padding: 12px; background: white; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; font-size: 16px;';
                         btn.onclick = () => sendAnswer(opt, btn);
                         optsDiv.appendChild(btn);
                     });
+                    
+                    startTimer(25);
+                } else if (data.question_index > currentQuestionIndex) {
+                    currentQuestionIndex = data.question_index;
+                    isWaitingForNext = false;
+                    loadCurrentQuestion();
+                } else {
+                    isWaitingForNext = true;
+                    setTimeout(loadCurrentQuestion, 500);
                 }
-                currentIndex++;
             });
     }
     
+    function startTimer(seconds) {
+        let timeLeft = seconds;
+        const timerDiv = document.getElementById('timerDiv');
+        if (window.timerInterval) clearInterval(window.timerInterval);
+        
+        window.timerInterval = setInterval(() => {
+            timerDiv.innerHTML = `⏱️ ${timeLeft} сек`;
+            if (timeLeft <= 0) {
+                clearInterval(window.timerInterval);
+                timerDiv.innerHTML = '⏰ Время вышло!';
+                currentQuestionIndex++;
+                loadCurrentQuestion();
+            }
+            timeLeft--;
+        }, 1000);
+    }
+    
     async function sendAnswer(answer, btn) {
+        clearInterval(window.timerInterval);
+        
         const res = await fetch('/api/team/answer', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -240,16 +288,18 @@ function startGame(data) {
         
         if (result.correct) {
             btn.style.background = '#4CAF50';
-            document.getElementById('gameTeamScore').innerText = result.team_score;
+            currentTeamScore = result.team_score;
+            document.getElementById('gameTeamScore').innerText = currentTeamScore;
         } else {
             btn.style.background = '#f44336';
             alert('❌ Неправильный ответ!');
         }
         
-        loadQuestion();
+        currentQuestionIndex++;
+        loadCurrentQuestion();
     }
     
-    loadQuestion();
+    loadCurrentQuestion();
 }
 
 // Показать результаты
@@ -257,18 +307,20 @@ async function showResults() {
     document.getElementById('gameScreen').style.display = 'none';
     document.getElementById('resultScreen').style.display = 'block';
     
+    document.getElementById('finalTeamName').innerText = currentTeam;
+    document.getElementById('finalTeamScore').innerText = currentTeamScore;
+    
     const res = await fetch(`/api/team/leaderboard?game_code=${gameCode}`);
     const data = await res.json();
     
     if (data.success && data.teams) {
-        document.getElementById('finalLeaderboard').innerHTML = `
-            <h2>🏆 Результаты:</h2>
-            ${data.teams.map((t, i) => `
-                <div style="margin: 10px 0; padding: 12px; background: white; border-radius: 8px;">
-                    <strong>${i+1}. ${t.name}</strong> - ${t.score} очков (${t.members_count} игроков)
-                </div>
-            `).join('')}
-        `;
+        const leaderboard = document.getElementById('leaderboardList');
+        leaderboard.innerHTML = data.teams.map((team, i) => `
+            <div style="background: ${team.name === currentTeam ? '#e8f5e9' : '#f9f9f9'}; margin: 10px 0; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between;">
+                <span><strong>${i+1}. ${team.name}</strong> (${team.members_count} игроков)</span>
+                <span style="color: #2196F3; font-weight: bold;">${team.score} очков</span>
+            </div>
+        `).join('');
     }
 }
 </script>

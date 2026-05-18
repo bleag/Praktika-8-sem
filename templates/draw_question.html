@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Рисование - {{ quiz.title }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto; padding: 20px;">
+    <h2>{{ question.text }}</h2>
+    <p>{{ question.additional_data.task }}</p>
+    
+    <div style="background: #f5f5f5; padding: 20px; border-radius: 20px;">
+        <canvas id="drawCanvas" width="600" height="400" style="border: 2px solid #333; background: white; cursor: crosshair;"></canvas>
+        
+        <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
+            <button id="clearBtn" class="btn btn-yellow">🧽 Очистить</button>
+            <button id="undoBtn" class="btn btn-blue">↩️ Отменить</button>
+            <button id="submitBtn" class="btn btn-green">✅ Отправить рисунок</button>
+        </div>
+        
+        <div style="margin-top: 10px;">
+            <label>🎨 Цвет: </label>
+            <input type="color" id="colorPicker" value="#000000">
+            <label>✏️ Размер: </label>
+            <input type="range" id="brushSize" min="1" max="20" value="3">
+        </div>
+    </div>
+</div>
+
+<script>
+const canvas = document.getElementById('drawCanvas');
+const ctx = canvas.getContext('2d');
+let drawing = false;
+let history = [];
+
+// Настройки
+ctx.fillStyle = 'white';
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+ctx.strokeStyle = '#000000';
+ctx.lineWidth = 3;
+ctx.lineCap = 'round';
+
+// Рисование
+canvas.addEventListener('mousedown', startDrawing);
+canvas.addEventListener('mousemove', draw);
+canvas.addEventListener('mouseup', stopDrawing);
+canvas.addEventListener('mouseleave', stopDrawing);
+
+function startDrawing(e) {
+    drawing = true;
+    const pos = getMousePos(e);
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+    saveState();
+}
+
+function draw(e) {
+    if (!drawing) return;
+    const pos = getMousePos(e);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+}
+
+function stopDrawing() {
+    drawing = false;
+    ctx.beginPath();
+}
+
+function getMousePos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    return {
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top) * scaleY
+    };
+}
+
+// Сохранение состояния для отмены
+function saveState() {
+    history.push(canvas.toDataURL());
+}
+
+// Очистка
+document.getElementById('clearBtn').onclick = () => {
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    history = [];
+};
+
+// Отмена
+document.getElementById('undoBtn').onclick = () => {
+    if (history.length > 0) {
+        const img = new Image();
+        img.onload = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0);
+        };
+        img.src = history.pop();
+    }
+};
+
+// Цвет и размер
+document.getElementById('colorPicker').onchange = (e) => {
+    ctx.strokeStyle = e.target.value;
+};
+document.getElementById('brushSize').onchange = (e) => {
+    ctx.lineWidth = parseInt(e.target.value);
+};
+
+// Отправка
+document.getElementById('submitBtn').onclick = async () => {
+    const imageData = canvas.toDataURL('image/png');
+    
+    const response = await fetch('/api/draw/submit', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            quiz_code: '{{ code }}',
+            question_id: {{ question.id }},
+            player_name: '{{ player_name }}',
+            drawing: imageData
+        })
+    });
+    
+    const data = await response.json();
+    if (data.success) {
+        alert('✅ Рисунок отправлен!');
+        window.location.href = `/play/{{ code }}`;
+    } else {
+        alert('❌ Ошибка: ' + data.error);
+    }
+};
+</script>
+{% endblock %}

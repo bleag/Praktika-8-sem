@@ -213,9 +213,15 @@
             
             <div class="form-group">
                 <label>Тип вопроса</label>
-                <select id="questionType" class="form-input">
-                    <option value="choice">Выбор варианта</option>
-                </select>
+            <select id="questionType" class="form-input">
+                <option value="choice">🔘 Выбор варианта</option>
+                <option value="open">✏️ Открытый вопрос</option>
+                <option value="poll">📊 Голосование</option>
+                <option value="wordcloud">☁️ Облако слов</option>
+                <option value="draw">🎨 Рисование</option>
+                <option value="dance">💃 Танцевальный раунд</option>
+                <option value="slide">📽️ Слайд</option>
+            </select>
             </div>
             
             <div class="form-group">
@@ -223,7 +229,7 @@
                 <textarea id="questionText" class="form-textarea" rows="3"></textarea>
             </div>
             
-            <div id="choiceBlock">
+                        <div id="choiceBlock">
                 <label>Варианты ответов</label>
                 <div id="optionsList">
                     <div class="option-row">
@@ -237,7 +243,64 @@
                 </div>
                 <button type="button" id="addOptionBtn" class="btn-small">+ Добавить вариант</button>
             </div>
-        </div>
+
+            <!-- Блок для открытого вопроса -->
+            <div id="openBlock" class="question-type-block" style="display: none;">
+                <div class="form-group">
+                    <label>Правильный ответ (ключевые слова через запятую)</label>
+                    <input type="text" id="openAnswer" class="form-input" placeholder="например: Париж, Эйфелева башня">
+                    <small class="form-hint">Ответ игрока будет сравниваться с этими ключевыми словами</small>
+                </div>
+            </div>
+
+            <!-- Блок для голосования -->
+            <div id="pollBlock" class="question-type-block" style="display: none;">
+                <label>Варианты для голосования</label>
+                <div id="pollOptionsList">
+                    <div class="option-row">
+                        <input type="text" class="form-input poll-option-input" placeholder="Вариант 1">
+                        <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; cursor:pointer;">❌</button>
+                    </div>
+                    <div class="option-row">
+                        <input type="text" class="form-input poll-option-input" placeholder="Вариант 2">
+                        <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; cursor:pointer;">❌</button>
+                    </div>
+                </div>
+                <button type="button" id="addPollOptionBtn" class="btn-small">+ Добавить вариант</button>
+                <small class="form-hint">Голосование не имеет правильных ответов</small>
+            </div>
+
+            <!-- Блок для облака слов -->
+            <div id="wordcloudBlock" class="question-type-block" style="display: none;">
+                <div class="form-group">
+                    <label>Инструкция для игроков</label>
+                    <textarea id="wordcloudInstruction" class="form-textarea" rows="2" placeholder="Напишите слова, которые приходят вам на ум..."></textarea>
+                </div>
+            </div>
+
+            <!-- Блок для рисования -->
+            <div id="drawBlock" class="question-type-block" style="display: none;">
+                <div class="form-group">
+                    <label>Задание на рисование</label>
+                    <textarea id="drawTask" class="form-textarea" rows="2" placeholder="Что нужно нарисовать?..."></textarea>
+                </div>
+            </div>
+
+            <!-- Блок для танцевального раунда -->
+            <div id="danceBlock" class="question-type-block" style="display: none;">
+                <div class="form-group">
+                    <label>Название танца/задания</label>
+                    <input type="text" id="danceTask" class="form-input" placeholder="Например: Повтори движение">
+                </div>
+            </div>
+
+            <!-- Блок для слайда -->
+            <div id="slideBlock" class="question-type-block" style="display: none;">
+                <div class="form-group">
+                    <label>Содержание слайда</label>
+                    <textarea id="slideContent" class="form-textarea" rows="4" placeholder="Текст слайда или ссылка на изображение..."></textarea>
+                </div>
+            </div>
         <div class="modal-footer">
             <button id="saveQuestionBtn" class="btn btn-blue">Сохранить</button>
             <button id="cancelModalBtn" class="btn-outline-new">Отмена</button>
@@ -458,7 +521,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return div.innerHTML;
     }
     
-    // Модальное окно
+       // Модальное окно
     const modal = document.getElementById('questionModal');
     const addBtn = document.getElementById('addQuestionBtn');
     
@@ -477,6 +540,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; cursor:pointer;">❌</button>
             </div>
         `;
+        
+        // Скрыть все блоки типов вопросов
+        const choiceBlock = document.getElementById('choiceBlock');
+        const openBlock = document.getElementById('openBlock');
+        const pollBlock = document.getElementById('pollBlock');
+        const wordcloudBlock = document.getElementById('wordcloudBlock');
+        const drawBlock = document.getElementById('drawBlock');
+        const danceBlock = document.getElementById('danceBlock');
+        const slideBlock = document.getElementById('slideBlock');
+        
+        if (choiceBlock) choiceBlock.style.display = 'none';
+        if (openBlock) openBlock.style.display = 'none';
+        if (pollBlock) pollBlock.style.display = 'none';
+        if (wordcloudBlock) wordcloudBlock.style.display = 'none';
+        if (drawBlock) drawBlock.style.display = 'none';
+        if (danceBlock) danceBlock.style.display = 'none';
+        if (slideBlock) slideBlock.style.display = 'none';
+        
+        // Показать блок выбора по умолчанию
+        if (choiceBlock) choiceBlock.style.display = 'block';
+        
         document.getElementById('modalTitle').textContent = 'Добавить вопрос';
         document.getElementById('editQuestionId').value = '';
     };
@@ -489,53 +573,85 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('.modal-close')?.addEventListener('click', closeModal);
     document.getElementById('cancelModalBtn')?.addEventListener('click', closeModal);
     
-    // Сохранение вопроса
-    document.getElementById('saveQuestionBtn')?.addEventListener('click', async () => {
-        if (!currentQuizId) {
-            alert('Сначала сохраните настройки викторины');
-            return;
-        }
-        
-        const text = document.getElementById('questionText').value;
-        if (!text) {
-            alert('Введите текст вопроса');
-            return;
-        }
-        
-        const options = [];
+   document.getElementById('saveQuestionBtn')?.addEventListener('click', async () => {
+    if (!currentQuizId) {
+        alert('Сначала сохраните настройки викторины');
+        return;
+    }
+    
+    const type = document.getElementById('questionType').value;
+    const text = document.getElementById('questionText').value;
+    
+    if (!text) {
+        alert('Введите текст вопроса');
+        return;
+    }
+    
+    let options = null;
+    let correctAnswer = null;
+    let additionalData = {};
+    
+    if (type === 'choice') {
+        options = [];
         document.querySelectorAll('.option-input').forEach(input => {
             if (input.value.trim()) options.push(input.value.trim());
         });
-        
         let correctIndex = -1;
         document.querySelectorAll('input[name="correctOption"]').forEach((radio, i) => {
             if (radio.checked) correctIndex = i;
         });
-        
-        const editId = document.getElementById('editQuestionId').value;
-        const url = editId ? `/api/question/${editId}` : `/api/quiz/${currentQuizId}/question`;
-        const method = editId ? 'PUT' : 'POST';
-        
-        const response = await fetch(url, {
-            method: method,
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                type: 'choice',
-                text: text,
-                options: options,
-                correct_answer: correctIndex >= 0 ? [options[correctIndex]] : null,
-                order: 0
-            })
-        });
-        
-        const result = await response.json();
-        if (result.success) {
-            closeModal();
-            loadQuestions();
-        } else {
-            alert('Ошибка: ' + result.error);
+        if (correctIndex >= 0 && options[correctIndex]) {
+            correctAnswer = [options[correctIndex]];
         }
+    } 
+    else if (type === 'open') {
+        const answer = document.getElementById('openAnswer').value;
+        correctAnswer = answer.split(',').map(s => s.trim()).filter(s => s);
+    }
+    else if (type === 'poll') {
+        options = [];
+        document.querySelectorAll('.poll-option-input').forEach(input => {
+            if (input.value.trim()) options.push(input.value.trim());
+        });
+    }
+    else if (type === 'wordcloud') {
+        additionalData = { instruction: document.getElementById('wordcloudInstruction').value };
+    }
+    else if (type === 'draw') {
+        additionalData = { task: document.getElementById('drawTask').value };
+    }
+    else if (type === 'dance') {
+        additionalData = { task: document.getElementById('danceTask').value };
+    }
+    else if (type === 'slide') {
+        additionalData = { content: document.getElementById('slideContent').value };
+    }
+    
+    const editId = document.getElementById('editQuestionId').value;
+    const url = editId ? `/api/question/${editId}` : `/api/quiz/${currentQuizId}/question`;
+    const method = editId ? 'PUT' : 'POST';
+    
+    const response = await fetch(url, {
+        method: method,
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            type: type,
+            text: text,
+            options: options,
+            correct_answer: correctAnswer,
+            order: 0,
+            additional_data: additionalData
+        })
     });
+    
+    const result = await response.json();
+    if (result.success) {
+        closeModal();
+        loadQuestions();
+    } else {
+        alert('Ошибка: ' + result.error);
+    }
+});
     
     document.getElementById('addOptionBtn')?.addEventListener('click', () => {
         const list = document.getElementById('optionsList');
@@ -550,6 +666,52 @@ document.addEventListener('DOMContentLoaded', function() {
         list.appendChild(div);
     });
     
+    // Обработчик смены типа вопроса
+    const questionTypeSelect = document.getElementById('questionType');
+    if (questionTypeSelect) {
+        questionTypeSelect.addEventListener('change', function() {
+            const type = this.value;
+            const choiceBlock = document.getElementById('choiceBlock');
+            const openBlock = document.getElementById('openBlock');
+            const pollBlock = document.getElementById('pollBlock');
+            const wordcloudBlock = document.getElementById('wordcloudBlock');
+            const drawBlock = document.getElementById('drawBlock');
+            const danceBlock = document.getElementById('danceBlock');
+            const slideBlock = document.getElementById('slideBlock');
+            
+            if (choiceBlock) choiceBlock.style.display = 'none';
+            if (openBlock) openBlock.style.display = 'none';
+            if (pollBlock) pollBlock.style.display = 'none';
+            if (wordcloudBlock) wordcloudBlock.style.display = 'none';
+            if (drawBlock) drawBlock.style.display = 'none';
+            if (danceBlock) danceBlock.style.display = 'none';
+            if (slideBlock) slideBlock.style.display = 'none';
+            
+            if (type === 'choice' && choiceBlock) choiceBlock.style.display = 'block';
+            else if (type === 'open' && openBlock) openBlock.style.display = 'block';
+            else if (type === 'poll' && pollBlock) pollBlock.style.display = 'block';
+            else if (type === 'wordcloud' && wordcloudBlock) wordcloudBlock.style.display = 'block';
+            else if (type === 'draw' && drawBlock) drawBlock.style.display = 'block';
+            else if (type === 'dance' && danceBlock) danceBlock.style.display = 'block';
+            else if (type === 'slide' && slideBlock) slideBlock.style.display = 'block';
+        });
+    }
+
+    // Добавление вариантов для голосования
+    document.getElementById('addPollOptionBtn')?.addEventListener('click', () => {
+        const list = document.getElementById('pollOptionsList');
+        const idx = list.children.length;
+        const div = document.createElement('div');
+        div.className = 'option-row';
+        div.innerHTML = `
+            <input type="text" class="form-input poll-option-input" placeholder="Вариант ${idx + 1}">
+            <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; cursor:pointer;">❌</button>
+        `;
+        list.appendChild(div);
+    });
+
+
+
     window.editQuestion = async function(questionId) {
         const response = await fetch(`/api/question/${questionId}`);
         const data = await response.json();

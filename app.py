@@ -288,7 +288,7 @@ def save_question(quiz_id):
     if question_id:
         question = Question.query.filter_by(id=question_id, quiz_id=quiz_id).first()
         if not question:
-            return jsonify({'success': False, 'error': 'Вопрос не найден'}), 404
+            return jsonify({'success': False, 'error': 'Вопрос не найдена'}), 404
     else:
         question = Question(quiz_id=quiz_id)
         db.session.add(question)
@@ -299,9 +299,11 @@ def save_question(quiz_id):
     question.correct_answer = data.get('correct_answer')
     question.media_url = data.get('media_url')
     question.order = data.get('order', 0)
+    question.additional_data = data.get('additional_data', {})  # Для хранения доп. данных (инструкции, задания и т.д.)
     
     db.session.commit()
     return jsonify({'success': True, 'question_id': question.id})
+
 
 @app.route('/api/question/<int:question_id>', methods=['DELETE'])
 def delete_question(question_id):
@@ -1188,6 +1190,38 @@ def team_answer_simple():
     
     if game['current_q'] >= len(game['questions']):
         game['status'] = 'finished'
+        
+        # ===== ДОБАВЬ ЭТОТ БЛОК - СОХРАНЕНИЕ РЕЗУЛЬТАТОВ =====
+        print(f"=== КОМАНДНАЯ ИГРА ОКОНЧЕНА, СОХРАНЯЕМ ===")
+        quiz_obj = Quiz.query.get(game['quiz_id'])
+        total_questions = len(game['questions'])
+        
+        for team_name_save, team_data in game['teams'].items():
+            for member in team_data['members']:
+                existing = GameResult.query.filter_by(
+                    quiz_id=game['quiz_id'],
+                    quiz_code=game_code,
+                    player_name=member['name'],
+                    mode='team'
+                ).first()
+                
+                if not existing:
+                    result = GameResult(
+                        quiz_id=game['quiz_id'],
+                        quiz_code=game_code,
+                        player_name=member['name'],
+                        score=team_data['score'],
+                        correct_answers=0,
+                        total_questions=total_questions,
+                        mode='team',
+                        finished_at=datetime.now(timezone.utc)
+                    )
+                    db.session.add(result)
+                    print(f"  ✅ {member['name']} (команда {team_name_save}) - {team_data['score']} очков")
+        
+        db.session.commit()
+        print(f"=== СОХРАНЕНО В БД ===")
+        # ===== КОНЕЦ БЛОКА =====
     
     return jsonify({
         'success': True,
@@ -1229,12 +1263,27 @@ def team_start_simple():
 
 @app.route('/team/leader/<int:quiz_id>')
 def team_leader(quiz_id):
-    """Панель ведущего"""
+    """Панель ведущего командной игры"""
     if 'user_id' not in session:
         return redirect(url_for('login_page'))
-    quiz = Quiz.query.get(quiz_id)
+    
+    quiz = db.session.get(Quiz, quiz_id)
     if not quiz or quiz.owner_id != session['user_id']:
         return "Нет доступа", 403
+    
+    # Создаём игру в team_games если её нет
+    game_code = quiz.quiz_code
+    if game_code not in team_games:
+        questions = Question.query.filter_by(quiz_id=quiz.id).all()
+        team_games[game_code] = {
+            'quiz_id': quiz.id,
+            'teams': {},
+            'status': 'waiting',
+            'current_q': 0,
+            'questions': [{'id': q.id, 'text': q.text, 'options': q.options, 'correct_answer': q.correct_answer} for q in questions]
+        }
+        print(f"✅ Создана командная игра с кодом {game_code}")
+    
     return render_template('team_leader.html', quiz=quiz)
 
 @app.route('/team/play/<code>')
@@ -1269,17 +1318,50 @@ def team_resume():
     
     return jsonify({'success': True})
 
+
+
 @app.route('/api/team/stop', methods=['POST'])
 def team_stop():
-    """Завершить игру"""
     data = request.get_json()
     game_code = data.get('game_code')
     
-    if game_code in team_games:
-        team_games[game_code]['status'] = 'finished'
+    if game_code not in team_games:
+        return jsonify({'success': False, 'error': 'Игра не найдена'}), 404
+    
+    game = team_games[game_code]
+    quiz_obj = Quiz.query.get(game['quiz_id'])
+    questions = Question.query.filter_by(quiz_id=quiz_obj.id).all()
+    total_questions = len(questions)
+    
+    print(f"=== СОХРАНЕНИЕ КОМАНДНОЙ ИГРЫ ===")
+    
+    # Сохраняем КАЖДУЮ КОМАНДУ (а не игроков)
+    for team_name, team_data in game['teams'].items():
+        existing = GameResult.query.filter_by(
+            quiz_id=game['quiz_id'],
+            quiz_code=game_code,
+            player_name=team_name,
+            mode='team'
+        ).first()
+        
+        if not existing:
+            result = GameResult(
+                quiz_id=game['quiz_id'],
+                quiz_code=game_code,
+                player_name=team_name,  # Название команды
+                score=team_data['score'],
+                correct_answers=0,
+                total_questions=total_questions,
+                mode='team',
+                finished_at=datetime.now(timezone.utc)
+            )
+            db.session.add(result)
+            print(f"  ✅ Сохранена команда: {team_name} - {team_data['score']} очков")
+    
+    db.session.commit()
+    game['status'] = 'finished'
     
     return jsonify({'success': True})
-
 
 @app.route('/quiz/stats/<int:quiz_id>')
 def quiz_stats(quiz_id):
@@ -1495,6 +1577,28 @@ def get_question_stats(quiz_id):
         'total_players': len(results)
     })
 
+
+# Хранилище рисунков (в реальном проекте - в БД)
+drawings = {}  # question_id: [{player_name, image_data, timestamp}]
+
+@app.route('/api/draw/submit', methods=['POST'])
+def submit_drawing():
+    data = request.get_json()
+    quiz_code = data.get('quiz_code')
+    question_id = data.get('question_id')
+    player_name = data.get('player_name')
+    drawing = data.get('drawing')
+    
+    if question_id not in drawings:
+        drawings[question_id] = []
+    
+    drawings[question_id].append({
+        'player_name': player_name,
+        'image_data': drawing,
+        'timestamp': datetime.now(timezone.utc)
+    })
+    
+    return jsonify({'success': True})
 
 if __name__ == '__main__':
     app.run(debug=True)

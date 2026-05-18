@@ -51,9 +51,14 @@
 .status-badge.active { background: #4CAF50; color: white; }
 .status-badge.paused { background: #FFC107; color: #333; }
 .status-badge.finished { background: #9E9E9E; color: white; }
-.btn-green:hover { background: #45a049; }
-.btn-yellow:hover { background: #e0a800; }
-.btn-red:hover { background: #d32f2f; }
+.team-item {
+    background: white;
+    margin: 10px 0;
+    padding: 12px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+}
 </style>
 
 <script>
@@ -66,33 +71,36 @@ function copyCode() {
     alert('Код скопирован: ' + code);
 }
 
+// Загрузка команд через team/leaderboard
 async function updateTeams() {
     try {
         const res = await fetch(`/api/team/leaderboard?game_code=${gameCode}`);
         const data = await res.json();
-        if (data.success && data.teams) {
-            const teamsDiv = document.getElementById('teamsDiv');
-            if (data.teams.length > 0) {
-                teamsDiv.innerHTML = '<h3>🏆 Команды:</h3>' + 
-                    data.teams.map((t, i) => `
-                        <div style="background: white; margin: 10px 0; padding: 12px; border-radius: 10px; display: flex; justify-content: space-between;">
-                            <span><strong>${i+1}. ${t.name}</strong> (${t.members_count} игроков)</span>
-                            <span style="color: #2196F3; font-weight: bold;">${t.score} очков</span>
-                        </div>
-                    `).join('');
-            } else {
-                teamsDiv.innerHTML = '<p>⏳ Ожидание подключения команд...</p>';
-            }
+        console.log('Команды:', data);
+        
+        const teamsDiv = document.getElementById('teamsDiv');
+        if (data.success && data.teams && data.teams.length > 0) {
+            teamsDiv.innerHTML = '<h3>🏆 Команды:</h3>' + 
+                data.teams.map((t, i) => `
+                    <div class="team-item">
+                        <span><strong>${i+1}. ${escapeHtml(t.name)}</strong> (${t.members_count} игроков)</span>
+                        <span style="color: #2196F3; font-weight: bold;">${t.score} очков</span>
+                    </div>
+                `).join('');
+        } else {
+            teamsDiv.innerHTML = '<p>⏳ Ожидание подключения команд...</p>';
         }
     } catch (error) {
-        console.error('Ошибка:', error);
+        console.error('Ошибка загрузки команд:', error);
     }
 }
 
+// Статус игры через team/status
 async function updateGameStatus() {
     try {
         const res = await fetch(`/api/team/status?game_code=${gameCode}&team_name=`);
         const data = await res.json();
+        console.log('Статус игры:', data);
         
         if (data.success) {
             const statusSpan = document.getElementById('gameStatus');
@@ -131,7 +139,6 @@ async function updateGameStatus() {
                 pauseBtn.disabled = true;
                 resumeBtn.disabled = true;
                 stopBtn.disabled = true;
-                if (statusInterval) clearInterval(statusInterval);
             }
             
             // Текущий вопрос
@@ -139,7 +146,7 @@ async function updateGameStatus() {
             if (data.current_question && data.status === 'active') {
                 currentQDiv.innerHTML = `
                     <strong>Вопрос ${data.question_index + 1}/${data.total_questions}</strong><br>
-                    ${data.current_question.text}
+                    ${escapeHtml(data.current_question.text)}
                 `;
             } else if (data.status === 'paused') {
                 currentQDiv.innerHTML = '⏸️ Игра на паузе';
@@ -150,18 +157,25 @@ async function updateGameStatus() {
             }
         }
     } catch (error) {
-        console.error('Ошибка:', error);
+        console.error('Ошибка статуса:', error);
     }
 }
 
 // Старт игры
 document.getElementById('startBtn').onclick = async () => {
-    await fetch('/api/team/start', {
+    console.log('Старт игры для кода:', gameCode);
+    const response = await fetch('/api/team/start', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ game_code: gameCode })
     });
-    alert('Игра начата!');
+    const data = await response.json();
+    console.log('Ответ старта:', data);
+    if (data.success) {
+        alert('✅ Игра начата!');
+    } else {
+        alert('❌ Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+    }
 };
 
 // Пауза
@@ -185,14 +199,26 @@ document.getElementById('resumeBtn').onclick = async () => {
 // Завершить игру
 document.getElementById('stopBtn').onclick = async () => {
     if (confirm('Завершить игру? Результаты будут сохранены.')) {
-        await fetch('/api/team/stop', {
+        const response = await fetch('/api/team/stop', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ game_code: gameCode })
         });
-        alert('Игра завершена');
+        const data = await response.json();
+        if (data.success) {
+            alert('✅ Игра завершена, результаты сохранены!');
+        } else {
+            alert('❌ Ошибка: ' + data.error);
+        }
     }
 };
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
 
 // Запускаем обновление
 updateTeams();
