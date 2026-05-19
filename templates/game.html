@@ -23,7 +23,10 @@
 
     <div id="gameScreen" class="game-panel" style="display: none;">
         <div class="game-header">
-            <span>Вопрос <span id="currentQ">1</span>/<span id="totalQ">0</span></span>
+            <div>
+                <span>Вопрос <span id="currentQ">1</span>/<span id="totalQ">0</span></span>
+                <span id="roundBadge" class="round-badge" style="display: none; margin-left: 15px;">📁 <span id="roundName"></span></span>
+            </div>
             <span>💰 <span id="score">0</span> баллов</span>
         </div>
         <h3 id="questionText"></h3>
@@ -58,28 +61,12 @@ let pointsPerQuestion = 100;
 let awaitingResult = false;
 let selectedAnswer = null;
 let countdownInterval = null;
+let timeShowAnswer = 10;
 
 async function checkNeedPassword() {
     try {
         const res = await fetch(`/api/quizmaster/${quizCode}/status`);
         const data = await res.json();
-        console.log('Status response (need_password check):', data);  // отладка
-        if (data.need_password) {
-            console.log('Показываем поле пароля');  // отладка
-            document.getElementById('passwordField').style.display = 'block';
-        } else {
-            console.log('Поле пароля не нужно');  // отладка
-        }
-    } catch (error) {
-        console.error('Ошибка проверки пароля:', error);
-    }
-}
-
-async function checkNeedPassword() {
-    try {
-        const res = await fetch(`/api/quizmaster/${quizCode}/status`);
-        const data = await res.json();
-        console.log('Status response:', data);  // отладка
         if (data.need_password) {
             document.getElementById('passwordField').style.display = 'block';
         }
@@ -111,11 +98,13 @@ document.getElementById('joinGameBtn').onclick = async () => {
 
 function startPolling() {
     intervalId = setInterval(async () => {
-        const res = await fetch(`/api/quizmaster/${quizCode}/status`);
+        const res = await fetch(`/api/quizmaster/${quizCode}/status?nickname=${encodeURIComponent(nickname)}`);
         const data = await res.json();
         if (!data.success) return;
 
         pointsPerQuestion = data.points_per_question || 100;
+        timeShowAnswer = data.time_show_answer || 10;
+        
         if (data.start_datetime && data.status !== 'active') {
             document.getElementById('startDateTimeText').innerText = data.start_datetime;
         }
@@ -123,6 +112,14 @@ function startPolling() {
         if (data.status === 'active') {
             document.getElementById('waitingScreen').style.display = 'none';
             document.getElementById('gameScreen').style.display = 'block';
+
+            // Отображение раунда
+            if (data.current_question && data.current_question.round_name) {
+                document.getElementById('roundBadge').style.display = 'inline-block';
+                document.getElementById('roundName').innerText = data.current_question.round_name;
+            } else {
+                document.getElementById('roundBadge').style.display = 'none';
+            }
 
             if (currentQuestionIndex !== data.question_index) {
                 currentQuestionIndex = data.question_index;
@@ -180,18 +177,20 @@ function renderQuestion(data) {
 async function submitAnswer(answer, btnElement) {
     if (hasAnswered) return;
     hasAnswered = true;
-    selectedAnswer = answer;
+    selectedAnswer = answer.trim();  // ← добавьте .trim()
+    
     document.querySelectorAll('.option-btn').forEach(btn => {
         btn.disabled = true;
-        if (btn.innerText === answer) {
+        if (btn.innerText.trim() === answer.trim()) {
             btn.style.background = '#e0e0e0';
             btn.style.border = '2px solid #ff9800';
         }
     });
+    
     await fetch(`/api/quizmaster/${quizCode}/answer`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ nickname, answer })
+        body: JSON.stringify({ nickname, answer: answer.trim() })
     });
 }
 
@@ -213,18 +212,33 @@ function startCountdown(seconds, onTick, onComplete) {
 function showAnswerResult(data) {
     const q = data.current_question;
     if (!q) return;
-    const correctAnswer = q.correct_answer ? q.correct_answer[0] : '?';
-    const isUserCorrect = (selectedAnswer === correctAnswer);
+    
+    // Получаем правильный ответ (убираем возможные лишние символы)
+    let correctAnswer = q.correct_answer;
+    if (Array.isArray(correctAnswer)) {
+        correctAnswer = correctAnswer[0];
+    }
+    if (typeof correctAnswer === 'string') {
+        correctAnswer = correctAnswer.trim();
+    }
+    
+    // Получаем ответ игрока
+    let userAnswer = selectedAnswer;
+    if (typeof userAnswer === 'string') {
+        userAnswer = userAnswer.trim();
+    }
+    
+    const isUserCorrect = (userAnswer === correctAnswer);
 
     const optionsDiv = document.getElementById('optionsDiv');
     const buttons = optionsDiv.querySelectorAll('.option-btn');
     buttons.forEach(btn => {
-        const opt = btn.innerText;
+        const opt = btn.innerText.trim();
         if (opt === correctAnswer) {
             btn.style.background = '#4caf50';
             btn.style.color = 'white';
         }
-        if (opt === selectedAnswer && opt !== correctAnswer) {
+        if (opt === userAnswer && opt !== correctAnswer) {
             btn.style.background = '#f44336';
             btn.style.color = 'white';
         }

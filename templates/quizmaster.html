@@ -34,9 +34,18 @@
                     </div>
                     
                     <div class="question-info">
-                        <h4>Текущий вопрос</h4>
-                        <div id="currentQuestionDisplay" class="current-question">
-                            Ожидание начала игры...
+                        <h4 id="questionHeader">Текущий вопрос</h4>
+                        
+                        <!-- Обычный режим: текущий вопрос -->
+                        <div id="currentQuestionDisplay" class="current-question" style="display: block;">
+                            <div id="currentQuestionText"></div>
+                            <div id="currentQuestionOptions" class="question-options" style="margin-top: 15px;"></div>
+                            <div id="currentQuestionTimer" class="timer-display" style="margin-top: 15px;"></div>
+                        </div>
+                        
+                        <!-- Случайный режим: список всех вопросов -->
+                        <div id="questionsListPanel" class="questions-list-panel" style="display: none;">
+                            <div id="allQuestionsList" class="all-questions-list"></div>
                         </div>
                     </div>
                 </div>
@@ -161,11 +170,6 @@
 .btn-purple { background: #9C27B0; color: white; }
 .btn-purple:hover { background: #7B1FA2; }
 
-.btn-green:disabled, .btn-yellow:disabled, .btn-red:disabled, .btn-purple:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
 .question-info {
     margin-top: 20px;
     padding-top: 20px;
@@ -179,6 +183,74 @@
     margin-top: 10px;
     font-size: 16px;
     line-height: 1.5;
+}
+
+.question-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.option-item {
+    padding: 8px 12px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.option-item.correct {
+    background: #e8f5e9;
+    border-left: 4px solid #4caf50;
+}
+
+.questions-list-panel {
+    margin-top: 20px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.all-questions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.question-item {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 15px;
+}
+
+.question-item .question-text {
+    font-weight: 600;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.question-item .options-list {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.question-item .option {
+    padding: 6px 12px;
+    background: #f5f5f5;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.question-item .option.correct {
+    background: #c8e6c9;
+    border-left: 3px solid #4caf50;
+}
+
+.timer-display {
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--sovcombank-blue);
 }
 
 .players-list {
@@ -239,6 +311,7 @@
 const quizCode = '{{ code }}';
 let updateInterval = null;
 let allowReplay = false;
+let randomQuestions = false;
 
 const startBtn = document.getElementById('startGameBtn');
 const pauseBtn = document.getElementById('pauseGameBtn');
@@ -248,7 +321,20 @@ const replayBtn = document.getElementById('replayGameBtn');
 const gameStatusSpan = document.getElementById('gameStatus');
 const playersListDiv = document.getElementById('playersList');
 const playersCountSpan = document.getElementById('playersCount');
-const currentQuestionDiv = document.getElementById('currentQuestionDisplay');
+const questionHeader = document.getElementById('questionHeader');
+const currentQuestionDisplay = document.getElementById('currentQuestionDisplay');
+const currentQuestionText = document.getElementById('currentQuestionText');
+const currentQuestionOptions = document.getElementById('currentQuestionOptions');
+const currentQuestionTimer = document.getElementById('currentQuestionTimer');
+const questionsListPanel = document.getElementById('questionsListPanel');
+const allQuestionsList = document.getElementById('allQuestionsList');
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
 
 async function updateStatus() {
     try {
@@ -257,6 +343,7 @@ async function updateStatus() {
         
         if (data.success) {
             allowReplay = data.allow_replay || false;
+            randomQuestions = data.random_questions || false;
             
             const statusText = {
                 'waiting': 'Ожидание игроков',
@@ -317,19 +404,85 @@ async function updateStatus() {
                 playersCountSpan.textContent = '0';
             }
             
-            // Текущий вопрос
-            if (data.current_question && data.status === 'active') {
-                const timeLeft = data.time_left !== null ? ` (осталось ${data.time_left} сек)` : '';
-                currentQuestionDiv.innerHTML = `
-                    <strong>Вопрос ${data.question_index + 1}/${data.total_questions}</strong>${timeLeft}<br>
-                    ${escapeHtml(data.current_question.text)}
-                `;
-            } else if (data.status === 'paused') {
-                currentQuestionDiv.innerHTML = '⏸️ Игра на паузе';
-            } else if (data.status === 'finished') {
-                currentQuestionDiv.innerHTML = '🎉 Игра окончена! Результаты показаны игрокам.';
-            } else {
-                currentQuestionDiv.innerHTML = 'Ожидание начала игры...';
+            // Отображение вопросов
+            if (data.status === 'finished') {
+                questionHeader.style.display = 'none';
+                currentQuestionDisplay.style.display = 'none';
+                questionsListPanel.style.display = 'none';
+            } 
+            else if (data.status === 'active') {
+                if (randomQuestions && data.all_questions && data.all_questions.length) {
+                    // Случайный режим - показываем все вопросы
+                    questionHeader.style.display = 'block';
+                    questionHeader.innerHTML = 'Все вопросы (случайный порядок)<br><small style="font-size: 12px; color: #666;">Игрокам может попасться любой вопрос из представленных ниже</small>';
+                    currentQuestionDisplay.style.display = 'none';
+                    questionsListPanel.style.display = 'block';
+                    
+                    allQuestionsList.innerHTML = data.all_questions.map(q => `
+                        <div class="question-item">
+                            <div class="question-text">📝 ${escapeHtml(q.text)}</div>
+                            <div class="options-list">
+                                ${q.options ? q.options.map(opt => `
+                                    <div class="option ${opt === q.correct_answer ? 'correct' : ''}">
+                                        ${escapeHtml(opt)} ${opt === q.correct_answer ? '✅' : ''}
+                                    </div>
+                                `).join('') : ''}
+                            </div>
+                            ${q.correct_answer ? `<div style="margin-top: 8px; color: #4caf50; font-size: 13px;">✅ Правильный ответ: ${escapeHtml(q.correct_answer)}</div>` : ''}
+                        </div>
+                    `).join('');
+                } 
+                else if (data.current_question) {
+                    // Обычный режим - показываем текущий вопрос с вариантами
+                    questionHeader.style.display = 'block';
+                    questionHeader.innerHTML = `Текущий вопрос (Вопрос ${data.question_index + 1}/${data.total_questions})`;
+                    currentQuestionDisplay.style.display = 'block';
+                    questionsListPanel.style.display = 'none';
+                    
+                    currentQuestionText.innerHTML = `<strong>${escapeHtml(data.current_question.text)}</strong>`;
+                    
+                    if (data.current_question.options && data.current_question.options.length) {
+                        const correctAnswer = data.current_question.correct_answer;
+                        currentQuestionOptions.innerHTML = data.current_question.options.map(opt => `
+                            <div class="option-item ${opt === correctAnswer ? 'correct' : ''}">
+                                ${escapeHtml(opt)} ${opt === correctAnswer ? '✅ Правильный ответ' : ''}
+                            </div>
+                        `).join('');
+                    } else {
+                        currentQuestionOptions.innerHTML = '<p>Нет вариантов ответа</p>';
+                    }
+                    
+                    if (data.time_left !== null) {
+                        currentQuestionTimer.innerHTML = `⏱️ Осталось времени: ${data.time_left} сек`;
+                        currentQuestionTimer.style.color = data.time_left <= 5 ? '#f44336' : 'var(--sovcombank-blue)';
+                    } else {
+                        currentQuestionTimer.innerHTML = '';
+                    }
+                } else {
+                    currentQuestionDisplay.style.display = 'block';
+                    questionsListPanel.style.display = 'none';
+                    currentQuestionText.innerHTML = 'Ожидание следующего вопроса...';
+                    currentQuestionOptions.innerHTML = '';
+                    currentQuestionTimer.innerHTML = '';
+                }
+            } 
+            else if (data.status === 'paused') {
+                questionHeader.style.display = 'block';
+                questionHeader.innerHTML = 'Текущий вопрос';
+                currentQuestionDisplay.style.display = 'block';
+                questionsListPanel.style.display = 'none';
+                currentQuestionText.innerHTML = '⏸️ Игра на паузе';
+                currentQuestionOptions.innerHTML = '';
+                currentQuestionTimer.innerHTML = '';
+            } 
+            else {
+                questionHeader.style.display = 'block';
+                questionHeader.innerHTML = 'Текущий вопрос';
+                currentQuestionDisplay.style.display = 'block';
+                questionsListPanel.style.display = 'none';
+                currentQuestionText.innerHTML = 'Ожидание начала игры...';
+                currentQuestionOptions.innerHTML = '';
+                currentQuestionTimer.innerHTML = '';
             }
         }
     } catch (error) {
@@ -369,13 +522,7 @@ replayBtn.onclick = async () => {
     }
 };
 
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
 updateStatus();
-updateInterval = setInterval(updateStatus, 1000);
+updateInterval = setInterval(updateStatus, 500);
 </script>
 {% endblock %}

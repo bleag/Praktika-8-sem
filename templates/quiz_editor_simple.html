@@ -98,7 +98,7 @@
                         </label>
                     </div>
                     
-                    <div class="form-group" id="quizPasswordGroup" style="display: none;">
+                    <div id="quizPasswordGroup" style="display: none;">
                         <label>Пароль для входа</label>
                         <input type="password" id="quizPassword" class="form-input" placeholder="Введите пароль">
                         <small class="form-hint">Игроки должны будут ввести этот пароль при подключении</small>
@@ -125,14 +125,14 @@
                             <label class="checkbox-label">
                                 <input type="checkbox" id="allowReplay"> Возможность перезапуска игры
                             </label>
-                            <small class="form-hint">После завершения игры ведущий может перезапустить её (доступно для всех режимов)</small>
+                            <small class="form-hint">После завершения игры ведущий может перезапустить её</small>
                         </div>
                         
                         <div class="form-group" id="allowReplaySoloBlock" style="display: none;">
                             <label class="checkbox-label">
                                 <input type="checkbox" id="allowReplaySolo"> Пройти викторину заново
                             </label>
-                            <small class="form-hint">Позволяет игрокам проходить викторину заново (доступно только для одиночного режима)</small>
+                            <small class="form-hint">Позволяет игрокам проходить викторину заново (только для одиночного режима)</small>
                         </div>
                     </div>
 
@@ -183,9 +183,18 @@
 
         <!-- Вкладка ВОПРОСЫ -->
         <div id="questionsTab" class="editor-tab">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3>Вопросы викторины</h3>
-                <button type="button" id="addQuestionBtn" class="btn btn-blue">+ Добавить вопрос</button>
+            <!-- Панель раундов (изначально скрыта) -->
+            <div id="roundsPanel" class="rounds-section" style="display: none;">
+                <div class="rounds-header">
+                    <h4>Раунды</h4>
+                    <button id="addRoundBtn" class="btn-small btn-blue">+ Добавить раунд</button>
+                </div>
+                <div id="roundsList" class="rounds-list"></div>
+            </div>
+
+            <div class="questions-header">
+                <h4>Вопросы</h4>
+                <button id="addQuestionBtn" class="btn btn-blue">+ Добавить вопрос</button>
             </div>
             
             <div id="questionsList">
@@ -213,38 +222,40 @@
             
             <div class="form-group">
                 <label>Тип вопроса</label>
-            <select id="questionType" class="form-input">
-                <option value="choice">🔘 Выбор варианта</option>
-                <option value="open">✏️ Открытый вопрос</option>
-                <option value="poll">📊 Голосование</option>
-                <option value="wordcloud">☁️ Облако слов</option>
-                <option value="draw">🎨 Рисование</option>
-                <option value="dance">💃 Танцевальный раунд</option>
-                <option value="slide">📽️ Слайд</option>
-            </select>
+                <select id="questionType" class="form-input">
+                    <option value="choice">🔘 Выбор варианта</option>
+                    <option value="open">✏️ Открытый вопрос</option>
+                    <option value="poll">📊 Голосование</option>
+                    <option value="wordcloud">☁️ Облако слов</option>
+                    <option value="draw">🎨 Рисование</option>
+                    <option value="dance">💃 Танцевальный раунд</option>
+                    <option value="slide">📽️ Слайд</option>
+                    <option value="round">📁 Раунд</option>
+                </select>
             </div>
             
-            <div class="form-group">
+            <div id="textFieldGroup" class="form-group">
                 <label>Текст вопроса *</label>
                 <textarea id="questionText" class="form-textarea" rows="3"></textarea>
             </div>
             
-                        <div id="choiceBlock">
+            <div id="choiceBlock">
                 <label>Варианты ответов</label>
                 <div id="optionsList">
                     <div class="option-row">
                         <input type="text" class="form-input option-input" placeholder="Вариант 1">
                         <input type="radio" name="correctOption" value="0"> Правильный
+                        <button type="button" onclick="this.parentElement.remove()" class="remove-option">❌</button>
                     </div>
                     <div class="option-row">
                         <input type="text" class="form-input option-input" placeholder="Вариант 2">
                         <input type="radio" name="correctOption" value="1"> Правильный
+                        <button type="button" onclick="this.parentElement.remove()" class="remove-option">❌</button>
                     </div>
                 </div>
                 <button type="button" id="addOptionBtn" class="btn-small">+ Добавить вариант</button>
             </div>
 
-            <!-- Блок для открытого вопроса -->
             <div id="openBlock" class="question-type-block" style="display: none;">
                 <div class="form-group">
                     <label>Правильный ответ (ключевые слова через запятую)</label>
@@ -253,24 +264,22 @@
                 </div>
             </div>
 
-            <!-- Блок для голосования -->
             <div id="pollBlock" class="question-type-block" style="display: none;">
                 <label>Варианты для голосования</label>
                 <div id="pollOptionsList">
                     <div class="option-row">
                         <input type="text" class="form-input poll-option-input" placeholder="Вариант 1">
-                        <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; cursor:pointer;">❌</button>
+                        <button type="button" onclick="this.parentElement.remove()" class="remove-option">❌</button>
                     </div>
                     <div class="option-row">
                         <input type="text" class="form-input poll-option-input" placeholder="Вариант 2">
-                        <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; cursor:pointer;">❌</button>
+                        <button type="button" onclick="this.parentElement.remove()" class="remove-option">❌</button>
                     </div>
                 </div>
                 <button type="button" id="addPollOptionBtn" class="btn-small">+ Добавить вариант</button>
                 <small class="form-hint">Голосование не имеет правильных ответов</small>
             </div>
 
-            <!-- Блок для облака слов -->
             <div id="wordcloudBlock" class="question-type-block" style="display: none;">
                 <div class="form-group">
                     <label>Инструкция для игроков</label>
@@ -278,7 +287,6 @@
                 </div>
             </div>
 
-            <!-- Блок для рисования -->
             <div id="drawBlock" class="question-type-block" style="display: none;">
                 <div class="form-group">
                     <label>Задание на рисование</label>
@@ -286,7 +294,6 @@
                 </div>
             </div>
 
-            <!-- Блок для танцевального раунда -->
             <div id="danceBlock" class="question-type-block" style="display: none;">
                 <div class="form-group">
                     <label>Название танца/задания</label>
@@ -294,25 +301,260 @@
                 </div>
             </div>
 
-            <!-- Блок для слайда -->
             <div id="slideBlock" class="question-type-block" style="display: none;">
                 <div class="form-group">
                     <label>Содержание слайда</label>
                     <textarea id="slideContent" class="form-textarea" rows="4" placeholder="Текст слайда или ссылка на изображение..."></textarea>
                 </div>
             </div>
-        <div class="modal-footer">
-            <button id="saveQuestionBtn" class="btn btn-blue">Сохранить</button>
-            <button id="cancelModalBtn" class="btn-outline-new">Отмена</button>
+
+            <div id="roundBlock" class="question-type-block" style="display: none;">
+                <div class="form-group">
+                    <label>Название раунда *</label>
+                    <input type="text" id="roundTitle" class="form-input" placeholder="Например: Спорт, Музыка, История...">
+                    <small class="form-hint">Создаёт новый раунд</small>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button id="saveQuestionBtn" class="btn btn-blue">Сохранить</button>
+                <button id="cancelModalBtn" class="btn-outline-new">Отмена</button>
+            </div>
         </div>
     </div>
 </div>
+
+<style>
+.editor-container { display: flex; gap: 30px; max-width: 1200px; margin: 0 auto; padding: 20px; }
+.editor-sidebar { width: 200px; }
+.sidebar-nav__btn { display: block; width: 100%; padding: 12px; margin-bottom: 10px; background: #f0f0f0; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+.sidebar-nav__btn.active { background: #2196F3; color: white; }
+.editor-main { flex: 1; }
+.editor-tab { display: none; }
+.editor-tab.active { display: block; }
+.settings-section { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.form-group { margin-bottom: 15px; }
+.form-input, .form-textarea { width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; }
+.btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; }
+.btn-blue { background: #2196F3; color: white; }
+.btn-red { background: #f44336; color: white; }
+.btn-outline-new { background: none; border: 1px solid #ddd; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
+.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+.modal-content { background: white; width: 500px; border-radius: 12px; padding: 20px; max-height: 80vh; overflow-y: auto; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.modal-close { font-size: 24px; cursor: pointer; }
+.option-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
+.option-row .form-input { flex: 1; }
+.remove-option { background: none; border: none; cursor: pointer; color: #999; font-size: 16px; }
+.remove-option:hover { color: #f44336; }
+.editor-actions { display: flex; gap: 15px; margin-top: 20px; }
+.checkbox-label, .radio-label { display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 12px; }
+.indent { margin-left: 24px; margin-top: 12px; margin-bottom: 12px; }
+.form-hint { display: block; font-size: 12px; color: #666; margin-top: 4px; }
+.sub-block { background: #f9f9f9; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+.sub-block__title { font-size: 16px; font-weight: 600; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #2196F3; display: inline-block; }
+.tariff-banner { background: #e3f2fd; border-radius: 12px; padding: 16px; margin-bottom: 24px; }
+.form-row { display: flex; gap: 20px; }
+.form-group.half { flex: 1; }
+.section-divider { margin: 20px 0; border: none; border-top: 1px solid #eee; }
+.subsection-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: #f44336; }
+.rounds-section { background: #f8f9fa; border-radius: 12px; padding: 15px; margin-bottom: 20px; }
+.rounds-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.rounds-list { display: flex; flex-wrap: wrap; gap: 10px; }
+.round-item { background: white; border: 1px solid #ddd; border-radius: 20px; padding: 8px 16px; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+.round-item.active { background: #2196F3; border-color: #2196F3; color: white; }
+.round-actions { display: flex; gap: 5px; margin-left: 10px; }
+.round-actions button { background: none; border: none; cursor: pointer; color: inherit; }
+.questions-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.btn-small { padding: 5px 12px; border-radius: 6px; border: none; cursor: pointer; background: #2196F3; color: white; font-size: 12px; }
+.current-round-indicator { background: #e3f2fd; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+</style>
 
 <script>
 let currentQuizId = null;
 {% if quiz %}
 currentQuizId = {{ quiz.id }};
 {% endif %}
+
+let currentRoundId = null;
+let rounds = [];
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Загрузка раундов
+async function loadRounds() {
+    if (!currentQuizId) return;
+    try {
+        const res = await fetch(`/api/quiz/${currentQuizId}/rounds`);
+        const data = await res.json();
+        if (data.success) {
+            rounds = data.rounds;
+            renderRounds();
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки раундов:', error);
+    }
+}
+
+// Отображение раундов
+async function renderRounds() {
+    const container = document.getElementById('roundsList');
+    const roundsPanel = document.getElementById('roundsPanel');
+    
+    if (!container) return;
+    
+    if (rounds.length === 0) {
+        roundsPanel.style.display = 'none';
+        return;
+    }
+    
+    roundsPanel.style.display = 'block';
+    
+    const defaultCount = await getQuestionsCount(null);
+    
+    let html = `<div class="round-item ${currentRoundId === null ? 'active' : ''}" data-round-id="">
+        <span class="round-name">📁 Общие вопросы</span>
+        <span class="round-questions-count">${defaultCount}</span>
+    </div>`;
+    
+    for (const r of rounds) {
+        html += `<div class="round-item ${currentRoundId === r.id ? 'active' : ''}" data-round-id="${r.id}">
+            <span class="round-name">📁 ${escapeHtml(r.title)}</span>
+            <span class="round-questions-count">${r.questions_count || 0}</span>
+            <div class="round-actions">
+                <button class="edit-round" data-id="${r.id}">✏️</button>
+                <button class="delete-round" data-id="${r.id}">🗑️</button>
+            </div>
+        </div>`;
+    }
+    
+    container.innerHTML = html;
+    
+    // Обработчики для раундов
+    document.querySelectorAll('.round-item[data-round-id]').forEach(el => {
+        el.addEventListener('click', async (e) => {
+            if (e.target.classList.contains('edit-round') || e.target.classList.contains('delete-round')) return;
+            const roundId = el.getAttribute('data-round-id');
+            currentRoundId = roundId === '' ? null : parseInt(roundId);
+            await renderRounds();
+            await loadQuestions();
+        });
+    });
+    
+    // Кнопки редактирования
+    document.querySelectorAll('.edit-round').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const id = parseInt(btn.getAttribute('data-id'));
+            const round = rounds.find(r => r.id === id);
+            const newTitle = prompt('Введите новое название раунда:', round.title);
+            if (newTitle && newTitle.trim()) {
+                await fetch(`/api/round/${id}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ title: newTitle.trim() })
+                });
+                await loadRounds();
+            }
+        });
+    });
+    
+    // Кнопки удаления
+    document.querySelectorAll('.delete-round').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const id = parseInt(btn.getAttribute('data-id'));
+            if (confirm('Удалить раунд? Вопросы переместятся в "Общие вопросы".')) {
+                await fetch(`/api/round/${id}`, { method: 'DELETE' });
+                if (currentRoundId === id) currentRoundId = null;
+                await loadRounds();
+                await loadQuestions();
+            }
+        });
+    });
+}
+
+// Подсчёт количества вопросов в раунде
+async function getQuestionsCount(roundId) {
+    if (!currentQuizId) return 0;
+    try {
+        const res = await fetch(`/api/quiz/${currentQuizId}/questions`);
+        const data = await res.json();
+        if (data.success && data.questions) {
+            if (roundId === null) {
+                return data.questions.filter(q => !q.round_id).length;
+            } else {
+                return data.questions.filter(q => q.round_id === roundId).length;
+            }
+        }
+    } catch (error) {
+        console.error('Ошибка подсчёта вопросов:', error);
+    }
+    return 0;
+}
+
+// Кнопка добавления раунда
+document.getElementById('addRoundBtn').onclick = async () => {
+    const title = prompt('Введите название раунда:');
+    if (title && title.trim()) {
+        await fetch(`/api/quiz/${currentQuizId}/round`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ title: title.trim() })
+        });
+        await loadRounds();
+    }
+};
+
+// Кнопка сброса раунда
+const resetRoundBtn = document.getElementById('resetRoundBtn');
+if (resetRoundBtn) {
+    resetRoundBtn.addEventListener('click', () => {
+        currentRoundId = null;
+        document.getElementById('currentRoundNameSpan').innerText = 'Общие вопросы';
+        renderRounds();
+        loadQuestions();
+    });
+}
+
+// Загрузка вопросов (с фильтрацией по выбранному раунду)
+async function loadQuestions() {
+    if (!currentQuizId) return;
+    try {
+        const res = await fetch(`/api/quiz/${currentQuizId}/questions`);
+        const data = await res.json();
+        const container = document.getElementById('questionsList');
+        if (!container) return;
+        
+        let filteredQuestions = data.questions || [];
+        if (currentRoundId) {
+            filteredQuestions = filteredQuestions.filter(q => q.round_id === currentRoundId);
+        } else {
+            filteredQuestions = filteredQuestions.filter(q => !q.round_id);
+        }
+        
+        if (filteredQuestions.length) {
+            container.innerHTML = filteredQuestions.map(q => `
+                <div style="background: #f5f5f5; border-radius: 12px; padding: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    <div><strong>${escapeHtml(q.text)}</strong></div>
+                    <div>
+                        <button onclick="editQuestion(${q.id})" style="margin-right: 5px; cursor: pointer;">✏️</button>
+                        <button onclick="deleteQuestion(${q.id})" style="cursor: pointer;">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">📝<p>Нет вопросов. Нажмите «+ Добавить вопрос»</p></div>';
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки вопросов:', error);
+    }
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     // Переключение вкладок
@@ -334,7 +576,10 @@ document.addEventListener('DOMContentLoaded', function() {
             questionsTab.classList.add('active');
             settingsBtn.classList.remove('active');
             questionsBtn.classList.add('active');
-            if (currentQuizId) loadQuestions();
+            if (currentQuizId) {
+                loadRounds();
+                loadQuestions();
+            }
         }
     }
     
@@ -348,12 +593,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const descTextarea = document.getElementById('quizDescription');
     if (titleInput) {
         titleInput.addEventListener('input', () => {
-            titleInput.nextElementSibling.textContent = titleInput.value.length + '/150';
+            const counter = titleInput.nextElementSibling;
+            if (counter) counter.textContent = titleInput.value.length + '/150';
         });
     }
     if (descTextarea) {
         descTextarea.addEventListener('input', () => {
-            descTextarea.nextElementSibling.textContent = descTextarea.value.length + '/800';
+            const counter = descTextarea.nextElementSibling;
+            if (counter) counter.textContent = descTextarea.value.length + '/800';
         });
     }
     
@@ -373,7 +620,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 reader.onload = (event) => {
                     coverData = event.target.result;
                     coverPreview.innerHTML = `<img src="${coverData}" style="max-width: 100%; max-height: 100%; object-fit: cover;">`;
-                    removeCoverBtn.style.display = 'inline-block';
+                    if (removeCoverBtn) removeCoverBtn.style.display = 'inline-block';
                 };
                 reader.readAsDataURL(file);
             }
@@ -392,17 +639,24 @@ document.addEventListener('DOMContentLoaded', function() {
     const accessPublic = document.querySelector('input[name="access"][value="public"]');
     const accessPassword = document.querySelector('input[name="access"][value="password"]');
     const passwordGroup = document.getElementById('quizPasswordGroup');
-    
-    if (accessPublic && accessPassword) {
-        accessPassword.addEventListener('change', () => {
+
+    function updatePasswordVisibility() {
+        if (accessPassword && accessPassword.checked) {
             passwordGroup.style.display = 'block';
-        });
-        accessPublic.addEventListener('change', () => {
+        } else {
             passwordGroup.style.display = 'none';
-        });
+            const pwdInput = document.getElementById('quizPassword');
+            if (pwdInput) pwdInput.value = '';
+        }
+    }
+
+    if (accessPublic && accessPassword) {
+        accessPublic.addEventListener('change', updatePasswordVisibility);
+        accessPassword.addEventListener('change', updatePasswordVisibility);
+        updatePasswordVisibility();
     }
     
-    // Показать/скрыть настройки баллов
+    // Настройки баллов
     const customScoring = document.getElementById('customScoring');
     const scoringSettings = document.getElementById('scoringSettings');
     const customPoints = document.getElementById('customPointsPerQuestion');
@@ -410,12 +664,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (customScoring) {
         customScoring.addEventListener('change', () => {
-            scoringSettings.style.display = customScoring.checked ? 'block' : 'none';
+            if (scoringSettings) scoringSettings.style.display = customScoring.checked ? 'block' : 'none';
         });
     }
     if (customPoints) {
         customPoints.addEventListener('change', () => {
-            pointsInput.style.display = customPoints.checked ? 'block' : 'none';
+            if (pointsInput) pointsInput.style.display = customPoints.checked ? 'block' : 'none';
         });
     }
     
@@ -424,7 +678,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (saveBtn) {
         saveBtn.onclick = async () => {
             const pointsValue = document.getElementById('pointsPerQuestion')?.value || 100;
-            
             const allowReplaySoloCheckbox = document.getElementById('allowReplaySolo');
 
             const data = {
@@ -474,12 +727,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const allowReplaySoloBlock = document.getElementById('allowReplaySoloBlock');
 
     function toggleReplaySoloOption() {
-        const mode = gameModeSelect.value;
-        if (mode === 'solo') {
-            allowReplaySoloBlock.style.display = 'block';
-        } else {
-            allowReplaySoloBlock.style.display = 'none';
-            document.getElementById('allowReplaySolo').checked = false;
+        if (gameModeSelect && allowReplaySoloBlock) {
+            const mode = gameModeSelect.value;
+            if (mode === 'solo') {
+                allowReplaySoloBlock.style.display = 'block';
+            } else {
+                allowReplaySoloBlock.style.display = 'none';
+                const soloCheckbox = document.getElementById('allowReplaySolo');
+                if (soloCheckbox) soloCheckbox.checked = false;
+            }
         }
     }
 
@@ -488,249 +744,266 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleReplaySoloOption();
     }
     
-    // Работа с вопросами
-    window.loadQuestions = function() {
-        if (!currentQuizId) return;
-        fetch(`/api/quiz/${currentQuizId}/questions`)
-            .then(res => res.json())
-            .then(data => {
-                const container = document.getElementById('questionsList');
-                if (!container) return;
-                if (data.success && data.questions && data.questions.length) {
-                    container.innerHTML = '';
-                    data.questions.forEach(q => {
-                        container.innerHTML += `
-                            <div style="background: #f5f5f5; border-radius: 12px; padding: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
-                                <div><strong>${escapeHtml(q.text)}</strong></div>
-                                <div>
-                                    <button onclick="editQuestion(${q.id})" style="margin-right: 5px; cursor: pointer;">✏️</button>
-                                    <button onclick="deleteQuestion(${q.id})" style="cursor: pointer;">🗑️</button>
-                                </div>
-                            </div>
-                        `;
-                    });
-                } else {
-                    container.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">📝<p>Нет вопросов. Нажмите «+ Добавить вопрос»</p></div>';
-                }
-            });
-    };
-    
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-    
-       // Модальное окно
+    // Модальное окно
     const modal = document.getElementById('questionModal');
     const addBtn = document.getElementById('addQuestionBtn');
     
+    window.closeModal = function() {
+        if (modal) modal.style.display = 'none';
+    };
+    
     window.openModal = function(questionId = null) {
+        if (!modal) return;
         modal.style.display = 'flex';
         document.getElementById('questionText').value = '';
+        document.getElementById('roundTitle').value = '';
         document.getElementById('optionsList').innerHTML = `
             <div class="option-row">
                 <input type="text" class="form-input option-input" placeholder="Вариант 1">
                 <input type="radio" name="correctOption" value="0"> Правильный
-                <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; cursor:pointer;">❌</button>
+                <button type="button" onclick="this.parentElement.remove()" class="remove-option">❌</button>
             </div>
             <div class="option-row">
                 <input type="text" class="form-input option-input" placeholder="Вариант 2">
                 <input type="radio" name="correctOption" value="1"> Правильный
-                <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; cursor:pointer;">❌</button>
+                <button type="button" onclick="this.parentElement.remove()" class="remove-option">❌</button>
             </div>
         `;
         
-        // Скрыть все блоки типов вопросов
-        const choiceBlock = document.getElementById('choiceBlock');
-        const openBlock = document.getElementById('openBlock');
-        const pollBlock = document.getElementById('pollBlock');
-        const wordcloudBlock = document.getElementById('wordcloudBlock');
-        const drawBlock = document.getElementById('drawBlock');
-        const danceBlock = document.getElementById('danceBlock');
-        const slideBlock = document.getElementById('slideBlock');
-        
-        if (choiceBlock) choiceBlock.style.display = 'none';
-        if (openBlock) openBlock.style.display = 'none';
-        if (pollBlock) pollBlock.style.display = 'none';
-        if (wordcloudBlock) wordcloudBlock.style.display = 'none';
-        if (drawBlock) drawBlock.style.display = 'none';
-        if (danceBlock) danceBlock.style.display = 'none';
-        if (slideBlock) slideBlock.style.display = 'none';
+        // Скрыть все блоки
+        const blocks = ['choiceBlock', 'openBlock', 'pollBlock', 'wordcloudBlock', 'drawBlock', 'danceBlock', 'slideBlock', 'roundBlock'];
+        blocks.forEach(blockId => {
+            const block = document.getElementById(blockId);
+            if (block) block.style.display = 'none';
+        });
         
         // Показать блок выбора по умолчанию
+        const choiceBlock = document.getElementById('choiceBlock');
         if (choiceBlock) choiceBlock.style.display = 'block';
         
-        document.getElementById('modalTitle').textContent = 'Добавить вопрос';
-        document.getElementById('editQuestionId').value = '';
-    };
-    
-    window.closeModal = function() {
-        modal.style.display = 'none';
+        // Показать поле текста вопроса
+        document.getElementById('textFieldGroup').style.display = 'block';
+        
+        const titleEl = document.getElementById('modalTitle');
+        if (titleEl) titleEl.textContent = 'Добавить вопрос';
+        const editId = document.getElementById('editQuestionId');
+        if (editId) editId.value = '';
+        
+        // Устанавливаем тип вопроса по умолчанию
+        const typeSelect = document.getElementById('questionType');
+        if (typeSelect) typeSelect.value = 'choice';
     };
     
     if (addBtn) addBtn.onclick = () => openModal();
-    document.querySelector('.modal-close')?.addEventListener('click', closeModal);
-    document.getElementById('cancelModalBtn')?.addEventListener('click', closeModal);
     
-   document.getElementById('saveQuestionBtn')?.addEventListener('click', async () => {
-    if (!currentQuizId) {
-        alert('Сначала сохраните настройки викторины');
-        return;
-    }
+    const closeModalBtn = document.querySelector('.modal-close');
+    if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+    const cancelBtn = document.getElementById('cancelModalBtn');
+    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
     
-    const type = document.getElementById('questionType').value;
-    const text = document.getElementById('questionText').value;
-    
-    if (!text) {
-        alert('Введите текст вопроса');
-        return;
-    }
-    
-    let options = null;
-    let correctAnswer = null;
-    let additionalData = {};
-    
-    if (type === 'choice') {
-        options = [];
-        document.querySelectorAll('.option-input').forEach(input => {
-            if (input.value.trim()) options.push(input.value.trim());
+    // Сохранение вопроса
+    const saveQuestionBtn = document.getElementById('saveQuestionBtn');
+    if (saveQuestionBtn) {
+        saveQuestionBtn.addEventListener('click', async () => {
+            if (!currentQuizId) {
+                alert('Сначала сохраните настройки викторины');
+                return;
+            }
+            
+            const type = document.getElementById('questionType').value;
+            const text = document.getElementById('questionText').value;
+            
+            // Блок для создания раунда
+            if (type === 'round') {
+                const roundTitle = document.getElementById('roundTitle').value.trim();
+                if (!roundTitle) {
+                    alert('Введите название раунда');
+                    return;
+                }
+                
+                const response = await fetch(`/api/quiz/${currentQuizId}/round`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ title: roundTitle })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    closeModal();
+                    await loadRounds();
+                    await loadQuestions();
+                } else {
+                    alert('Ошибка: ' + result.error);
+                }
+                return;
+            }
+            
+            // Для обычных вопросов проверяем текст
+            if (!text) {
+                alert('Введите текст вопроса');
+                return;
+            }
+            
+            let options = null;
+            let correctAnswer = null;
+            let additionalData = {};
+            
+            if (type === 'choice') {
+                options = [];
+                document.querySelectorAll('.option-input').forEach(input => {
+                    if (input.value.trim()) options.push(input.value.trim());
+                });
+                let correctIndex = -1;
+                document.querySelectorAll('input[name="correctOption"]').forEach((radio, i) => {
+                    if (radio.checked) correctIndex = i;
+                });
+                if (correctIndex >= 0 && options[correctIndex]) {
+                    correctAnswer = [options[correctIndex]];
+                }
+            } 
+            else if (type === 'open') {
+                const answer = document.getElementById('openAnswer').value;
+                correctAnswer = answer.split(',').map(s => s.trim()).filter(s => s);
+            }
+            else if (type === 'poll') {
+                options = [];
+                document.querySelectorAll('.poll-option-input').forEach(input => {
+                    if (input.value.trim()) options.push(input.value.trim());
+                });
+            }
+            else if (type === 'wordcloud') {
+                additionalData = { instruction: document.getElementById('wordcloudInstruction').value };
+            }
+            else if (type === 'draw') {
+                additionalData = { task: document.getElementById('drawTask').value };
+            }
+            else if (type === 'dance') {
+                additionalData = { task: document.getElementById('danceTask').value };
+            }
+            else if (type === 'slide') {
+                additionalData = { content: document.getElementById('slideContent').value };
+            }
+            
+            const editId = document.getElementById('editQuestionId').value;
+            const url = editId ? `/api/question/${editId}` : `/api/quiz/${currentQuizId}/question`;
+            const method = editId ? 'PUT' : 'POST';
+            
+            const response = await fetch(url, {
+                method: method,
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    type: type,
+                    text: text,
+                    options: options,
+                    correct_answer: correctAnswer,
+                    order: 0,
+                    round_id: currentRoundId,
+                    additional_data: additionalData
+                })
+            });
+            
+            const result = await response.json();
+            if (result.success) {
+                closeModal();
+                await loadQuestions();
+                await loadRounds();
+            } else {
+                alert('Ошибка: ' + result.error);
+            }
         });
-        let correctIndex = -1;
-        document.querySelectorAll('input[name="correctOption"]').forEach((radio, i) => {
-            if (radio.checked) correctIndex = i;
+    }
+    
+    // Добавление варианта
+    const addOptionBtn = document.getElementById('addOptionBtn');
+    if (addOptionBtn) {
+        addOptionBtn.addEventListener('click', () => {
+            const list = document.getElementById('optionsList');
+            const idx = list.children.length;
+            const div = document.createElement('div');
+            div.className = 'option-row';
+            div.innerHTML = `
+                <input type="text" class="form-input option-input" placeholder="Вариант ${idx + 1}">
+                <input type="radio" name="correctOption" value="${idx}"> Правильный
+                <button type="button" onclick="this.parentElement.remove()" class="remove-option">❌</button>
+            `;
+            list.appendChild(div);
         });
-        if (correctIndex >= 0 && options[correctIndex]) {
-            correctAnswer = [options[correctIndex]];
-        }
-    } 
-    else if (type === 'open') {
-        const answer = document.getElementById('openAnswer').value;
-        correctAnswer = answer.split(',').map(s => s.trim()).filter(s => s);
-    }
-    else if (type === 'poll') {
-        options = [];
-        document.querySelectorAll('.poll-option-input').forEach(input => {
-            if (input.value.trim()) options.push(input.value.trim());
-        });
-    }
-    else if (type === 'wordcloud') {
-        additionalData = { instruction: document.getElementById('wordcloudInstruction').value };
-    }
-    else if (type === 'draw') {
-        additionalData = { task: document.getElementById('drawTask').value };
-    }
-    else if (type === 'dance') {
-        additionalData = { task: document.getElementById('danceTask').value };
-    }
-    else if (type === 'slide') {
-        additionalData = { content: document.getElementById('slideContent').value };
     }
     
-    const editId = document.getElementById('editQuestionId').value;
-    const url = editId ? `/api/question/${editId}` : `/api/quiz/${currentQuizId}/question`;
-    const method = editId ? 'PUT' : 'POST';
-    
-    const response = await fetch(url, {
-        method: method,
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-            type: type,
-            text: text,
-            options: options,
-            correct_answer: correctAnswer,
-            order: 0,
-            additional_data: additionalData
-        })
-    });
-    
-    const result = await response.json();
-    if (result.success) {
-        closeModal();
-        loadQuestions();
-    } else {
-        alert('Ошибка: ' + result.error);
-    }
-});
-    
-    document.getElementById('addOptionBtn')?.addEventListener('click', () => {
-        const list = document.getElementById('optionsList');
-        const idx = list.children.length;
-        const div = document.createElement('div');
-        div.className = 'option-row';
-        div.innerHTML = `
-            <input type="text" class="form-input option-input" placeholder="Вариант ${idx + 1}">
-            <input type="radio" name="correctOption" value="${idx}"> Правильный
-            <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; cursor:pointer;">❌</button>
-        `;
-        list.appendChild(div);
-    });
-    
-    // Обработчик смены типа вопроса
+    // Смена типа вопроса
     const questionTypeSelect = document.getElementById('questionType');
     if (questionTypeSelect) {
         questionTypeSelect.addEventListener('change', function() {
             const type = this.value;
-            const choiceBlock = document.getElementById('choiceBlock');
-            const openBlock = document.getElementById('openBlock');
-            const pollBlock = document.getElementById('pollBlock');
-            const wordcloudBlock = document.getElementById('wordcloudBlock');
-            const drawBlock = document.getElementById('drawBlock');
-            const danceBlock = document.getElementById('danceBlock');
-            const slideBlock = document.getElementById('slideBlock');
+            const blocks = {
+                'choice': 'choiceBlock',
+                'open': 'openBlock',
+                'poll': 'pollBlock',
+                'wordcloud': 'wordcloudBlock',
+                'draw': 'drawBlock',
+                'dance': 'danceBlock',
+                'slide': 'slideBlock',
+                'round': 'roundBlock'
+            };
             
-            if (choiceBlock) choiceBlock.style.display = 'none';
-            if (openBlock) openBlock.style.display = 'none';
-            if (pollBlock) pollBlock.style.display = 'none';
-            if (wordcloudBlock) wordcloudBlock.style.display = 'none';
-            if (drawBlock) drawBlock.style.display = 'none';
-            if (danceBlock) danceBlock.style.display = 'none';
-            if (slideBlock) slideBlock.style.display = 'none';
+            for (const [key, blockId] of Object.entries(blocks)) {
+                const block = document.getElementById(blockId);
+                if (block) block.style.display = 'none';
+            }
             
-            if (type === 'choice' && choiceBlock) choiceBlock.style.display = 'block';
-            else if (type === 'open' && openBlock) openBlock.style.display = 'block';
-            else if (type === 'poll' && pollBlock) pollBlock.style.display = 'block';
-            else if (type === 'wordcloud' && wordcloudBlock) wordcloudBlock.style.display = 'block';
-            else if (type === 'draw' && drawBlock) drawBlock.style.display = 'block';
-            else if (type === 'dance' && danceBlock) danceBlock.style.display = 'block';
-            else if (type === 'slide' && slideBlock) slideBlock.style.display = 'block';
+            // Для раунда скрываем поле текста вопроса
+            if (type === 'round') {
+                document.getElementById('textFieldGroup').style.display = 'none';
+            } else {
+                document.getElementById('textFieldGroup').style.display = 'block';
+            }
+            
+            const activeBlock = document.getElementById(blocks[type]);
+            if (activeBlock) activeBlock.style.display = 'block';
         });
     }
-
+    
     // Добавление вариантов для голосования
-    document.getElementById('addPollOptionBtn')?.addEventListener('click', () => {
-        const list = document.getElementById('pollOptionsList');
-        const idx = list.children.length;
-        const div = document.createElement('div');
-        div.className = 'option-row';
-        div.innerHTML = `
-            <input type="text" class="form-input poll-option-input" placeholder="Вариант ${idx + 1}">
-            <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; cursor:pointer;">❌</button>
-        `;
-        list.appendChild(div);
-    });
-
-
-
+    const addPollOptionBtn = document.getElementById('addPollOptionBtn');
+    if (addPollOptionBtn) {
+        addPollOptionBtn.addEventListener('click', () => {
+            const list = document.getElementById('pollOptionsList');
+            const idx = list.children.length;
+            const div = document.createElement('div');
+            div.className = 'option-row';
+            div.innerHTML = `<input type="text" class="form-input poll-option-input" placeholder="Вариант ${idx + 1}">
+                <button type="button" onclick="this.parentElement.remove()" class="remove-option">❌</button>`;
+            list.appendChild(div);
+        });
+    }
+    
     window.editQuestion = async function(questionId) {
         const response = await fetch(`/api/question/${questionId}`);
         const data = await response.json();
-        if (data.success) {
+        if (data.success && modal) {
             const q = data.question;
             document.getElementById('questionText').value = q.text;
+            document.getElementById('questionType').value = q.type;
+            
             const list = document.getElementById('optionsList');
             list.innerHTML = '';
-            q.options.forEach((opt, idx) => {
-                const isCorrect = q.correct_answer && q.correct_answer.includes(opt);
-                const div = document.createElement('div');
-                div.className = 'option-row';
-                div.innerHTML = `
-                    <input type="text" class="form-input option-input" value="${escapeHtml(opt)}">
-                    <input type="radio" name="correctOption" value="${idx}" ${isCorrect ? 'checked' : ''}> Правильный
-                    <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; cursor:pointer;">❌</button>
-                `;
-                list.appendChild(div);
-            });
+            if (q.options) {
+                q.options.forEach((opt, idx) => {
+                    const isCorrect = q.correct_answer && q.correct_answer.includes(opt);
+                    const div = document.createElement('div');
+                    div.className = 'option-row';
+                    div.innerHTML = `
+                        <input type="text" class="form-input option-input" value="${escapeHtml(opt)}">
+                        <input type="radio" name="correctOption" value="${idx}" ${isCorrect ? 'checked' : ''}> Правильный
+                        <button type="button" onclick="this.parentElement.remove()" class="remove-option">❌</button>
+                    `;
+                    list.appendChild(div);
+                });
+            }
+            
+            // Триггерим событие change для показа правильного блока
+            const event = new Event('change');
+            questionTypeSelect.dispatchEvent(event);
+            
             document.getElementById('modalTitle').textContent = 'Редактировать вопрос';
             document.getElementById('editQuestionId').value = questionId;
             modal.style.display = 'flex';
@@ -740,7 +1013,8 @@ document.addEventListener('DOMContentLoaded', function() {
     window.deleteQuestion = async function(questionId) {
         if (confirm('Удалить вопрос?')) {
             await fetch(`/api/question/${questionId}`, { method: 'DELETE' });
-            loadQuestions();
+            await loadQuestions();
+            await loadRounds();
         }
     };
     
@@ -750,11 +1024,11 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(res => res.json())
             .then(data => {
                 if (data.success && data.quiz) {
-                    document.getElementById('quizTitle').value = data.quiz.title || '';
-                    document.getElementById('quizDescription').value = data.quiz.description || '';
+                    if (titleInput) titleInput.value = data.quiz.title || '';
+                    if (descTextarea) descTextarea.value = data.quiz.description || '';
                     if (data.quiz.coverImage) {
                         coverData = data.quiz.coverImage;
-                        coverPreview.innerHTML = `<img src="${coverData}" style="max-width: 100%; max-height: 100%; object-fit: cover;">`;
+                        if (coverPreview) coverPreview.innerHTML = `<img src="${coverData}" style="max-width: 100%; max-height: 100%; object-fit: cover;">`;
                         if (removeCoverBtn) removeCoverBtn.style.display = 'inline-block';
                     }
                     if (data.quiz.startDate) document.getElementById('startDate').value = data.quiz.startDate;
@@ -763,205 +1037,41 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (data.quiz.timePerQuestion) document.getElementById('timePerQuestion').value = data.quiz.timePerQuestion;
                     if (data.quiz.timeShowAnswer) document.getElementById('timeShowAnswer').value = data.quiz.timeShowAnswer;
                     if (data.quiz.accessType === 'password') {
-                        document.querySelector('input[name="access"][value="password"]').checked = true;
-                        document.getElementById('quizPasswordGroup').style.display = 'block';
-                        document.getElementById('quizPassword').value = data.quiz.accessPassword || '';
+                        const passwordRadio = document.querySelector('input[name="access"][value="password"]');
+                        if (passwordRadio) passwordRadio.checked = true;
+                        updatePasswordVisibility();
+                        const passwordInput = document.getElementById('quizPassword');
+                        if (passwordInput && data.quiz.accessPassword) passwordInput.value = data.quiz.accessPassword;
                     }
                     if (data.quiz.gameMode) document.getElementById('gameMode').value = data.quiz.gameMode;
                     if (data.quiz.allowReplay) document.getElementById('allowReplay').checked = true;
                     if (data.quiz.customScoring) {
                         document.getElementById('customScoring').checked = true;
-                        document.getElementById('scoringSettings').style.display = 'block';
+                        if (scoringSettings) scoringSettings.style.display = 'block';
                     }
                     if (data.quiz.customPointsPerQuestion) {
                         document.getElementById('customPointsPerQuestion').checked = true;
-                        document.getElementById('pointsPerQuestionInput').style.display = 'block';
-                        document.getElementById('pointsPerQuestion').value = data.quiz.pointsPerQuestion || 100;
+                        if (pointsInput) pointsInput.style.display = 'block';
+                        if (document.getElementById('pointsPerQuestion')) document.getElementById('pointsPerQuestion').value = data.quiz.pointsPerQuestion || 100;
                     }
                     if (data.quiz.randomQuestions) document.getElementById('randomQuestions').checked = true;
                     if (data.quiz.randomOptions) document.getElementById('randomOptions').checked = true;
                     
-                    if (titleInput) titleInput.nextElementSibling.textContent = titleInput.value.length + '/150';
-                    if (descTextarea) descTextarea.nextElementSibling.textContent = descTextarea.value.length + '/800';
+                    if (titleInput && titleInput.nextElementSibling) {
+                        titleInput.nextElementSibling.textContent = titleInput.value.length + '/150';
+                    }
+                    if (descTextarea && descTextarea.nextElementSibling) {
+                        descTextarea.nextElementSibling.textContent = descTextarea.value.length + '/800';
+                    }
+                    
+                    toggleReplaySoloOption();
+                    
+                    // Загружаем раунды после загрузки данных
+                    loadRounds();
+                    loadQuestions();
                 }
             });
     }
 });
 </script>
-
-<style>
-.editor-container {
-    display: flex;
-    gap: 30px;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-}
-.editor-sidebar {
-    width: 200px;
-}
-.sidebar-nav__btn {
-    display: block;
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 10px;
-    background: #f0f0f0;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-}
-.sidebar-nav__btn.active {
-    background: #2196F3;
-    color: white;
-}
-.editor-main {
-    flex: 1;
-}
-.editor-tab {
-    display: none;
-}
-.editor-tab.active {
-    display: block;
-}
-.settings-section {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-.section-title {
-    margin-bottom: 10px;
-    color: #333;
-}
-.form-group {
-    margin-bottom: 15px;
-}
-.form-input, .form-textarea {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-}
-.btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-}
-.btn-blue {
-    background: #2196F3;
-    color: white;
-}
-.btn-red {
-    background: #f44336;
-    color: white;
-}
-.btn-outline-new {
-    background: none;
-    border: 1px solid #ddd;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-}
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.modal-content {
-    background: white;
-    width: 500px;
-    border-radius: 12px;
-    padding: 20px;
-}
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-.modal-close {
-    font-size: 24px;
-    cursor: pointer;
-}
-.option-row {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 10px;
-    align-items: center;
-}
-.option-row .form-input {
-    flex: 1;
-}
-.editor-actions {
-    display: flex;
-    gap: 15px;
-    margin-top: 20px;
-}
-.checkbox-label, .radio-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    margin-bottom: 12px;
-}
-.indent {
-    margin-left: 24px;
-    margin-top: 12px;
-    margin-bottom: 12px;
-}
-.form-hint {
-    display: block;
-    font-size: 12px;
-    color: #666;
-    margin-top: 4px;
-}
-.sub-block {
-    background: #f9f9f9;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 24px;
-}
-.sub-block__title {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 16px;
-    padding-bottom: 8px;
-    border-bottom: 2px solid #2196F3;
-    display: inline-block;
-}
-.tariff-banner {
-    background: #e3f2fd;
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 24px;
-}
-.form-row {
-    display: flex;
-    gap: 20px;
-}
-.form-group.half {
-    flex: 1;
-}
-.section-divider {
-    margin: 20px 0;
-    border: none;
-    border-top: 1px solid #eee;
-}
-.subsection-title {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 16px;
-    color: #f44336;
-}
-</style>
 {% endblock %}

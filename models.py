@@ -28,7 +28,8 @@ class Quiz(db.Model):
 class Question(db.Model):
     __tablename__ = 'questions'
     id = db.Column(db.Integer, primary_key=True)
-    quiz_id = db.Column(db.Integer, db.ForeignKey('quizzes.id'))  # ← quizzes, а не quiz
+    quiz_id = db.Column(db.Integer, db.ForeignKey('quizzes.id'))
+    round_id = db.Column(db.Integer, db.ForeignKey('rounds.id'), nullable=True) 
     type = db.Column(db.String(20), default='choice')
     text = db.Column(db.Text, nullable=False)
     options = db.Column(db.JSON)
@@ -52,3 +53,14 @@ class GameResult(db.Model):
     finished_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     
     quiz = db.relationship('Quiz', backref='game_results')
+    
+class Round(db.Model):
+    __tablename__ = 'rounds'
+    id = db.Column(db.Integer, primary_key=True)
+    quiz_id = db.Column(db.Integer, db.ForeignKey('quizzes.id'), nullable=False)
+    title = db.Column(db.String(200), nullable=False)
+    order_index = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    quiz = db.relationship('Quiz', backref='rounds')
+    questions = db.relationship('Question', backref='round', lazy=True)

@@ -67,12 +67,42 @@ const quizMode = '{{ quiz.settings.gameMode if quiz.settings else "multiplayer" 
 let allResults = [];
 
 async function loadData() {
-    // Загружаем результаты только для текущего режима викторины
+    // Загружаем результаты
     const res = await fetch(`/api/quiz/${quizId}/all-results?mode=${quizMode}`);
     const data = await res.json();
     
     if (data.success) {
-        allResults = data.results;
+        if (quizMode === 'team') {
+            // Для командного режима — суммируем результаты по командам
+            const teamMap = new Map();
+            
+            data.results.forEach(r => {
+                if (teamMap.has(r.player_name)) {
+                    const existing = teamMap.get(r.player_name);
+                    existing.score += r.score;
+                    existing.games_count += 1;
+                    // Берём последнюю дату
+                    if (r.finished_at > existing.finished_at) {
+                        existing.finished_at = r.finished_at;
+                    }
+                } else {
+                    teamMap.set(r.player_name, {
+                        player_name: r.player_name,
+                        score: r.score,
+                        games_count: 1,
+                        finished_at: r.finished_at
+                    });
+                }
+            });
+            
+            // Преобразуем в массив и сортируем по убыванию очков
+            allResults = Array.from(teamMap.values());
+            allResults.sort((a, b) => b.score - a.score);
+        } else {
+            // Для мультиплеера и соло — оставляем как есть
+            allResults = data.results;
+        }
+        
         renderPlayersTab();
     }
 }
@@ -83,7 +113,6 @@ function renderPlayersTab() {
     const avg = total > 0 ? scores.reduce((a, b) => a + b, 0) / total : 0;
     const max = total > 0 ? Math.max(...scores) : 0;
     
-    // Определяем по режиму викторины
     const isTeamMode = quizMode === 'team';
     const nameLabel = isTeamMode ? 'Команда' : 'Игрок';
     
@@ -102,7 +131,8 @@ function renderPlayersTab() {
                 <tr><th style="padding: 12px; text-align: left;">Место</th>
                     <th style="padding: 12px; text-align: left;">${nameLabel}</th>
                     <th style="padding: 12px; text-align: center;">Счёт</th>
-                    <th style="padding: 12px; text-align: center;">Дата</th>
+                    ${isTeamMode ? '<th style="padding: 12px; text-align: center;">Игр</th>' : ''}
+                    <th style="padding: 12px; text-align: center;">Последняя игра</th>
                 </tr>
             </thead>
             <tbody>
@@ -111,6 +141,7 @@ function renderPlayersTab() {
                         <td style="padding: 12px;">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i+1}</td>
                         <td style="padding: 12px;">${escapeHtml(p.player_name)}</td>
                         <td style="padding: 12px; text-align: center; font-weight: bold;">${p.score}</td>
+                        ${isTeamMode ? `<td style="padding: 12px; text-align: center;">${p.games_count}</td>` : ''}
                         <td style="padding: 12px; text-align: center;">${p.finished_at}</td>
                     </tr>
                 `).join('')}
@@ -124,7 +155,8 @@ function renderPlayersTab() {
             <thead>
                 <tr><th style="padding: 10px; text-align: left;">${nameLabel}</th>
                     <th style="padding: 10px; text-align: center;">Счёт</th>
-                    <th style="padding: 10px; text-align: center;">Дата</th>
+                    ${isTeamMode ? '<th style="padding: 10px; text-align: center;">Игр</th>' : ''}
+                    <th style="padding: 10px; text-align: center;">Последняя игра</th>
                 </tr>
             </thead>
             <tbody>
@@ -132,6 +164,7 @@ function renderPlayersTab() {
                     <tr style="border-bottom: 1px solid #eee;">
                         <td style="padding: 10px;">${escapeHtml(p.player_name)}</td>
                         <td style="padding: 10px; text-align: center; font-weight: bold;">${p.score}</td>
+                        ${isTeamMode ? `<td style="padding: 10px; text-align: center;">${p.games_count}</td>` : ''}
                         <td style="padding: 10px; text-align: center;">${p.finished_at}</td>
                     </tr>
                 `).join('')}
@@ -151,11 +184,11 @@ document.getElementById('exportCSVBtn')?.addEventListener('click', () => {
     const isTeamMode = quizMode === 'team';
     const nameLabel = isTeamMode ? 'Команда' : 'Игрок';
     
-    let csv = `\uFEFF${nameLabel};Счёт;Дата\n`;
+    let csv = `\uFEFF${nameLabel};Счёт${isTeamMode ? ';Количество игр' : ''};Последняя игра\n`;
     allResults.forEach(p => {
         let name = p.player_name.replace(/"/g, '""');
         if (name.includes(';') || name.includes('"')) name = `"${name}"`;
-        csv += `${name};${p.score};${p.finished_at}\n`;
+        csv += `${name};${p.score}${isTeamMode ? `;${p.games_count}` : ''};${p.finished_at}\n`;
     });
     
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });

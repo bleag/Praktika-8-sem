@@ -10,8 +10,8 @@
             <h2>{{ quiz.title }}</h2>
             <div class="quiz-code-box">
                 <span>Код для игроков:</span>
-                <strong id="quizCodeDisplay">{{ quiz.quiz_code }}</strong>
-                <button onclick="copyCode()" class="btn-small btn-copy">📋</button>
+                <strong>{{ quiz.quiz_code }}</strong>
+                <button onclick="copyCode()" class="btn-small btn-copy">📋 Копировать</button>
             </div>
         </div>
 
@@ -22,29 +22,35 @@
                     
                     <div class="game-status">
                         <span class="status-label">Статус:</span>
-                        <span id="gameStatus" class="status-badge waiting">Ожидание</span>
+                        <span id="gameStatus" class="status-badge waiting">Проверка...</span>
+                    </div>
+                    
+                    <div id="autoStartInfo" class="info-box" style="display: none; margin-top: 15px;">
+                        <p>⏰ <strong>Автоматический запуск:</strong></p>
+                        <p id="autoStartText">Доступ будет открыт автоматически</p>
                     </div>
                     
                     <div class="control-buttons">
-                        <button id="startGameBtn" class="btn btn-green">🚀 Старт игры</button>
-                        <button id="pauseGameBtn" class="btn btn-yellow">⏸️ Пауза</button>
-                        <button id="resumeGameBtn" class="btn btn-green">▶️ Возобновить</button>
-                        <button id="stopGameBtn" class="btn btn-red">⏹️ Завершить игру</button>
-                        <button id="reopenGameBtn" class="btn btn-purple" style="display: none;">🔓 Открыть игру заново</button>
+                        <button id="closeAccessBtn" class="btn btn-red">🔒 Закрыть доступ</button>
+                        <button id="openAccessBtn" class="btn btn-green" style="display: none;">🔓 Открыть доступ</button>
                     </div>
                     
-                    <div class="question-info">
-                        <h4>Текущий вопрос</h4>
-                        <div id="currentQuestionDisplay" class="current-question">
-                            Ожидание начала игры...
-                        </div>
+                    <div class="info-box" style="margin-top: 20px;">
+                        <p>📌 <strong>Как это работает:</strong></p>
+                        <ul>
+                            <li>Игроки заходят по коду викторины: <strong>{{ quiz.quiz_code }}</strong></li>
+                            <li>Когда доступ открыт — игроки могут начать игру</li>
+                            <li>Когда доступ закрыт — новые игроки не могут начать игру</li>
+                            <li>Результаты сохраняются в таблицу лидеров</li>
+                            <li>Игроки могут проходить викторину только один раз (если не включена опция повторного прохождения)</li>
+                        </ul>
                     </div>
                 </div>
             </div>
             
             <div class="quizmaster-players">
                 <div class="players-card">
-                    <h3>Таблица лидеров <span id="playersCount">0</span></h3>
+                    <h3>🏆 Таблица лидеров <span id="playersCount">0</span></h3>
                     <div id="playersList" class="players-list">
                         <div class="empty-players">Нет результатов</div>
                     </div>
@@ -61,7 +67,7 @@
 <style>
 .quizmaster-container {
     padding: 40px 0;
-    background: #f8f9fa;
+    background: var(--gray-light);
     min-height: calc(100vh - 200px);
 }
 .quizmaster-header {
@@ -69,11 +75,11 @@
     margin-bottom: 40px;
 }
 .quizmaster-header h1 {
-    color: #2196F3;
+    color: var(--sovcombank-blue);
     margin-bottom: 10px;
 }
 .quizmaster-header h2 {
-    color: #333;
+    color: var(--text-dark);
     margin-bottom: 15px;
 }
 .quiz-code-box {
@@ -91,7 +97,7 @@
     font-size: 28px;
     font-family: monospace;
     letter-spacing: 2px;
-    color: #2196F3;
+    color: var(--sovcombank-blue);
 }
 .quizmaster-grid {
     display: grid;
@@ -107,12 +113,12 @@
 .control-card h3, .players-card h3 {
     margin-bottom: 20px;
     padding-bottom: 10px;
-    border-bottom: 2px solid #eee;
+    border-bottom: 2px solid var(--gray-border);
 }
 .game-status {
     margin-bottom: 20px;
     padding: 12px;
-    background: #f5f5f5;
+    background: var(--gray-light);
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -130,7 +136,6 @@
 }
 .status-badge.waiting { background: #FF9800; color: white; }
 .status-badge.active { background: #4CAF50; color: white; }
-.status-badge.paused { background: #FFC107; color: #333; }
 .status-badge.finished { background: #9E9E9E; color: white; }
 .control-buttons {
     display: flex;
@@ -138,23 +143,40 @@
     gap: 12px;
     margin-bottom: 30px;
 }
-.btn-green { background: #4CAF50; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
-.btn-yellow { background: #FFC107; color: #333; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
-.btn-red { background: #f44336; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
-.btn-purple { background: #9C27B0; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
-.btn-green:disabled, .btn-yellow:disabled, .btn-red:disabled, .btn-purple:disabled { opacity: 0.5; cursor: not-allowed; }
-.question-info {
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
+.btn-green {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
 }
-.current-question {
-    background: #f5f5f5;
-    padding: 15px;
+.btn-green:hover {
+    background: #45a049;
+}
+.btn-red {
+    background: var(--sovcombank-red);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.btn-red:hover {
+    background: var(--red-dark);
+}
+.info-box {
+    background: #e3f2fd;
     border-radius: 12px;
-    margin-top: 10px;
-    font-size: 16px;
-    line-height: 1.5;
+    padding: 15px;
+    font-size: 14px;
+}
+.info-box ul {
+    margin: 10px 0 0 20px;
+    padding: 0;
+}
+.info-box li {
+    margin: 5px 0;
 }
 .players-list {
     max-height: 500px;
@@ -165,27 +187,33 @@
     justify-content: space-between;
     align-items: center;
     padding: 12px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--gray-border);
 }
 .player-name {
     font-weight: 500;
+    flex: 1;
 }
 .player-score {
-    color: #2196F3;
+    color: var(--sovcombank-blue);
     font-weight: bold;
+    margin-right: 15px;
+}
+.player-detail {
+    color: var(--text-gray);
+    font-size: 12px;
 }
 .empty-players {
     text-align: center;
     padding: 40px;
-    color: #999;
+    color: var(--text-gray);
 }
 .quizmaster-actions {
     margin-top: 30px;
     text-align: center;
 }
 .btn-copy {
-    background: #f5f5f5;
-    border: 1px solid #ddd;
+    background: var(--gray-light);
+    border: 1px solid var(--gray-border);
     cursor: pointer;
     padding: 4px 10px;
     border-radius: 6px;
@@ -194,50 +222,116 @@
     .quizmaster-grid {
         grid-template-columns: 1fr;
     }
+    .quiz-code-box strong {
+        font-size: 20px;
+    }
 }
 </style>
 
 <script>
 const quizId = {{ quiz.id }};
 let updateInterval = null;
-let currentGameStatus = 'waiting';
+let autoStartTime = null;
 
-const startBtn = document.getElementById('startGameBtn');
-const pauseBtn = document.getElementById('pauseGameBtn');
-const resumeBtn = document.getElementById('resumeGameBtn');
-const stopBtn = document.getElementById('stopGameBtn');
-const reopenBtn = document.getElementById('reopenGameBtn');
+const closeBtn = document.getElementById('closeAccessBtn');
+const openBtn = document.getElementById('openAccessBtn');
 const gameStatusSpan = document.getElementById('gameStatus');
 const playersListDiv = document.getElementById('playersList');
 const playersCountSpan = document.getElementById('playersCount');
-const currentQuestionDiv = document.getElementById('currentQuestionDisplay');
+const autoStartInfoDiv = document.getElementById('autoStartInfo');
+const autoStartTextSpan = document.getElementById('autoStartText');
 
 function copyCode() {
-    const code = document.getElementById('quizCodeDisplay').innerText;
+    const code = '{{ quiz.quiz_code }}';
     navigator.clipboard.writeText(code);
     alert('Код скопирован: ' + code);
 }
 
 async function updateStatus() {
     try {
-        // Получаем статус викторины (открыта/закрыта)
+        // Получаем статус доступности
         const statusRes = await fetch(`/api/solo/${quizId}/status`);
         const statusData = await statusRes.json();
         
-        // Получаем активную игру
-        const gameRes = await fetch(`/api/solo/${quizId}/current-question`);
-        const gameData = await gameRes.json();
+        // Получаем настройки викторины (для автозапуска)
+        const settingsRes = await fetch(`/api/public/quiz/${quizId}/status`);
+        const settingsData = await settingsRes.json();
+        
+        if (settingsData.success && settingsData.autoStart && settingsData.startDate && settingsData.startTime) {
+            const startDateTimeStr = `${settingsData.startDate}T${settingsData.startTime}`;
+            const startTime = new Date(startDateTimeStr).getTime();
+            const now = new Date().getTime();
+            
+            if (now < startTime) {
+                // Доступ ещё не открыт, показываем время открытия
+                const dateStr = new Date(startTime).toLocaleString('ru-RU');
+                autoStartInfoDiv.style.display = 'block';
+                autoStartTextSpan.innerHTML = `⏰ Доступ будет открыт автоматически ${dateStr}`;
+                
+                if (statusData.success && statusData.is_closed) {
+                    gameStatusSpan.textContent = `🔒 Доступ закрыт (откроется ${dateStr})`;
+                    gameStatusSpan.className = 'status-badge waiting';
+                } else {
+                    gameStatusSpan.textContent = `⏳ Ожидание автоматического запуска (${dateStr})`;
+                    gameStatusSpan.className = 'status-badge waiting';
+                }
+                
+                closeBtn.style.display = 'none';
+                openBtn.style.display = 'none';
+                
+                // Проверяем каждую минуту, не наступило ли время
+                if (autoStartTime !== startTime) {
+                    autoStartTime = startTime;
+                    const checkInterval = setInterval(async () => {
+                        const now2 = new Date().getTime();
+                        if (now2 >= startTime) {
+                            clearInterval(checkInterval);
+                            location.reload();
+                        }
+                    }, 60000);
+                }
+            } else {
+                autoStartInfoDiv.style.display = 'none';
+                
+                if (statusData.success && statusData.is_closed) {
+                    gameStatusSpan.textContent = '🔒 Доступ закрыт';
+                    gameStatusSpan.className = 'status-badge finished';
+                    closeBtn.style.display = 'none';
+                    openBtn.style.display = 'inline-block';
+                } else {
+                    gameStatusSpan.textContent = '✅ Доступ открыт';
+                    gameStatusSpan.className = 'status-badge active';
+                    closeBtn.style.display = 'inline-block';
+                    openBtn.style.display = 'none';
+                }
+            }
+        } else {
+            // Нет автозапуска — обычный ручной режим
+            autoStartInfoDiv.style.display = 'none';
+            
+            if (statusData.success && statusData.is_closed) {
+                gameStatusSpan.textContent = '🔒 Доступ закрыт';
+                gameStatusSpan.className = 'status-badge finished';
+                closeBtn.style.display = 'none';
+                openBtn.style.display = 'inline-block';
+            } else {
+                gameStatusSpan.textContent = '✅ Доступ открыт';
+                gameStatusSpan.className = 'status-badge active';
+                closeBtn.style.display = 'inline-block';
+                openBtn.style.display = 'none';
+            }
+        }
         
         // Получаем таблицу лидеров
         const leaderRes = await fetch(`/api/solo/${quizId}/leaderboard`);
         const leaderData = await leaderRes.json();
         
-        // Обновляем таблицу лидеров
         if (leaderData.success && leaderData.leaderboard.length > 0) {
             playersListDiv.innerHTML = leaderData.leaderboard.map((p, i) => `
                 <div class="player-item">
                     <span class="player-name">${i+1}. ${escapeHtml(p.player_name)}</span>
                     <span class="player-score">${p.score} баллов</span>
+                    <span class="player-detail">${p.correct_answers}/${p.total_questions}</span>
                 </div>
             `).join('');
             playersCountSpan.textContent = leaderData.leaderboard.length;
@@ -245,141 +339,45 @@ async function updateStatus() {
             playersListDiv.innerHTML = '<div class="empty-players">Нет результатов</div>';
             playersCountSpan.textContent = '0';
         }
-        
-        // Обновляем статус и кнопки
-        if (statusData.success && statusData.is_closed) {
-            // Игра завершена
-            gameStatusSpan.textContent = 'Игра завершена';
-            gameStatusSpan.className = 'status-badge finished';
-            startBtn.disabled = true;
-            pauseBtn.disabled = true;
-            resumeBtn.disabled = true;
-            stopBtn.disabled = true;
-            reopenBtn.style.display = 'inline-block';
-            currentGameStatus = 'finished';
-            currentQuestionDiv.innerHTML = '🎉 Игра окончена! Нажмите "Открыть игру заново" чтобы начать новую.';
-        } 
-        else if (gameData.has_active_game && gameData.is_active) {
-            gameStatusSpan.textContent = 'Игра идёт';
-            gameStatusSpan.className = 'status-badge active';
-            startBtn.disabled = true;
-            pauseBtn.disabled = false;
-            resumeBtn.disabled = true;
-            stopBtn.disabled = false;
-            reopenBtn.style.display = 'none';
-            currentGameStatus = 'active';
-            
-            // Показываем текущий вопрос
-            if (gameData.current_question) {
-                const timeLeft = gameData.time_left !== null ? ` (осталось ${gameData.time_left} сек)` : '';
-                currentQuestionDiv.innerHTML = `
-                    <strong>Вопрос ${gameData.question_index}/${gameData.total_questions}</strong>${timeLeft}<br>
-                    ${escapeHtml(gameData.current_question.text)}
-                `;
-            }
-        } 
-        else if (gameData.has_active_game && gameData.is_paused) {
-            gameStatusSpan.textContent = 'На паузе';
-            gameStatusSpan.className = 'status-badge paused';
-            startBtn.disabled = true;
-            pauseBtn.disabled = true;
-            resumeBtn.disabled = false;
-            stopBtn.disabled = false;
-            reopenBtn.style.display = 'none';
-            currentGameStatus = 'paused';
-            currentQuestionDiv.innerHTML = '⏸️ Игра на паузе';
-        }
-        else {
-            gameStatusSpan.textContent = 'Ожидание';
-            gameStatusSpan.className = 'status-badge waiting';
-            startBtn.disabled = false;
-            pauseBtn.disabled = true;
-            resumeBtn.disabled = true;
-            stopBtn.disabled = true;
-            reopenBtn.style.display = 'none';
-            currentGameStatus = 'waiting';
-            currentQuestionDiv.innerHTML = 'Ожидание начала игры...';
-        }
-        
     } catch (error) {
         console.error('Ошибка:', error);
     }
 }
 
-// Старт игры
-startBtn.onclick = async () => {
-    if (confirm('Начать игру?')) {
-        const response = await fetch(`/api/solo/${quizId}/start-game`, { method: 'POST' });
-        const data = await response.json();
-        if (data.success) {
-            alert('✅ Игра начата!');
-        } else {
-            alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
-        }
-    }
-};
-
-// Пауза
-pauseBtn.onclick = async () => {
-    const response = await fetch(`/api/solo/${quizId}/pause-game`, { method: 'POST' });
-    const data = await response.json();
-    if (data.success) {
-        alert('⏸️ Игра на паузе');
-    }
-};
-
-// Возобновить
-resumeBtn.onclick = async () => {
-    const response = await fetch(`/api/solo/${quizId}/resume-game`, { method: 'POST' });
-    const data = await response.json();
-    if (data.success) {
-        alert('▶️ Игра возобновлена');
-    }
-};
-
-// Завершить игру (закрыть доступ)
-stopBtn.onclick = async () => {
-    if (confirm('Завершить игру? Игроки больше не смогут подключаться.')) {
+closeBtn.onclick = async () => {
+    if (confirm('Закрыть доступ к викторине? Игроки больше не смогут начать новую игру.')) {
         const response = await fetch(`/api/solo/${quizId}/close`, { method: 'POST' });
         const data = await response.json();
         if (data.success) {
-            alert('✅ Игра завершена!');
+            alert('✅ Доступ закрыт');
+            updateStatus();
         } else {
-            alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+            alert('❌ Ошибка: ' + (data.error || 'Неизвестная ошибка'));
         }
     }
 };
 
-// Открыть игру заново
-reopenBtn.onclick = async () => {
-    if (confirm('Открыть игру заново? Игроки снова смогут подключаться и играть. Результаты сохранятся.')) {
-        // Открываем доступ
-        const openRes = await fetch(`/api/solo/${quizId}/open`, { method: 'POST' });
-        const openData = await openRes.json();
-        
-        if (openData.success) {
-            // Перезапускаем игровую сессию
-            const startRes = await fetch(`/api/solo/${quizId}/start-game`, { method: 'POST' });
-            const startData = await startRes.json();
-            
-            if (startData.success) {
-                alert('✅ Игра открыта заново! Игроки могут подключаться.');
-            } else {
-                alert('✅ Доступ открыт, но нажмите "Старт игры" для начала.');
-            }
+openBtn.onclick = async () => {
+    if (confirm('Открыть доступ к викторине? Игроки снова смогут играть.')) {
+        const response = await fetch(`/api/solo/${quizId}/open`, { method: 'POST' });
+        const data = await response.json();
+        if (data.success) {
+            alert('✅ Доступ открыт');
+            updateStatus();
         } else {
-            alert('Ошибка: ' + (openData.error || 'Неизвестная ошибка'));
+            alert('❌ Ошибка: ' + (data.error || 'Неизвестная ошибка'));
         }
     }
 };
 
 function escapeHtml(text) {
+    if (!text) return '';
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
 }
 
 updateStatus();
-updateInterval = setInterval(updateStatus, 1000);
+updateInterval = setInterval(updateStatus, 3000);
 </script>
 {% endblock %}

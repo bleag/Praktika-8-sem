@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from config import Config
-from models import db, User, Quiz, Question, GameResult
+from models import db, User, Quiz, Question, GameResult, Round
 from datetime import datetime, timezone
 import random
 import string
@@ -15,7 +15,7 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 
-# Хранилище активных игр
+# Хранилище мульти игр
 game_sessions = {}
 # Хранилище командных игр
 team_games = {}
@@ -249,7 +249,8 @@ def get_questions(quiz_id):
             'options': q.options,
             'correct_answer': q.correct_answer,
             'media_url': q.media_url,
-            'order': q.order
+            'order': q.order,
+            'round_id': q.round_id  # ← ДОБАВЛЕНО
         } for q in questions]
     })
 
@@ -269,7 +270,10 @@ def get_public_questions(quiz_id):
             'options': q.options,
             'correct_answer': q.correct_answer,
             'media_url': q.media_url,
-            'order': q.order
+            'order': q.order,
+            'round_id': q.round_id,
+            'round_name': q.round.title if q.round else None,  # ← ДОБАВИТЬ ЭТУ СТРОКУ
+            'additional_data': q.additional_data
         } for q in questions]
     })
 
@@ -288,7 +292,7 @@ def save_question(quiz_id):
     if question_id:
         question = Question.query.filter_by(id=question_id, quiz_id=quiz_id).first()
         if not question:
-            return jsonify({'success': False, 'error': 'Вопрос не найдена'}), 404
+            return jsonify({'success': False, 'error': 'Вопрос не найден'}), 404
     else:
         question = Question(quiz_id=quiz_id)
         db.session.add(question)
@@ -299,28 +303,11 @@ def save_question(quiz_id):
     question.correct_answer = data.get('correct_answer')
     question.media_url = data.get('media_url')
     question.order = data.get('order', 0)
-    question.additional_data = data.get('additional_data', {})  # Для хранения доп. данных (инструкции, задания и т.д.)
+    question.round_id = data.get('round_id')  # ← ДОБАВЛЕНО
+    question.additional_data = data.get('additional_data', {})
     
     db.session.commit()
     return jsonify({'success': True, 'question_id': question.id})
-
-
-@app.route('/api/question/<int:question_id>', methods=['DELETE'])
-def delete_question(question_id):
-    if 'user_id' not in session:
-        return jsonify({'success': False, 'error': 'Не авторизован'}), 401
-    
-    question = Question.query.get(question_id)
-    if not question:
-        return jsonify({'success': False, 'error': 'Вопрос не найден'}), 404
-    
-    quiz = Quiz.query.filter_by(id=question.quiz_id, owner_id=session['user_id']).first()
-    if not quiz:
-        return jsonify({'success': False, 'error': 'Нет доступа'}), 403
-    
-    db.session.delete(question)
-    db.session.commit()
-    return jsonify({'success': True})
 
 @app.route('/api/question/<int:question_id>', methods=['GET'])
 def get_question(question_id):
@@ -344,10 +331,29 @@ def get_question(question_id):
             'options': question.options,
             'correct_answer': question.correct_answer,
             'media_url': question.media_url,
-            'order': question.order
+            'order': question.order,
+            'round_id': question.round_id,  # ← ДОБАВЛЕНО
+            'additional_data': question.additional_data
         }
     })
 
+
+@app.route('/api/question/<int:question_id>', methods=['DELETE'])
+def delete_question(question_id):
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'Не авторизован'}), 401
+    
+    question = Question.query.get(question_id)
+    if not question:
+        return jsonify({'success': False, 'error': 'Вопрос не найден'}), 404
+    
+    quiz = Quiz.query.filter_by(id=question.quiz_id, owner_id=session['user_id']).first()
+    if not quiz:
+        return jsonify({'success': False, 'error': 'Нет доступа'}), 403
+    
+    db.session.delete(question)
+    db.session.commit()
+    return jsonify({'success': True})
 
 # ========== ПАНЕЛЬ ВЕДУЩЕГО (МУЛЬТИПЛЕЕР) ==========
 
@@ -368,6 +374,10 @@ def quizmaster_panel(code):
         time_per_question = int(settings.get('timePerQuestion', 25))
         time_show_answer = int(settings.get('timeShowAnswer', 10))
         allow_replay = settings.get('allowReplay', False)
+        random_questions = settings.get('randomQuestions', False)
+        random_options = settings.get('randomOptions', False)
+        
+        all_questions = Question.query.filter_by(quiz_id=quiz.id).order_by(Question.order).all()
         
         game_sessions[code] = {
             'quiz_id': quiz.id,
@@ -380,10 +390,11 @@ def quizmaster_panel(code):
             'time_per_question': time_per_question,
             'time_show_answer': time_show_answer,
             'game_end_time': None,
-            'questions_shuffled': False,
-            'shuffled_questions': None,
             'allow_replay': allow_replay,
-            'manual_start_required': False
+            'manual_start_required': False,
+            'random_questions': random_questions,
+            'random_options': random_options,
+            'all_questions': all_questions
         }
     
     return render_template('quizmaster.html', quiz=quiz, code=code)
@@ -401,6 +412,7 @@ def api_quizmaster_join(code):
     quiz = Quiz.query.get(session_data['quiz_id'])
     settings = quiz.settings or {}
     
+    # Проверка пароля
     if settings.get('accessType') == 'password':
         expected_password = settings.get('accessPassword', '')
         if password != expected_password:
@@ -416,9 +428,29 @@ def api_quizmaster_join(code):
     if len(session_data['players']) >= 35:
         return jsonify({'success': False, 'error': 'Достигнут лимит бесплатного тарифа (35 игроков).'}), 400
     
-    session_data['players'].append({'nickname': nickname, 'score': 0})
+    # Загружаем все вопросы
+    all_questions = session_data.get('all_questions', [])
+    if not all_questions:
+        all_questions = Question.query.filter_by(quiz_id=quiz.id).order_by(Question.order).all()
+        session_data['all_questions'] = all_questions
     
-    return jsonify({'success': True, 'players': session_data['players']})
+    random_questions = session_data.get('random_questions', settings.get('randomQuestions', False))
+    
+    # Каждый игрок получает свой уникальный перемешанный список
+    if random_questions:
+        shuffled = [q.id for q in all_questions]
+        random.shuffle(shuffled)
+        player_questions = shuffled.copy()
+    else:
+        player_questions = [q.id for q in all_questions]
+    
+    session_data['players'].append({
+        'nickname': nickname, 
+        'score': 0,
+        'shuffled_questions': player_questions
+    })
+    
+    return jsonify({'success': True, 'players': [{'nickname': p['nickname'], 'score': p['score']} for p in session_data['players']]})
 
 @app.route('/api/quizmaster/<code>/players', methods=['GET'])
 def api_quizmaster_players(code):
@@ -537,33 +569,28 @@ def api_quizmaster_status(code):
     if code not in game_sessions:
         return jsonify({'success': False, 'error': 'Игра не найдена'}), 404
 
-    session = game_sessions[code]
-    quiz = Quiz.query.get(session['quiz_id'])
-    all_questions = Question.query.filter_by(quiz_id=quiz.id).order_by(Question.order).all()
+    nickname = request.args.get('nickname')
+    
+    session_data = game_sessions[code]
+    quiz = Quiz.query.get(session_data['quiz_id'])
+    
+    all_questions = Question.query.options(db.joinedload(Question.round)).filter_by(quiz_id=quiz.id).order_by(Question.order).all()
     now = time.time()
 
     settings = quiz.settings or {}
     time_per_question = int(settings.get('timePerQuestion', 25))
     time_show_answer = int(settings.get('timeShowAnswer', 10))
     points_per_question = int(settings.get('pointsPerQuestion', 100))
-    random_questions = settings.get('randomQuestions', False)
-    random_options = settings.get('randomOptions', False)
+    random_questions = session_data.get('random_questions', settings.get('randomQuestions', False))
+    random_options = session_data.get('random_options', settings.get('randomOptions', False))
     winner_count = int(settings.get('prizeWinnersCount', 3))
     show_leaderboard = not settings.get('hideFromPlayers', False)
     auto_start = settings.get('autoStart', False)
-    allow_replay = settings.get('allowReplay', False)
-    manual_start_required = session.get('manual_start_required', False)
-
-    if session.get('shuffled_questions') is None:
-        if random_questions:
-            import random
-            shuffled = all_questions.copy()
-            random.shuffle(shuffled)
-            session['shuffled_questions'] = shuffled
-        else:
-            session['shuffled_questions'] = all_questions
-
-    questions = session['shuffled_questions']
+    allow_replay = session_data.get('allow_replay', False)
+    manual_start_required = session_data.get('manual_start_required', False)
+    
+    if 'all_questions' not in session_data:
+        session_data['all_questions'] = all_questions
 
     start_datetime_str = None
     start_date = settings.get('startDate', '')
@@ -571,128 +598,169 @@ def api_quizmaster_status(code):
     if start_date and start_time_str:
         start_datetime_str = f"{start_date} {start_time_str}"
 
-    if session['status'] == 'waiting' and auto_start and not manual_start_required:
+    # Автостарт
+    if session_data['status'] == 'waiting' and auto_start and not manual_start_required:
         if start_date and start_time_str:
             try:
                 start_ts = datetime.strptime(f"{start_date} {start_time_str}", "%Y-%m-%d %H:%M").timestamp()
                 if now >= start_ts:
-                    session['status'] = 'active'
-                    session['current_index'] = 0
-                    session['show_answer'] = False
-                    session['players_answers'] = {}
-                    session['answer_end_time'] = None
-                    session['manual_start_required'] = False
+                    session_data['status'] = 'active'
+                    session_data['current_index'] = 0
+                    session_data['show_answer'] = False
+                    session_data['players_answers'] = {}
+                    session_data['answer_end_time'] = None
+                    session_data['manual_start_required'] = False
             except:
                 pass
 
-    if session['status'] == 'active':
-        if session.get('answer_end_time') is None and not session.get('show_answer'):
-            session['answer_end_time'] = now + time_per_question
-            session['players_answers'] = {}
+    # Логика игры
+    if session_data['status'] == 'active':
+        if session_data.get('answer_end_time') is None and not session_data.get('show_answer'):
+            session_data['answer_end_time'] = now + time_per_question
+            session_data['players_answers'] = {}
 
-        if not session.get('show_answer') and session.get('answer_end_time') and now >= session['answer_end_time']:
-            if session['current_index'] < len(questions):
-                current_q = questions[session['current_index']]
-                for player in session['players']:
-                    nickname = player['nickname']
-                    if nickname in session['players_answers']:
-                        answer = session['players_answers'][nickname]
-                        if current_q.type == 'choice' and current_q.correct_answer:
-                            if answer in current_q.correct_answer:
-                                player['score'] += points_per_question
-            session['show_answer'] = True
-            session['answer_end_time'] = now + time_show_answer
+        if not session_data.get('show_answer') and session_data.get('answer_end_time') and now >= session_data['answer_end_time']:
+            for player in session_data['players']:
+                p_nickname = player['nickname']
+                if p_nickname in session_data['players_answers']:
+                    player_question_ids = player.get('shuffled_questions', [])
+                    if session_data['current_index'] < len(player_question_ids):
+                        q_id = player_question_ids[session_data['current_index']]
+                        current_q = next((q for q in all_questions if q.id == q_id), None)
+                        if current_q:
+                            answer = session_data['players_answers'][p_nickname]
+                            if current_q.type == 'choice' and current_q.correct_answer:
+                                if answer in current_q.correct_answer:
+                                    player['score'] += points_per_question
+            session_data['show_answer'] = True
+            session_data['answer_end_time'] = now + time_show_answer
 
-        elif session.get('show_answer') and session.get('answer_end_time') and now >= session['answer_end_time']:
-            session['current_index'] += 1
-            session['show_answer'] = False
-            session['answer_end_time'] = None
-            session['players_answers'] = {}
+        elif session_data.get('show_answer') and session_data.get('answer_end_time') and now >= session_data['answer_end_time']:
+            session_data['current_index'] += 1
+            session_data['show_answer'] = False
+            session_data['answer_end_time'] = None
+            session_data['players_answers'] = {}
 
-            if session['current_index'] >= len(questions):
-                session['status'] = 'finished'
-                session['game_end_time'] = now
+            all_finished = True
+            for player in session_data['players']:
+                player_question_ids = player.get('shuffled_questions', [])
+                if session_data['current_index'] < len(player_question_ids):
+                    all_finished = False
+                    break
+            
+            if all_finished:
+                session_data['status'] = 'finished'
+                session_data['game_end_time'] = now
                 
-                # ===== СОХРАНЯЕМ РЕЗУЛЬТАТЫ В БД =====
-                print(f"=== ИГРА ОКОНЧЕНА, СОХРАНЯЕМ РЕЗУЛЬТАТЫ ===")
-                total_questions = len(questions)
-                
-                for player in session['players']:
+                for player in session_data['players']:
                     existing = GameResult.query.filter_by(
-                        quiz_id=session['quiz_id'],
+                        quiz_id=session_data['quiz_id'],
                         quiz_code=code,
                         player_name=player['nickname'],
                         mode='multiplayer'
                     ).first()
-                    
                     if not existing:
                         result = GameResult(
-                            quiz_id=session['quiz_id'],
+                            quiz_id=session_data['quiz_id'],
                             quiz_code=code,
                             player_name=player['nickname'],
                             score=player['score'],
                             correct_answers=0,
-                            total_questions=total_questions,
+                            total_questions=len(player.get('shuffled_questions', [])),
                             mode='multiplayer',
                             finished_at=datetime.now(timezone.utc)
                         )
                         db.session.add(result)
-                        print(f"  ✅ Сохранён: {player['nickname']} - {player['score']} баллов")
-                    else:
-                        print(f"  ⚠️ Уже есть: {player['nickname']}")
-                
                 db.session.commit()
-                print(f"=== СОХРАНЕНО {len(session['players'])} ИГРОКОВ В БД ===")
 
-    current_question = None
-    if session['status'] == 'active' and session['current_index'] < len(questions):
-        q = questions[session['current_index']]
-        opts = q.options
-        if random_options and opts:
-            import random
-            opts = random.sample(opts, len(opts))
-        current_question = {
-            'id': q.id,
-            'text': q.text,
-            'type': q.type,
-            'options': opts,
-            'correct_answer': q.correct_answer if session.get('show_answer') else None
-        }
+    # Вопрос для конкретного игрока (если передан nickname)
+    current_question_for_player = None
+    if session_data['status'] == 'active' and nickname:
+        player = next((p for p in session_data['players'] if p['nickname'] == nickname), None)
+        if player:
+            player_question_ids = player.get('shuffled_questions', [])
+            if session_data['current_index'] < len(player_question_ids):
+                q_id = player_question_ids[session_data['current_index']]
+                q = next((q_obj for q_obj in all_questions if q_obj.id == q_id), None)
+                if q:
+                    opts = q.options
+                    if random_options and opts:
+                        import random
+                        opts = random.sample(opts, len(opts))
+                    current_question_for_player = {
+                        'id': q.id,
+                        'text': q.text,
+                        'type': q.type,
+                        'options': opts,
+                        'correct_answer': q.correct_answer[0] if q.correct_answer else None,
+                        'round_name': q.round.title if q.round else None
+                    }
+
+    # Вопрос для ведущего (без nickname)
+    current_question_for_host = None
+    if session_data['status'] == 'active' and not nickname and session_data['players']:
+        first_player = session_data['players'][0]
+        player_question_ids = first_player.get('shuffled_questions', [])
+        if session_data['current_index'] < len(player_question_ids):
+            q_id = player_question_ids[session_data['current_index']]
+            q = next((q_obj for q_obj in all_questions if q_obj.id == q_id), None)
+            if q:
+                opts = q.options
+                if random_options and opts:
+                    import random
+                    opts = random.sample(opts, len(opts))
+                current_question_for_host = {
+                    'id': q.id,
+                    'text': q.text,
+                    'type': q.type,
+                    'options': opts,
+                    'correct_answer': q.correct_answer[0] if q.correct_answer else None,
+                    'round_name': q.round.title if q.round else None
+                }
 
     time_left = None
-    if session['status'] == 'active' and session.get('answer_end_time'):
-        time_left = max(0, int(session['answer_end_time'] - now))
+    if session_data['status'] == 'active' and session_data.get('answer_end_time'):
+        time_left = max(0, int(session_data['answer_end_time'] - now))
 
-    sorted_players = sorted(session['players'], key=lambda x: x['score'], reverse=True)
-    winners = sorted_players[:winner_count] if winner_count > 0 else []
+    sorted_players = sorted(session_data['players'], key=lambda x: x['score'], reverse=True)
+    winners = [{'nickname': p['nickname'], 'score': p['score']} for p in sorted_players[:winner_count]] if winner_count > 0 else []
 
     show_final_results = False
-    if session['status'] == 'finished' and session.get('game_end_time'):
-        if now - session['game_end_time'] < 6:
+    if session_data['status'] == 'finished' and session_data.get('game_end_time'):
+        if now - session_data['game_end_time'] < 6:
             show_final_results = True
 
     need_password = settings.get('accessType') == 'password'
 
     return jsonify({
         'success': True,
-        'status': session['status'],
-        'current_question': current_question,
-        'question_index': session['current_index'],
-        'total_questions': len(questions),
-        'show_answer': session.get('show_answer', False),
-        'players': session['players'],
-        'sorted_players': sorted_players,
+        'status': session_data['status'],
+        'current_question': current_question_for_player if nickname else current_question_for_host,
+        'question_index': session_data['current_index'],
+        'total_questions': len(session_data['players'][0].get('shuffled_questions', [])) if session_data['players'] else 0,
+        'show_answer': session_data.get('show_answer', False),
+        'players': [{'nickname': p['nickname'], 'score': p['score']} for p in session_data['players']],
+        'sorted_players': [{'nickname': p['nickname'], 'score': p['score']} for p in sorted_players],
         'time_left': time_left,
         'time_per_question': time_per_question,
         'time_show_answer': time_show_answer,
         'show_leaderboard_to_players': show_leaderboard,
-        'winners': [{'nickname': p['nickname'], 'score': p['score']} for p in winners],
+        'winners': winners,
         'start_datetime': start_datetime_str,
         'show_final_results': show_final_results,
         'points_per_question': points_per_question,
         'need_password': need_password,
         'auto_start': auto_start,
-        'allow_replay': allow_replay
+        'allow_replay': allow_replay,
+        'random_questions': random_questions,
+        'all_questions': [
+            {
+                'text': q.text,
+                'options': q.options,
+                'correct_answer': q.correct_answer[0] if q.correct_answer else '?'
+            }
+            for q in all_questions
+        ] if random_questions else []
     })
 
 @app.route('/api/quizmaster/<code>/answer', methods=['POST'])
@@ -732,8 +800,13 @@ def api_quizmaster_replay(code):
     time_per_question = int(settings.get('timePerQuestion', 25))
     time_show_answer = int(settings.get('timeShowAnswer', 10))
     allow_replay = settings.get('allowReplay', False)
+    random_questions = settings.get('randomQuestions', False)
+    random_options = settings.get('randomOptions', False)
     
-    new_session = {
+    # Загружаем все вопросы для этой викторины
+    all_questions = Question.query.filter_by(quiz_id=quiz_obj.id).order_by(Question.order).all()
+    
+    game_sessions[code] = {
         'quiz_id': old_session['quiz_id'],
         'players': [],
         'current_index': 0,
@@ -744,13 +817,12 @@ def api_quizmaster_replay(code):
         'time_per_question': time_per_question,
         'time_show_answer': time_show_answer,
         'game_end_time': None,
-        'questions_shuffled': False,
-        'shuffled_questions': None,
         'allow_replay': allow_replay,
-        'manual_start_required': True
+        'manual_start_required': True,
+        'random_questions': random_questions,
+        'random_options': random_options,
+        'all_questions': all_questions
     }
-    
-    game_sessions[code] = new_session
     
     return jsonify({'success': True})
 
@@ -812,21 +884,33 @@ def public_quiz_status(quiz_id):
         return jsonify({'success': False, 'error': 'Викторина не найдена'}), 404
     
     settings = quiz.settings or {}
-    is_closed = settings.get('is_closed', False)
+    is_closed = solo_games_status.get(quiz_id, {}).get('is_closed', False)
     allow_replay_solo = settings.get('allowReplaySolo', False)
     time_show_answer = int(settings.get('timeShowAnswer', 10))
+    time_per_question = int(settings.get('timePerQuestion', 25))
     random_questions = settings.get('randomQuestions', False)
     random_options = settings.get('randomOptions', False)
     points_per_question = int(settings.get('pointsPerQuestion', 100))
+    need_password = settings.get('accessType') == 'password'
+    auto_start = settings.get('autoStart', False)
+    start_date = settings.get('startDate', '')
+    start_time = settings.get('startTime', '')
+    allow_replay = settings.get('allowReplay', False)
     
     return jsonify({
         'success': True,
         'is_closed': is_closed,
         'allowReplaySolo': allow_replay_solo,
+        'allowReplay': allow_replay,
         'timeShowAnswer': time_show_answer,
+        'timePerQuestion': time_per_question,
         'randomQuestions': random_questions,
         'randomOptions': random_options,
-        'pointsPerQuestion': points_per_question
+        'need_password': need_password,
+        'pointsPerQuestion': points_per_question,
+        'autoStart': auto_start,
+        'startDate': start_date,
+        'startTime': start_time
     })
 
 
@@ -961,7 +1045,6 @@ def solo_open_access(quiz_id):
 
 @app.route('/api/solo/<int:quiz_id>/status', methods=['GET'])
 def solo_game_status(quiz_id):
-    """Проверить доступна ли викторина для игры"""
     quiz = db.session.get(Quiz, quiz_id)
     if not quiz:
         return jsonify({'success': False, 'error': 'Викторина не найдена'}), 404
@@ -1087,43 +1170,114 @@ def solo_game_by_code(code):
         return "Викторина не найдена", 404
     return render_template('solo_game.html', quiz=quiz)
 
-# ========== КОМАНДНЫЙ РЕЖИМ (ПРАВИЛЬНАЯ ЛОГИКА) ==========
+# ========== КОМАНДНЫЙ РЕЖИМ (КАЖДАЯ КОМАНДА НЕЗАВИСИМО) ==========
 
-# Хранилище командных игр
-team_games = {}  # game_code: {quiz_id, teams: {team_code: {name, members, score}}, status, current_q, questions}
+team_games = {}  # game_code -> {teams: {team_name: {members, score, current_index, players_answers, show_answer, answer_end_time}}}
 
-@app.route('/api/team/join', methods=['POST'])
-def team_join_simple():
-    """Игрок присоединяется к команде"""
-    data = request.get_json()
-    game_code = data.get('game_code')
-    team_name = data.get('team_name')
-    player_name = data.get('player_name')
+@app.route('/team/leader/<int:quiz_id>')
+def team_leader(quiz_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login_page'))
     
-    if not game_code or not team_name or not player_name:
-        return jsonify({'success': False, 'error': 'Заполните все поля'}), 400
+    quiz = db.session.get(Quiz, quiz_id)
+    if not quiz or quiz.owner_id != session['user_id']:
+        return "Нет доступа", 403
     
-    # Создаём игру если её нет
+    game_code = quiz.quiz_code
     if game_code not in team_games:
-        quiz = Quiz.query.filter_by(quiz_code=game_code).first()
-        if not quiz:
-            return jsonify({'success': False, 'error': 'Викторина не найдена'}), 404
-        questions = Question.query.filter_by(quiz_id=quiz.id).all()
+        settings = quiz.settings or {}
+        all_questions = Question.query.filter_by(quiz_id=quiz.id).order_by(Question.order).all()
         team_games[game_code] = {
             'quiz_id': quiz.id,
             'teams': {},
             'status': 'waiting',
-            'current_q': 0,
-            'questions': [{'id': q.id, 'text': q.text, 'options': q.options, 'correct_answer': q.correct_answer} for q in questions]
+            'time_per_question': int(settings.get('timePerQuestion', 25)),
+            'time_show_answer': int(settings.get('timeShowAnswer', 10)),
+            'points_per_question': int(settings.get('pointsPerQuestion', 100)),
+            'all_questions': all_questions,
+            'allow_replay': settings.get('allowReplay', False),
+            'auto_start': settings.get('autoStart', False),
+            'start_date': settings.get('startDate', ''),
+            'start_time': settings.get('startTime', ''),
+            'need_password': settings.get('accessType') == 'password',
+            'access_password': settings.get('accessPassword', ''),
+            'manual_start_required': False,
+            'random_questions': settings.get('randomQuestions', False),
+            'random_options': settings.get('randomOptions', False)
+        }
+    
+    return render_template('team_leader.html', quiz=quiz)
+
+@app.route('/team/play/<code>')
+def team_play(code):
+    quiz = Quiz.query.filter_by(quiz_code=code).first()
+    if not quiz:
+        return "Викторина не найдена", 404
+    return render_template('team_play.html', quiz=quiz, code=code)
+
+@app.route('/api/team/join', methods=['POST'])
+def team_join():
+    data = request.get_json()
+    game_code = data.get('game_code')
+    team_name = data.get('team_name')
+    player_name = data.get('player_name')
+    password = data.get('password', '')
+    
+    if not game_code or not team_name or not player_name:
+        return jsonify({'success': False, 'error': 'Заполните все поля'}), 400
+    
+    if game_code not in team_games:
+        quiz = Quiz.query.filter_by(quiz_code=game_code).first()
+        if not quiz:
+            return jsonify({'success': False, 'error': 'Викторина не найдена'}), 404
+        settings = quiz.settings or {}
+        all_questions = Question.query.filter_by(quiz_id=quiz.id).order_by(Question.order).all()
+        team_games[game_code] = {
+            'quiz_id': quiz.id,
+            'teams': {},
+            'status': 'waiting',
+            'time_per_question': int(settings.get('timePerQuestion', 25)),
+            'time_show_answer': int(settings.get('timeShowAnswer', 10)),
+            'points_per_question': int(settings.get('pointsPerQuestion', 100)),
+            'all_questions': all_questions,
+            'allow_replay': settings.get('allowReplay', False),
+            'auto_start': settings.get('autoStart', False),
+            'start_date': settings.get('startDate', ''),
+            'start_time': settings.get('startTime', ''),
+            'need_password': settings.get('accessType') == 'password',
+            'access_password': settings.get('accessPassword', ''),
+            'manual_start_required': False,
+            'random_questions': settings.get('randomQuestions', False),
+            'random_options': settings.get('randomOptions', False)
         }
     
     game = team_games[game_code]
     
-    # Добавляем игрока в команду
-    if team_name not in game['teams']:
-        game['teams'][team_name] = {'members': [], 'score': 0}
+    if game.get('need_password') and game.get('access_password'):
+        if password != game['access_password']:
+            return jsonify({'success': False, 'error': 'Неверный пароль'}), 400
     
-    # Проверяем не входил ли уже
+    if game['status'] != 'waiting':
+        return jsonify({'success': False, 'error': 'Игра уже началась'}), 400
+    
+    if team_name not in game['teams']:
+        # Создаём команду с её собственным прогрессом
+        all_q = game['all_questions']
+        shuffled_questions = all_q.copy()
+        if game.get('random_questions'):
+            random.shuffle(shuffled_questions)
+        
+        game['teams'][team_name] = {
+            'members': [],
+            'score': 0,
+            'current_index': 0,
+            'shuffled_questions': shuffled_questions,
+            'players_answers': {},
+            'show_answer': False,
+            'answer_end_time': None,
+            'options_shuffled': {}
+        }
+    
     for member in game['teams'][team_name]['members']:
         if member['name'] == player_name:
             return jsonify({'success': True, 'team_name': team_name})
@@ -1132,9 +1286,22 @@ def team_join_simple():
     
     return jsonify({'success': True, 'team_name': team_name})
 
+@app.route('/api/team/leaderboard', methods=['GET'])
+def team_leaderboard():
+    game_code = request.args.get('game_code')
+    
+    if game_code not in team_games:
+        return jsonify({'success': True, 'teams': []})
+    
+    game = team_games[game_code]
+    teams_list = [{'name': name, 'score': team['score'], 'members_count': len(team['members'])} 
+                  for name, team in game['teams'].items()]
+    teams_list.sort(key=lambda x: x['score'], reverse=True)
+    
+    return jsonify({'success': True, 'teams': teams_list})
+
 @app.route('/api/team/status', methods=['GET'])
-def team_status_simple():
-    """Получить статус игры"""
+def team_status():
     game_code = request.args.get('game_code')
     team_name = request.args.get('team_name')
     
@@ -1142,32 +1309,184 @@ def team_status_simple():
         return jsonify({'success': False, 'error': 'Игра не найдена'}), 404
     
     game = team_games[game_code]
+    quiz = Quiz.query.get(game['quiz_id'])
+    now = time.time()
     
-    current_q = None
-    if game['status'] == 'active' and game['current_q'] < len(game['questions']):
-        q = game['questions'][game['current_q']]
-        current_q = {
-            'text': q['text'],
-            'options': q['options']
+    # Загружаем все вопросы викторины для отображения ведущему
+    all_questions = Question.query.filter_by(quiz_id=quiz.id).order_by(Question.order).all()
+    all_questions_data = [
+        {
+            'text': q.text,
+            'options': q.options,
+            'correct_answer': q.correct_answer[0] if q.correct_answer else '?'
         }
+        for q in all_questions
+    ]
     
-    team_score = game['teams'].get(team_name, {}).get('score', 0) if team_name else 0
+    # Автостарт
+    if game['status'] == 'waiting' and game.get('auto_start') and not game.get('manual_start_required', False):
+        start_date = game.get('start_date', '')
+        start_time_str = game.get('start_time', '')
+        if start_date and start_time_str:
+            try:
+                start_ts = datetime.strptime(f"{start_date} {start_time_str}", "%Y-%m-%d %H:%M").timestamp()
+                if now >= start_ts and len(game['teams']) > 0:
+                    game['status'] = 'active'
+                    for team in game['teams'].values():
+                        team['answer_end_time'] = now + game['time_per_question']
+                        team['show_answer'] = False
+                        team['players_answers'] = {}
+                        team['finished'] = False
+            except:
+                pass
+    
+    # Если запрос от ведущего (без team_name)
+    if not team_name:
+        # Собираем общую информацию о всех командах
+        teams_info = []
+        max_current = 0
+        max_total = 0
+        
+        for t_name, team in game['teams'].items():
+            questions = team.get('shuffled_questions', [])
+            current_q = team['current_index'] + 1 if team['current_index'] < len(questions) else len(questions)
+            total_q = len(questions)
+            
+            teams_info.append({
+                'name': t_name,
+                'score': team['score'],
+                'members_count': len(team['members']),
+                'current_question': current_q,
+                'total_questions': total_q,
+                'finished': team.get('finished', False)
+            })
+            
+            if current_q > max_current:
+                max_current = current_q
+                max_total = total_q
+        
+        teams_info.sort(key=lambda x: x['score'], reverse=True)
+        
+        return jsonify({
+            'success': True,
+            'status': game['status'],
+            'teams': teams_info,
+            'total_teams': len(game['teams']),
+            'current_question': max_current,
+            'total_questions': max_total,
+            'start_datetime': f"{game.get('start_date', '')} {game.get('start_time', '')}" if game.get('auto_start') and game['status'] == 'waiting' else None,
+            'need_password': game.get('need_password', False),
+            'time_per_question': game['time_per_question'],
+            'time_show_answer': game['time_show_answer'],
+            'points_per_question': game['points_per_question'],
+            'random_questions': game.get('random_questions', False),
+            'all_questions': all_questions_data if game.get('random_questions', False) else []
+        })
+    
+    # Запрос от команды
+    if team_name not in game['teams']:
+        return jsonify({'success': False, 'error': 'Команда не найдена'}), 404
+    
+    team = game['teams'][team_name]
+    questions = team['shuffled_questions']
+    
+    # Логика игры для этой команды
+    if game['status'] == 'active' and not team.get('finished'):
+        if not team.get('show_answer') and team.get('answer_end_time') and now >= team['answer_end_time']:
+            if team['current_index'] < len(questions):
+                current_q = questions[team['current_index']]
+                team_correct_count = 0
+                for member in team['members']:
+                    member_answer = team['players_answers'].get(member['name'])
+                    if member_answer and current_q.correct_answer and member_answer in current_q.correct_answer:
+                        team_correct_count += 1
+                team['score'] += team_correct_count * game['points_per_question']
+            team['show_answer'] = True
+            team['answer_end_time'] = now + game['time_show_answer']
+        
+        elif team.get('show_answer') and team.get('answer_end_time') and now >= team['answer_end_time']:
+            team['current_index'] += 1
+            team['show_answer'] = False
+            team['players_answers'] = {}
+            team['answer_end_time'] = None
+            
+            if team['current_index'] >= len(questions):
+                team['finished'] = True
+        
+        if not team.get('show_answer') and team.get('answer_end_time') is None and not team.get('finished'):
+            team['answer_end_time'] = now + game['time_per_question']
+    
+    # Формируем текущий вопрос
+    current_question = None
+    if game['status'] == 'active' and team['current_index'] < len(questions) and not team.get('finished'):
+        q = questions[team['current_index']]
+        
+        options = q.options
+        if game.get('random_options') and options:
+            cache_key = f"{team_name}_{team['current_index']}"
+            if cache_key not in team.get('options_shuffled', {}):
+                opts = options.copy()
+                random.shuffle(opts)
+                team.setdefault('options_shuffled', {})[cache_key] = opts
+            options = team['options_shuffled'][cache_key]
+        
+        current_question = {
+            'text': q.text,
+            'options': options,
+            'round_name': q.round.title if q.round else None
+        }
+        if team.get('show_answer'):
+            current_question['correct_answer'] = q.correct_answer[0] if q.correct_answer else None
+    
+    time_left = None
+    if game['status'] == 'active' and team.get('answer_end_time') and not team.get('show_answer'):
+        time_left = max(0, int(team['answer_end_time'] - now))
+    
+    # Проверяем, все ли команды закончили
+    all_finished = all(t.get('finished', False) for t in game['teams'].values())
+    if all_finished and len(game['teams']) > 0:
+        game['status'] = 'finished'
+        for team_name_key, team_data in game['teams'].items():
+            existing = GameResult.query.filter_by(
+                quiz_id=game['quiz_id'],
+                quiz_code=game_code,
+                player_name=team_name_key,
+                mode='team'
+            ).first()
+            if not existing:
+                result = GameResult(
+                    quiz_id=game['quiz_id'],
+                    quiz_code=game_code,
+                    player_name=team_name_key,
+                    score=team_data['score'],
+                    correct_answers=0,
+                    total_questions=len(team_data['shuffled_questions']),
+                    mode='team',
+                    finished_at=datetime.now(timezone.utc)
+                )
+                db.session.add(result)
+        db.session.commit()
     
     return jsonify({
         'success': True,
         'status': game['status'],
-        'current_question': current_q,
-        'question_index': game['current_q'],
-        'total_questions': len(game['questions']),
-        'team_score': team_score
+        'current_question': current_question,
+        'question_index': team['current_index'],
+        'total_questions': len(questions),
+        'team_score': team['score'],
+        'time_left': time_left,
+        'show_answer': team.get('show_answer', False),
+        'finished': team.get('finished', False),
+        'points_per_question': game['points_per_question'],
+        'time_show_answer': game['time_show_answer']
     })
 
 @app.route('/api/team/answer', methods=['POST'])
-def team_answer_simple():
-    """Ответ команды"""
+def team_answer():
     data = request.get_json()
     game_code = data.get('game_code')
     team_name = data.get('team_name')
+    player_name = data.get('player_name')
     answer = data.get('answer')
     
     if game_code not in team_games:
@@ -1178,127 +1497,47 @@ def team_answer_simple():
     if game['status'] != 'active':
         return jsonify({'success': False, 'error': 'Игра не активна'}), 400
     
-    # Проверяем ответ
-    q = game['questions'][game['current_q']]
-    is_correct = q['correct_answer'] and answer in q['correct_answer']
+    if team_name not in game['teams']:
+        return jsonify({'success': False, 'error': 'Команда не найдена'}), 404
     
-    if is_correct:
-        game['teams'][team_name]['score'] += 100
+    team = game['teams'][team_name]
     
-    # Переход к следующему вопросу
-    game['current_q'] += 1
+    if team.get('show_answer'):
+        return jsonify({'success': False, 'error': 'Время ответа истекло'}), 400
     
-    if game['current_q'] >= len(game['questions']):
-        game['status'] = 'finished'
-        
-        # ===== ДОБАВЬ ЭТОТ БЛОК - СОХРАНЕНИЕ РЕЗУЛЬТАТОВ =====
-        print(f"=== КОМАНДНАЯ ИГРА ОКОНЧЕНА, СОХРАНЯЕМ ===")
-        quiz_obj = Quiz.query.get(game['quiz_id'])
-        total_questions = len(game['questions'])
-        
-        for team_name_save, team_data in game['teams'].items():
-            for member in team_data['members']:
-                existing = GameResult.query.filter_by(
-                    quiz_id=game['quiz_id'],
-                    quiz_code=game_code,
-                    player_name=member['name'],
-                    mode='team'
-                ).first()
-                
-                if not existing:
-                    result = GameResult(
-                        quiz_id=game['quiz_id'],
-                        quiz_code=game_code,
-                        player_name=member['name'],
-                        score=team_data['score'],
-                        correct_answers=0,
-                        total_questions=total_questions,
-                        mode='team',
-                        finished_at=datetime.now(timezone.utc)
-                    )
-                    db.session.add(result)
-                    print(f"  ✅ {member['name']} (команда {team_name_save}) - {team_data['score']} очков")
-        
-        db.session.commit()
-        print(f"=== СОХРАНЕНО В БД ===")
-        # ===== КОНЕЦ БЛОКА =====
+    # Сохраняем ответ игрока
+    if player_name not in team['players_answers']:
+        team['players_answers'][player_name] = answer
     
-    return jsonify({
-        'success': True,
-        'correct': is_correct,
-        'team_score': game['teams'][team_name]['score'],
-        'game_finished': game['status'] == 'finished'
-    })
-
-@app.route('/api/team/leaderboard', methods=['GET'])
-def team_leaderboard_simple():
-    """Таблица команд"""
-    game_code = request.args.get('game_code')
-    
-    if game_code not in team_games:
-        return jsonify({'success': False, 'error': 'Игра не найдена'}), 404
-    
-    game = team_games[game_code]
-    
-    teams_list = [{'name': name, 'score': team['score'], 'members_count': len(team['members'])} 
-                  for name, team in game['teams'].items()]
-    teams_list.sort(key=lambda x: x['score'], reverse=True)
-    
-    return jsonify({'success': True, 'teams': teams_list})
+    return jsonify({'success': True})
 
 @app.route('/api/team/start', methods=['POST'])
-def team_start_simple():
-    """Начать игру (ведущий)"""
+def team_start():
     data = request.get_json()
     game_code = data.get('game_code')
     
     if game_code not in team_games:
         return jsonify({'success': False, 'error': 'Игра не найдена'}), 404
     
-    team_games[game_code]['status'] = 'active'
-    team_games[game_code]['current_q'] = 0
+    game = team_games[game_code]
+    
+    if len(game['teams']) == 0:
+        return jsonify({'success': False, 'error': 'Нет команд'}), 400
+    
+    game['status'] = 'active'
+    game['manual_start_required'] = False
+    now = time.time()
+    
+    for team in game['teams'].values():
+        team['answer_end_time'] = now + game['time_per_question']
+        team['show_answer'] = False
+        team['players_answers'] = {}
+        team['finished'] = False
     
     return jsonify({'success': True})
 
-
-@app.route('/team/leader/<int:quiz_id>')
-def team_leader(quiz_id):
-    """Панель ведущего командной игры"""
-    if 'user_id' not in session:
-        return redirect(url_for('login_page'))
-    
-    quiz = db.session.get(Quiz, quiz_id)
-    if not quiz or quiz.owner_id != session['user_id']:
-        return "Нет доступа", 403
-    
-    # Создаём игру в team_games если её нет
-    game_code = quiz.quiz_code
-    if game_code not in team_games:
-        questions = Question.query.filter_by(quiz_id=quiz.id).all()
-        team_games[game_code] = {
-            'quiz_id': quiz.id,
-            'teams': {},
-            'status': 'waiting',
-            'current_q': 0,
-            'questions': [{'id': q.id, 'text': q.text, 'options': q.options, 'correct_answer': q.correct_answer} for q in questions]
-        }
-        print(f"✅ Создана командная игра с кодом {game_code}")
-    
-    return render_template('team_leader.html', quiz=quiz)
-
-@app.route('/team/play/<code>')
-def team_play(code):
-    """Страница для игроков"""
-    quiz = Quiz.query.filter_by(quiz_code=code).first()
-    if not quiz:
-        return "Викторина не найдена", 404
-    return render_template('team_play.html', quiz=quiz, code=code)
-
-
-
 @app.route('/api/team/pause', methods=['POST'])
 def team_pause():
-    """Поставить игру на паузу"""
     data = request.get_json()
     game_code = data.get('game_code')
     
@@ -1309,16 +1548,18 @@ def team_pause():
 
 @app.route('/api/team/resume', methods=['POST'])
 def team_resume():
-    """Возобновить игру"""
     data = request.get_json()
     game_code = data.get('game_code')
     
     if game_code in team_games and team_games[game_code]['status'] == 'paused':
-        team_games[game_code]['status'] = 'active'
+        game = team_games[game_code]
+        game['status'] = 'active'
+        now = time.time()
+        for team in game['teams'].values():
+            if team.get('answer_end_time'):
+                team['answer_end_time'] = now + max(0, team['answer_end_time'] - team.get('pause_start_time', now))
     
     return jsonify({'success': True})
-
-
 
 @app.route('/api/team/stop', methods=['POST'])
 def team_stop():
@@ -1329,13 +1570,8 @@ def team_stop():
         return jsonify({'success': False, 'error': 'Игра не найдена'}), 404
     
     game = team_games[game_code]
-    quiz_obj = Quiz.query.get(game['quiz_id'])
-    questions = Question.query.filter_by(quiz_id=quiz_obj.id).all()
-    total_questions = len(questions)
+    total_questions = len(game['all_questions'])
     
-    print(f"=== СОХРАНЕНИЕ КОМАНДНОЙ ИГРЫ ===")
-    
-    # Сохраняем КАЖДУЮ КОМАНДУ (а не игроков)
     for team_name, team_data in game['teams'].items():
         existing = GameResult.query.filter_by(
             quiz_id=game['quiz_id'],
@@ -1343,12 +1579,11 @@ def team_stop():
             player_name=team_name,
             mode='team'
         ).first()
-        
         if not existing:
             result = GameResult(
                 quiz_id=game['quiz_id'],
                 quiz_code=game_code,
-                player_name=team_name,  # Название команды
+                player_name=team_name,
                 score=team_data['score'],
                 correct_answers=0,
                 total_questions=total_questions,
@@ -1356,10 +1591,43 @@ def team_stop():
                 finished_at=datetime.now(timezone.utc)
             )
             db.session.add(result)
-            print(f"  ✅ Сохранена команда: {team_name} - {team_data['score']} очков")
     
     db.session.commit()
     game['status'] = 'finished'
+    
+    return jsonify({'success': True})
+
+@app.route('/api/team/replay', methods=['POST'])
+def team_replay():
+    data = request.get_json()
+    game_code = data.get('game_code')
+    
+    if game_code not in team_games:
+        return jsonify({'success': False, 'error': 'Игра не найдена'}), 404
+    
+    old_game = team_games[game_code]
+    quiz = Quiz.query.get(old_game['quiz_id'])
+    settings = quiz.settings or {}
+    all_questions = Question.query.filter_by(quiz_id=quiz.id).order_by(Question.order).all()
+    
+    team_games[game_code] = {
+        'quiz_id': quiz.id,
+        'teams': {},
+        'status': 'waiting',
+        'time_per_question': old_game['time_per_question'],
+        'time_show_answer': old_game['time_show_answer'],
+        'points_per_question': old_game['points_per_question'],
+        'all_questions': all_questions,
+        'allow_replay': old_game.get('allow_replay', False),
+        'auto_start': False,
+        'manual_start_required': True,
+        'start_date': old_game.get('start_date', ''),
+        'start_time': old_game.get('start_time', ''),
+        'need_password': old_game.get('need_password', False),
+        'access_password': old_game.get('access_password', ''),
+        'random_questions': old_game.get('random_questions', False),
+        'random_options': old_game.get('random_options', False)
+    }
     
     return jsonify({'success': True})
 
@@ -1597,6 +1865,169 @@ def submit_drawing():
         'image_data': drawing,
         'timestamp': datetime.now(timezone.utc)
     })
+    
+    return jsonify({'success': True})
+
+@app.route('/api/solo/<int:quiz_id>/auth', methods=['POST'])
+def solo_auth(quiz_id):
+    data = request.get_json()
+    password = data.get('password', '')
+    
+    quiz = db.session.get(Quiz, quiz_id)
+    if not quiz:
+        return jsonify({'success': False, 'error': 'Викторина не найдена'}), 404
+    
+    settings = quiz.settings or {}
+    access_type = settings.get('accessType', 'public')
+    access_password = settings.get('accessPassword', '')
+    
+    if access_type == 'password' and access_password and password != access_password:
+        return jsonify({'success': False, 'error': 'Неверный пароль'}), 403
+    
+    return jsonify({'success': True})
+
+@app.route('/api/team/next', methods=['POST'])
+def team_next_question():
+    """Перейти к следующему вопросу (вызывается автоматически по таймеру)"""
+    data = request.get_json()
+    game_code = data.get('game_code')
+    
+    if game_code not in team_games:
+        return jsonify({'success': False, 'error': 'Игра не найдена'}), 404
+    
+    game = team_games[game_code]
+    
+    if game['status'] != 'active':
+        return jsonify({'success': False, 'error': 'Игра не активна'}), 400
+    
+    # Переход к следующему вопросу
+    game['current_q'] += 1
+    game['show_answer'] = False
+    game['answer_shown'] = False
+    
+    # Сброс таймера для нового вопроса
+    if game['current_q'] < len(game['questions']):
+        game['question_start_time'] = time.time()
+    
+    # Проверяем конец игры
+    if game['current_q'] >= len(game['questions']):
+        game['status'] = 'finished'
+        
+        # Сохраняем результаты
+        quiz_obj = Quiz.query.get(game['quiz_id'])
+        if quiz_obj:
+            total_questions = len(game['questions'])
+            for team_name_save, team_data in game['teams'].items():
+                existing = GameResult.query.filter_by(
+                    quiz_id=game['quiz_id'],
+                    quiz_code=game_code,
+                    player_name=team_name_save,
+                    mode='team'
+                ).first()
+                if not existing:
+                    result = GameResult(
+                        quiz_id=game['quiz_id'],
+                        quiz_code=game_code,
+                        player_name=team_name_save,
+                        score=team_data['score'],
+                        correct_answers=0,
+                        total_questions=total_questions,
+                        mode='team',
+                        finished_at=datetime.now(timezone.utc)
+                    )
+                    db.session.add(result)
+            db.session.commit()
+    
+    return jsonify({'success': True})
+
+# ========== API ДЛЯ РАУНДОВ ==========
+
+@app.route('/api/quiz/<int:quiz_id>/rounds', methods=['GET'])
+def get_rounds(quiz_id):
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'Не авторизован'}), 401
+    
+    quiz = Quiz.query.filter_by(id=quiz_id, owner_id=session['user_id']).first()
+    if not quiz:
+        return jsonify({'success': False, 'error': 'Викторина не найдена'}), 404
+    
+    rounds = Round.query.filter_by(quiz_id=quiz_id).order_by(Round.order_index).all()
+    return jsonify({
+        'success': True,
+        'rounds': [{
+            'id': r.id,
+            'title': r.title,
+            'order_index': r.order_index,
+            'questions_count': len(r.questions)
+        } for r in rounds]
+    })
+
+@app.route('/api/quiz/<int:quiz_id>/round', methods=['POST'])
+def create_round(quiz_id):
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'Не авторизован'}), 401
+    
+    quiz = Quiz.query.filter_by(id=quiz_id, owner_id=session['user_id']).first()
+    if not quiz:
+        return jsonify({'success': False, 'error': 'Викторина не найдена'}), 404
+    
+    data = request.get_json()
+    title = data.get('title')
+    
+    if not title:
+        return jsonify({'success': False, 'error': 'Введите название раунда'}), 400
+    
+    # Определяем порядковый индекс
+    max_order = db.session.query(db.func.max(Round.order_index)).filter_by(quiz_id=quiz_id).scalar() or 0
+    
+    new_round = Round(
+        quiz_id=quiz_id,
+        title=title,
+        order_index=max_order + 1
+    )
+    db.session.add(new_round)
+    db.session.commit()
+    
+    return jsonify({'success': True, 'round_id': new_round.id})
+
+@app.route('/api/round/<int:round_id>', methods=['PUT'])
+def update_round(round_id):
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'Не авторизован'}), 401
+    
+    round_obj = db.session.get(Round, round_id)
+    if not round_obj:
+        return jsonify({'success': False, 'error': 'Раунд не найден'}), 404
+    
+    quiz = Quiz.query.filter_by(id=round_obj.quiz_id, owner_id=session['user_id']).first()
+    if not quiz:
+        return jsonify({'success': False, 'error': 'Нет доступа'}), 403
+    
+    data = request.get_json()
+    if 'title' in data:
+        round_obj.title = data['title']
+    
+    db.session.commit()
+    return jsonify({'success': True})
+
+@app.route('/api/round/<int:round_id>', methods=['DELETE'])
+def delete_round(round_id):
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'Не авторизован'}), 401
+    
+    round_obj = db.session.get(Round, round_id)
+    if not round_obj:
+        return jsonify({'success': False, 'error': 'Раунд не найден'}), 404
+    
+    quiz = Quiz.query.filter_by(id=round_obj.quiz_id, owner_id=session['user_id']).first()
+    if not quiz:
+        return jsonify({'success': False, 'error': 'Нет доступа'}), 403
+    
+    # Переносим вопросы из удаляемого раунда в общий список (round_id = NULL)
+    Question.query.filter_by(round_id=round_id).update({'round_id': None})
+    
+    db.session.delete(round_obj)
+    db.session.commit()
     
     return jsonify({'success': True})
 

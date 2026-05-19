@@ -2297,3 +2297,129 @@ body.auth-page {
     padding-top: 20px;
     border-top: 1px solid #eee;
 }
+
+.question-progress {
+    font-size: 14px;
+    color: var(--text-gray);
+    margin-top: 10px;
+    padding: 8px;
+    background: #FFF8E1;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.rounds-section {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.rounds-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.rounds-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.round-item {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    padding: 8px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s;
+}
+
+.round-item.active {
+    background: var(--sovcombank-blue);
+    border-color: var(--sovcombank-blue);
+    color: white;
+}
+
+.round-item .round-name {
+    font-size: 14px;
+}
+
+.round-item .round-questions-count {
+    font-size: 12px;
+    background: #eee;
+    padding: 2px 6px;
+    border-radius: 10px;
+}
+
+.round-item.active .round-questions-count {
+    background: rgba(255,255,255,0.3);
+    color: white;
+}
+
+.round-actions {
+    display: flex;
+    gap: 5px;
+    margin-left: 10px;
+}
+
+.round-actions button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.current-round-indicator {
+    background: #e3f2fd;
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-small {
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    background: #2196F3;
+    color: white;
+}
+
+.questions-list-panel {
+    margin-top: 20px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+.all-questions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.question-item {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 14px;
+}
+.question-item.correct {
+    background: #e8f5e9;
+    border-left: 4px solid #4caf50;
+}
+.question-item .question-text {
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+.question-item .correct-answer {
+    color: #4caf50;
+    font-size: 12px;
+}
