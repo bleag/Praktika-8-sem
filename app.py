@@ -1312,16 +1312,15 @@ def team_status():
     quiz = Quiz.query.get(game['quiz_id'])
     now = time.time()
     
-    # Загружаем все вопросы викторины для отображения ведущему
-    all_questions = Question.query.filter_by(quiz_id=quiz.id).order_by(Question.order).all()
-    all_questions_data = [
-        {
+    # Загружаем все вопросы викторины с раундами (eager loading)
+    all_questions = Question.query.options(db.joinedload(Question.round)).filter_by(quiz_id=quiz.id).order_by(Question.order).all()
+    all_questions_data = []
+    for q in all_questions:
+        all_questions_data.append({
             'text': q.text,
             'options': q.options,
             'correct_answer': q.correct_answer[0] if q.correct_answer else '?'
-        }
-        for q in all_questions
-    ]
+        })
     
     # Автостарт
     if game['status'] == 'waiting' and game.get('auto_start') and not game.get('manual_start_required', False):
@@ -1380,7 +1379,8 @@ def team_status():
             'time_show_answer': game['time_show_answer'],
             'points_per_question': game['points_per_question'],
             'random_questions': game.get('random_questions', False),
-            'all_questions': all_questions_data if game.get('random_questions', False) else []
+            'all_questions': all_questions_data if game.get('random_questions', False) else [],
+            'allow_replay': game.get('allow_replay', False)
         })
     
     # Запрос от команды
@@ -1392,7 +1392,9 @@ def team_status():
     
     # Логика игры для этой команды
     if game['status'] == 'active' and not team.get('finished'):
+        # Если не показываем ответ и время истекло
         if not team.get('show_answer') and team.get('answer_end_time') and now >= team['answer_end_time']:
+            # Начисляем очки
             if team['current_index'] < len(questions):
                 current_q = questions[team['current_index']]
                 team_correct_count = 0
@@ -1404,19 +1406,25 @@ def team_status():
             team['show_answer'] = True
             team['answer_end_time'] = now + game['time_show_answer']
         
+        # Если показываем ответ и время истекло
         elif team.get('show_answer') and team.get('answer_end_time') and now >= team['answer_end_time']:
             team['current_index'] += 1
             team['show_answer'] = False
             team['players_answers'] = {}
             team['answer_end_time'] = None
             
+            # Проверяем конец игры для этой команды
             if team['current_index'] >= len(questions):
                 team['finished'] = True
+            else:
+                # Устанавливаем время для следующего вопроса
+                team['answer_end_time'] = now + game['time_per_question']
         
+        # Если команда ещё не начала новый вопрос и есть время
         if not team.get('show_answer') and team.get('answer_end_time') is None and not team.get('finished'):
             team['answer_end_time'] = now + game['time_per_question']
     
-    # Формируем текущий вопрос
+    # Формируем текущий вопрос для команды
     current_question = None
     if game['status'] == 'active' and team['current_index'] < len(questions) and not team.get('finished'):
         q = questions[team['current_index']]
@@ -1430,10 +1438,17 @@ def team_status():
                 team.setdefault('options_shuffled', {})[cache_key] = opts
             options = team['options_shuffled'][cache_key]
         
+        # Безопасное получение названия раунда
+        round_name = None
+        if q.round_id:
+            round_obj = db.session.get(Round, q.round_id)
+            if round_obj:
+                round_name = round_obj.title
+        
         current_question = {
             'text': q.text,
             'options': options,
-            'round_name': q.round.title if q.round else None
+            'round_name': round_name
         }
         if team.get('show_answer'):
             current_question['correct_answer'] = q.correct_answer[0] if q.correct_answer else None
@@ -1446,6 +1461,7 @@ def team_status():
     all_finished = all(t.get('finished', False) for t in game['teams'].values())
     if all_finished and len(game['teams']) > 0:
         game['status'] = 'finished'
+        # Сохраняем результаты
         for team_name_key, team_data in game['teams'].items():
             existing = GameResult.query.filter_by(
                 quiz_id=game['quiz_id'],
@@ -1478,7 +1494,8 @@ def team_status():
         'show_answer': team.get('show_answer', False),
         'finished': team.get('finished', False),
         'points_per_question': game['points_per_question'],
-        'time_show_answer': game['time_show_answer']
+        'time_show_answer': game['time_show_answer'],
+        'time_per_question': game['time_per_question']  # ← ДОБАВЬТЕ ЭТУ СТРОКУ
     })
 
 @app.route('/api/team/answer', methods=['POST'])

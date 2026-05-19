@@ -95,6 +95,7 @@ let selectedAnswer = null;
 let timeShowAnswer = 10;
 let totalQuestions = 0;
 let needPassword = false;
+let countdownInterval = null;
 
 async function loadQuizSettings() {
     try {
@@ -259,7 +260,6 @@ function startPolling() {
             document.getElementById('gameTeamScore').innerText = data.team_score;
             totalScore = data.team_score;
 
-            // Отображение раунда
             if (data.current_question && data.current_question.round_name) {
                 document.getElementById('roundBadge').style.display = 'inline-block';
                 document.getElementById('roundName').innerText = data.current_question.round_name;
@@ -267,16 +267,16 @@ function startPolling() {
                 document.getElementById('roundBadge').style.display = 'none';
             }
 
-            if (currentQuestionIndex !== data.question_index) {
+            if (currentQuestionIndex !== data.question_index && !awaitingResult) {
                 currentQuestionIndex = data.question_index;
                 hasAnswered = false;
-                awaitingResult = false;
                 selectedAnswer = null;
                 document.getElementById('resultBlock').style.display = 'none';
                 document.getElementById('waitingNextDiv').style.display = 'none';
                 renderQuestion(data);
             }
 
+            // Таймер обновляется всегда, даже после ответа (но не во время показа ответа)
             if (data.time_left !== null && !awaitingResult) {
                 const timerDiv = document.getElementById('timerDiv');
                 timerDiv.innerHTML = `⏱️ ${data.time_left} сек`;
@@ -303,8 +303,17 @@ function startPolling() {
 function renderQuestion(data) {
     const q = data.current_question;
     if (!q) return;
+    
     document.getElementById('currentQ').innerText = data.question_index + 1;
     document.getElementById('questionText').innerHTML = q.text;
+    
+    // Добавьте ЭТОТ БЛОК для отображения раунда
+    if (q.round_name && q.round_name !== 'None') {
+        document.getElementById('roundBadge').style.display = 'inline-block';
+        document.getElementById('roundName').innerText = q.round_name;
+    } else {
+        document.getElementById('roundBadge').style.display = 'none';
+    }
 
     const optionsDiv = document.getElementById('optionsDiv');
     optionsDiv.innerHTML = '';
@@ -318,19 +327,17 @@ function renderQuestion(data) {
             btn.onclick = () => submitAnswer(opt, btn);
             optionsDiv.appendChild(btn);
         });
-    } else {
-        optionsDiv.innerHTML = '<p>Ожидание...</p>';
     }
 }
 
 async function submitAnswer(answer, btnElement) {
     if (hasAnswered) return;
     hasAnswered = true;
-    selectedAnswer = answer;
+    selectedAnswer = answer.trim();
     
     document.querySelectorAll('.option-btn').forEach(btn => {
         btn.disabled = true;
-        if (btn.innerText === answer) {
+        if (btn.innerText.trim() === answer.trim()) {
             btn.style.background = '#e0e0e0';
             btn.style.border = '2px solid #ff9800';
         }
@@ -343,26 +350,54 @@ async function submitAnswer(answer, btnElement) {
             game_code: gameCode, 
             team_name: currentTeam, 
             player_name: nickname,
-            answer: answer 
+            answer: answer.trim() 
         })
     });
+}
+
+function startCountdown(seconds, onTick, onComplete) {
+    let remaining = seconds;
+    if (countdownInterval) clearInterval(countdownInterval);
+    countdownInterval = setInterval(() => {
+        if (remaining <= 0) {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+            if (onComplete) onComplete();
+        } else {
+            remaining--;
+            if (onTick) onTick(remaining);
+        }
+    }, 1000);
 }
 
 function showAnswerResult(data) {
     const q = data.current_question;
     if (!q) return;
-    const correctAnswer = q.correct_answer ? q.correct_answer : '?';
-    const isUserCorrect = (selectedAnswer === correctAnswer);
+    
+    let correctAnswer = q.correct_answer;
+    if (Array.isArray(correctAnswer)) {
+        correctAnswer = correctAnswer[0];
+    }
+    if (typeof correctAnswer === 'string') {
+        correctAnswer = correctAnswer.trim();
+    }
+    
+    let userAnswer = selectedAnswer;
+    if (typeof userAnswer === 'string') {
+        userAnswer = userAnswer.trim();
+    }
+    
+    const isUserCorrect = (userAnswer === correctAnswer);
 
     const optionsDiv = document.getElementById('optionsDiv');
     const buttons = optionsDiv.querySelectorAll('.option-btn');
     buttons.forEach(btn => {
-        const opt = btn.innerText;
+        const opt = btn.innerText.trim();
         if (opt === correctAnswer) {
             btn.style.background = '#4caf50';
             btn.style.color = 'white';
         }
-        if (opt === selectedAnswer && opt !== correctAnswer) {
+        if (opt === userAnswer && opt !== correctAnswer) {
             btn.style.background = '#f44336';
             btn.style.color = 'white';
         }
@@ -379,23 +414,23 @@ function showAnswerResult(data) {
         message = `❌ Неправильно! Правильный ответ: ${correctAnswer}`;
     }
     
-    resultBlock.innerHTML = `<strong>${message}</strong><br>Следующий вопрос через ${timeShowAnswer} сек...`;
+    const isLastQuestion = (data.question_index + 1 >= data.total_questions);
     
-    let answerTimeLeft = timeShowAnswer;
-    const waitNextDiv = document.getElementById('waitingNextDiv');
-    waitNextDiv.style.display = 'block';
-    const nextTimerSpan = document.getElementById('nextTimer');
-    
-    const timer = setInterval(() => {
-        answerTimeLeft--;
-        nextTimerSpan.innerText = answerTimeLeft;
-        if (answerTimeLeft <= 0) {
-            clearInterval(timer);
-            resultBlock.style.display = 'none';
-            waitNextDiv.style.display = 'none';
-            currentQuestionIndex++;
-        }
-    }, 1000);
+    if (isLastQuestion) {
+        resultBlock.innerHTML = `<strong>${message}</strong><br><span id="resultCountdown">Результаты игры через ${timeShowAnswer} сек...</span>`;
+        startCountdown(timeShowAnswer, (remaining) => {
+            const span = document.getElementById('resultCountdown');
+            if (span) span.innerText = `Результаты игры через ${remaining} сек...`;
+        }, () => {});
+    } else {
+        resultBlock.innerHTML = `<strong>${message}</strong><br><span id="resultCountdown">Следующий вопрос через ${timeShowAnswer} сек...</span>`;
+        startCountdown(timeShowAnswer, (remaining) => {
+            const span = document.getElementById('resultCountdown');
+            if (span) span.innerText = `Следующий вопрос через ${remaining} сек...`;
+        }, () => {
+            awaitingResult = false;
+        });
+    }
 }
 
 async function showResults() {
@@ -419,6 +454,13 @@ async function showResults() {
             </div>
         `).join('');
     }
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 loadQuizSettings();
