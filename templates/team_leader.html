@@ -454,7 +454,7 @@ async function updateGameStatus() {
                         currentQuestionOptions.innerHTML = '<p>Нет вариантов ответа</p>';
                     }
                     
-                    if (data.time_left !== null) {
+                    if (data.time_left !== null && data.time_left !== undefined) {
                         currentQuestionTimer.innerHTML = `⏱️ Осталось времени: ${data.time_left} сек`;
                         currentQuestionTimer.style.color = data.time_left <= 5 ? '#f44336' : 'var(--sovcombank-blue)';
                     } else {

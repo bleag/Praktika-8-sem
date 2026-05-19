@@ -1316,10 +1316,16 @@ def team_status():
     all_questions = Question.query.options(db.joinedload(Question.round)).filter_by(quiz_id=quiz.id).order_by(Question.order).all()
     all_questions_data = []
     for q in all_questions:
+        round_name = None
+        if q.round_id:
+            round_obj = db.session.get(Round, q.round_id)
+            if round_obj:
+                round_name = round_obj.title
         all_questions_data.append({
             'text': q.text,
             'options': q.options,
-            'correct_answer': q.correct_answer[0] if q.correct_answer else '?'
+            'correct_answer': q.correct_answer[0] if q.correct_answer else '?',
+            'round_name': round_name
         })
     
     # Автостарт
@@ -1366,13 +1372,58 @@ def team_status():
         
         teams_info.sort(key=lambda x: x['score'], reverse=True)
         
+        # Информация о текущем вопросе для ведущего
+        current_question_for_host = None
+        time_left_for_host = None
+        current_question_index = 0
+        total_questions_for_host = 0
+        show_answer_for_host = False
+        
+        if game['status'] == 'active' and game['teams']:
+            # Берём первую команду для отображения текущего вопроса
+            first_team = list(game['teams'].values())[0]
+            questions_list = first_team.get('shuffled_questions', [])
+            current_idx = first_team.get('current_index', 0)
+            total_questions_for_host = len(questions_list)
+            current_question_index = current_idx
+            show_answer_for_host = first_team.get('show_answer', False)
+            
+            if current_idx < len(questions_list):
+                q = questions_list[current_idx]
+                # Безопасное получение названия раунда
+                round_name = None
+                if q.round_id:
+                    round_obj = db.session.get(Round, q.round_id)
+                    if round_obj:
+                        round_name = round_obj.title
+                
+                options = q.options
+                if game.get('random_options') and options:
+                    opts = options.copy()
+                    random.shuffle(opts)
+                    options = opts
+                
+                current_question_for_host = {
+                    'text': q.text,
+                    'options': options,
+                    'correct_answer': q.correct_answer[0] if q.correct_answer else None,
+                    'round_name': round_name
+                }
+                
+                # Время до конца текущего вопроса
+                if first_team.get('answer_end_time') and not first_team.get('show_answer'):
+                    time_left_for_host = max(0, int(first_team['answer_end_time'] - now))
+        
         return jsonify({
             'success': True,
             'status': game['status'],
             'teams': teams_info,
             'total_teams': len(game['teams']),
-            'current_question': max_current,
-            'total_questions': max_total,
+            'current_question': current_question_for_host,
+            'question_index': current_question_index,
+            'total_questions': total_questions_for_host,
+            'time_left': time_left_for_host,
+            'show_answer': show_answer_for_host,
             'start_datetime': f"{game.get('start_date', '')} {game.get('start_time', '')}" if game.get('auto_start') and game['status'] == 'waiting' else None,
             'need_password': game.get('need_password', False),
             'time_per_question': game['time_per_question'],
@@ -1392,9 +1443,7 @@ def team_status():
     
     # Логика игры для этой команды
     if game['status'] == 'active' and not team.get('finished'):
-        # Если не показываем ответ и время истекло
         if not team.get('show_answer') and team.get('answer_end_time') and now >= team['answer_end_time']:
-            # Начисляем очки
             if team['current_index'] < len(questions):
                 current_q = questions[team['current_index']]
                 team_correct_count = 0
@@ -1406,21 +1455,17 @@ def team_status():
             team['show_answer'] = True
             team['answer_end_time'] = now + game['time_show_answer']
         
-        # Если показываем ответ и время истекло
         elif team.get('show_answer') and team.get('answer_end_time') and now >= team['answer_end_time']:
             team['current_index'] += 1
             team['show_answer'] = False
             team['players_answers'] = {}
             team['answer_end_time'] = None
             
-            # Проверяем конец игры для этой команды
             if team['current_index'] >= len(questions):
                 team['finished'] = True
             else:
-                # Устанавливаем время для следующего вопроса
                 team['answer_end_time'] = now + game['time_per_question']
         
-        # Если команда ещё не начала новый вопрос и есть время
         if not team.get('show_answer') and team.get('answer_end_time') is None and not team.get('finished'):
             team['answer_end_time'] = now + game['time_per_question']
     
@@ -1461,7 +1506,6 @@ def team_status():
     all_finished = all(t.get('finished', False) for t in game['teams'].values())
     if all_finished and len(game['teams']) > 0:
         game['status'] = 'finished'
-        # Сохраняем результаты
         for team_name_key, team_data in game['teams'].items():
             existing = GameResult.query.filter_by(
                 quiz_id=game['quiz_id'],
@@ -1494,8 +1538,7 @@ def team_status():
         'show_answer': team.get('show_answer', False),
         'finished': team.get('finished', False),
         'points_per_question': game['points_per_question'],
-        'time_show_answer': game['time_show_answer'],
-        'time_per_question': game['time_per_question']  # ← ДОБАВЬТЕ ЭТУ СТРОКУ
+        'time_show_answer': game['time_show_answer']
     })
 
 @app.route('/api/team/answer', methods=['POST'])
