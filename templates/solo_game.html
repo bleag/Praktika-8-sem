@@ -8,28 +8,28 @@
     
     <div id="startScreen" class="game-panel">
         <h3>Введите ваше имя</h3>
-        <input type="text" id="playerName" class="form-input" placeholder="Ваше имя" maxlength="30" style="width: 250px;">
+        <input type="text" id="playerName" class="form-input" placeholder="Ваше имя" maxlength="30" style="width: 100%;">
         
         <div id="passwordField" style="display: none; margin-top: 15px;">
             <h3>Введите пароль</h3>
-            <input type="password" id="quizPassword" class="form-input" placeholder="Пароль" style="width: 250px;">
+            <input type="password" id="quizPassword" class="form-input" placeholder="Пароль" style="width: 100%;">
         </div>
         
         <div id="autoStartInfo" style="display: none; margin-top: 15px; padding: 10px; background: #FFF3E0; border-radius: 8px; color: #FF9800;">
-            ⏰ <span id="autoStartText"></span>
+            <span id="autoStartText"></span>
         </div>
         
         <br>
-        <button id="startBtn" class="btn btn-blue" style="margin-top: 20px;">🎮 Начать игру</button>
+        <button id="startBtn" class="btn btn-blue" style="margin-top: 20px;">Начать игру</button>
     </div>
     
     <div id="gameScreen" class="game-panel" style="display: none;">
         <div class="game-header">
             <div>
                 <span>Вопрос <span id="currentQ">1</span>/<span id="totalQ">0</span></span>
-                <span id="roundBadge" class="round-badge" style="display: none; margin-left: 15px;">📁 <span id="roundName"></span></span>
+                <span id="roundBadge" class="round-badge" style="display: none; margin-left: 15px;"><span id="roundName"></span></span>
             </div>
-            <span>💰 <span id="score">0</span> баллов</span>
+            <span><span id="score">0</span> баллов</span>
         </div>
         <h3 id="questionText" class="question-text"></h3>
         <div id="optionsDiv" class="options-list"></div>
@@ -38,7 +38,7 @@
     </div>
     
     <div id="resultScreen" class="game-panel" style="display: none;">
-        <h2>🎉 Игра окончена!</h2>
+        <h2>Игра окончена!</h2>
         <div class="player-result">
             <div class="player-name-large" id="resultName"></div>
             <div class="player-stats">
@@ -49,20 +49,23 @@
         </div>
         
         <div id="replayButtonDiv" style="display: none; margin: 20px 0;">
-            <button id="replaySoloBtn" class="btn btn-purple">🔄 Пройти викторину заново</button>
+            <button id="replaySoloBtn" class="btn btn-purple">Пройти викторину заново</button>
         </div>
         
         <div id="leaderboardSection" style="margin-top: 30px;">
-            <h3>🏆 Таблица лидеров</h3>
+            <h3>Таблица лидеров</h3>
             <div id="leaderboardList" class="leaderboard-list"></div>
         </div>
         
         <div style="margin-top: 20px;">
-            <a href="/" class="btn-outline-new">🏠 На главную</a>
+            <a href="/" class="btn-outline-new">На главную</a>
         </div>
     </div>
 </div>
-
+<!-- Toast уведомление -->
+<div id="toast" class="toast-notification">
+    <div id="toast-message"></div>
+</div>
 <script>
 const quizId = {{ quiz.id }};
 let questions = [];
@@ -80,7 +83,20 @@ let pointsPerQuestion = 100;
 let needPassword = false;
 let currentRoundName = '';
 
-// Проверка доступности и автоматического запуска
+// Красивый Toast
+function showToast(message, type = 'error') {
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toast-message');
+    
+    toastMessage.textContent = message;
+    toast.className = `toast-notification ${type}`;
+    toast.classList.add('show');
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 4000);
+}
+
 async function checkQuizAvailability() {
     try {
         const settingsRes = await fetch(`/api/public/quiz/${quizId}/status`);
@@ -157,7 +173,7 @@ checkPasswordField();
 document.getElementById('startBtn').onclick = async () => {
     playerName = document.getElementById('playerName').value.trim();
     if (!playerName) {
-        alert('Введите ваше имя');
+        showToast('Введите ваше имя', 'error');
         return;
     }
     
@@ -172,12 +188,12 @@ document.getElementById('startBtn').onclick = async () => {
         pointsPerQuestion = settingsData.pointsPerQuestion || 100;
         needPassword = settingsData.need_password || false;
         
-        if (needPassword) {
-            const password = document.getElementById('quizPassword').value;
-            if (!password) {
-                alert('Введите пароль для доступа к викторине');
-                return;
-            }
+            if (needPassword) {
+                    const password = document.getElementById('quizPassword').value;
+                    if (!password) {
+                        showToast('Введите пароль для доступа к викторине', 'error');
+                        return;
+                    }
             const authRes = await fetch(`/api/solo/${quizId}/auth`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -214,7 +230,7 @@ document.getElementById('startBtn').onclick = async () => {
         document.getElementById('gameScreen').style.display = 'block';
         showQuestion();
     } else {
-        alert('В викторине нет вопросов');
+        showToast('В викторине нет вопросов', 'error');
     }
 };
 
@@ -290,7 +306,7 @@ function checkAnswer(answer, btnElement) {
     
     const resultBlock = document.createElement('div');
     resultBlock.className = 'answer-result';
-    resultBlock.innerHTML = `<strong>✅ Правильный ответ: ${correctAnswer}</strong><br>Следующий вопрос через <span id="answerTimer">${timeShowAnswer}</span> сек...`;
+    resultBlock.innerHTML = `<strong>Правильный ответ: ${correctAnswer}</strong><br>Следующий вопрос через <span id="answerTimer">${timeShowAnswer}</span> сек...`;
     resultBlock.style.cssText = 'margin-top: 20px; padding: 15px; background: #e8f5e9; border-radius: 12px; text-align: center;';
     optionsDiv.appendChild(resultBlock);
     
@@ -314,10 +330,10 @@ function startTimer(seconds) {
     
     timerDiv.style.display = 'block';
     timerInterval = setInterval(() => {
-        timerDiv.innerHTML = `⏱️ ${timeLeft} сек`;
+        timerDiv.innerHTML = `⏱ ${timeLeft} сек`;
         if (timeLeft <= 0) {
             clearInterval(timerInterval);
-            timerDiv.innerHTML = '⏰ Время вышло!';
+            timerDiv.innerHTML = 'Время вышло!';
             setTimeout(() => {
                 currentIndex++;
                 showQuestion();

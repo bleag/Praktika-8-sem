@@ -309,8 +309,8 @@ def save_question(quiz_id):
     db.session.commit()
     return jsonify({'success': True, 'question_id': question.id})
 
-@app.route('/api/question/<int:question_id>', methods=['GET'])
-def get_question(question_id):
+@app.route('/api/question/<int:question_id>', methods=['GET', 'PUT', 'DELETE'])
+def handle_question(question_id):
     if 'user_id' not in session:
         return jsonify({'success': False, 'error': 'Не авторизован'}), 401
     
@@ -321,21 +321,42 @@ def get_question(question_id):
     quiz = Quiz.query.filter_by(id=question.quiz_id, owner_id=session['user_id']).first()
     if not quiz:
         return jsonify({'success': False, 'error': 'Нет доступа'}), 403
-    
-    return jsonify({
-        'success': True,
-        'question': {
-            'id': question.id,
-            'type': question.type,
-            'text': question.text,
-            'options': question.options,
-            'correct_answer': question.correct_answer,
-            'media_url': question.media_url,
-            'order': question.order,
-            'round_id': question.round_id,  # ← ДОБАВЛЕНО
-            'additional_data': question.additional_data
-        }
-    })
+
+    if request.method == 'GET':
+        return jsonify({
+            'success': True,
+            'question': {
+                'id': question.id,
+                'type': question.type,
+                'text': question.text,
+                'options': question.options,
+                'correct_answer': question.correct_answer,
+                'media_url': question.media_url,
+                'order': question.order,
+                'round_id': question.round_id,
+                'additional_data': question.additional_data
+            }
+        })
+
+    elif request.method == 'PUT':
+        data = request.get_json()
+        
+        question.type = data.get('type', question.type)
+        question.text = data.get('text', question.text)
+        question.options = data.get('options')
+        question.correct_answer = data.get('correct_answer')
+        question.media_url = data.get('media_url')
+        question.order = data.get('order', question.order)
+        question.round_id = data.get('round_id')
+        question.additional_data = data.get('additional_data', question.additional_data)
+        
+        db.session.commit()
+        return jsonify({'success': True, 'question_id': question.id})
+
+    elif request.method == 'DELETE':
+        db.session.delete(question)
+        db.session.commit()
+        return jsonify({'success': True})
 
 
 @app.route('/api/question/<int:question_id>', methods=['DELETE'])
@@ -1170,6 +1191,18 @@ def solo_game_by_code(code):
         return "Викторина не найдена", 404
     return render_template('solo_game.html', quiz=quiz)
 
+@app.route('/solo/<int:quiz_id>')
+def solo_game(quiz_id):
+    """Одиночная игра по ID викторины"""
+    quiz = Quiz.query.get_or_404(quiz_id)
+    
+    # Проверяем, что это действительно одиночная викторина
+    settings = quiz.settings or {}
+    if settings.get('gameMode') != 'solo':
+        flash('Это не одиночная викторина', 'warning')
+        return redirect(url_for('play_game', code=quiz.quiz_code))
+    
+    return render_template('solo_game.html', quiz=quiz)
 # ========== КОМАНДНЫЙ РЕЖИМ (КАЖДАЯ КОМАНДА НЕЗАВИСИМО) ==========
 
 team_games = {}  # game_code -> {teams: {team_name: {members, score, current_index, players_answers, show_answer, answer_end_time}}}

@@ -25,9 +25,9 @@
         <div class="game-header">
             <div>
                 <span>Вопрос <span id="currentQ">1</span>/<span id="totalQ">0</span></span>
-                <span id="roundBadge" class="round-badge" style="display: none; margin-left: 15px;">📁 <span id="roundName"></span></span>
+                <span id="roundBadge" class="round-badge" style="display: none; margin-left: 15px;"><span id="roundName"></span></span>
             </div>
-            <span>💰 <span id="score">0</span> баллов</span>
+            <span><span id="score">0</span> баллов</span>
         </div>
         <h3 id="questionText"></h3>
         <div id="optionsDiv"></div>
@@ -48,7 +48,48 @@
         </div>
         <a href="/">На главную</a>
     </div>
+    <!-- Toast уведомления -->
+    <div id="toast" class="toast-notification">
+        <div id="toast-message"></div>
+    </div>
 </div>
+
+<style>
+    /* Красивые уведомления */
+.toast-notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1f2937;
+    color: white;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+    min-width: 280px;
+    text-align: center;
+    font-size: 16px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    border-left: 5px solid #3b82f6;
+}
+
+.toast-notification.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(10px);
+}
+
+.toast-notification.error {
+    border-left-color: #ef4444;
+}
+
+.toast-notification.success {
+    border-left-color: #22c55e;
+}
+</style>
 
 <script>
 const quizCode = '{{ quiz.quiz_code }}';
@@ -79,20 +120,27 @@ checkNeedPassword();
 document.getElementById('joinGameBtn').onclick = async () => {
     nickname = document.getElementById('nicknameInput').value.trim();
     const password = document.getElementById('passwordInput')?.value || '';
-    if (!nickname) return alert('Введите ник');
+    
+    if (!nickname) {
+        showToast('Введите никнейм', 'error');
+        return;
+    }
+
     const res = await fetch(`/api/quizmaster/${quizCode}/join`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ nickname, password })
     });
+    
     const data = await res.json();
+    
     if (data.success) {
         document.getElementById('joinScreen').style.display = 'none';
         document.getElementById('waitingScreen').style.display = 'block';
         document.getElementById('playerNickname').innerText = nickname;
         startPolling();
     } else {
-        alert(data.error);
+        showToast(data.error || 'Ошибка присоединения', 'error');
     }
 };
 
@@ -132,7 +180,7 @@ function startPolling() {
 
             if (data.time_left !== null && !awaitingResult) {
                 const timerDiv = document.getElementById('timerDiv');
-                timerDiv.innerHTML = `⏱️ ${data.time_left} сек`;
+                timerDiv.innerHTML = `⏱ ${data.time_left} сек`;
                 timerDiv.style.display = 'block';
                 timerDiv.style.color = data.time_left <= 5 ? '#f44336' : '#2196F3';
             }
@@ -248,13 +296,13 @@ function showAnswerResult(data) {
     resultBlock.style.display = 'block';
     let message = '';
     if (selectedAnswer === null) {
-        message = `⏰ Время вышло! Правильный ответ: ${correctAnswer}`;
+        message = `Время вышло! Правильный ответ: ${correctAnswer}`;
     } else if (isUserCorrect) {
-        message = `✅ Правильно! Вы получаете ${pointsPerQuestion} баллов`;
+        message = `Правильно! Вы получаете ${pointsPerQuestion} баллов`;
         totalScore += pointsPerQuestion;
         document.getElementById('score').innerText = totalScore;
     } else {
-        message = `❌ Неправильно! Правильный ответ: ${correctAnswer}`;
+        message = `Неправильно! Правильный ответ: ${correctAnswer}`;
     }
     
     const isLastQuestion = (data.question_index + 1 >= data.total_questions);
@@ -290,6 +338,20 @@ function showResults(data) {
         const html = players.map((p, i) => `<div class="${winners.includes(p.nickname) ? 'winner' : ''}">${i+1}. ${p.nickname} — ${p.score}</div>`).join('');
         document.getElementById('leaderboardList').innerHTML = html;
     }
+}
+
+// Красивая функция уведомлений
+function showToast(message, type = 'error') {
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toast-message');
+    
+    toastMessage.innerHTML = message;
+    toast.className = `toast-notification ${type}`;
+    toast.classList.add('show');
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3500);
 }
 </script>
 {% endblock %}

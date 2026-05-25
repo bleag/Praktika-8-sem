@@ -42,29 +42,26 @@ body {
     text-decoration: none;
 }
 
-/* СИНЯЯ кнопка (основное действие) - цвет Совкомбанка */
-.btn-blue {
-    background-color: var(--sovcombank-blue);
-    color: white;
-}
-
-.btn-blue:hover {
-    background-color: var(--blue-light);
-}
-
-/* КРАСНАЯ кнопка (важное действие, удаление, старт) - цвет Совкомбанка */
-.btn-red {
-    background-color: var(--sovcombank-red);
-    color: white;
-}
-
-.btn-red:hover {
-    background-color: var(--red-dark);
-}
-
+/* Большая кнопка */
 .btn-large {
-    padding: 14px 32px;
+    width: 100%;
+    padding: 16px 24px;
     font-size: 18px;
+    font-weight: 700;
+    border-radius: 16px;
+    margin-top: 16px;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-blue { background: linear-gradient(90deg, #2563eb, #1e40af); }
+.btn-purple { background: linear-gradient(90deg, #8b5cf6, #7c3aed); }
+.btn-green { background: linear-gradient(90deg, #22c55e, #16a34a); }
+
+.btn-large:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.3);
 }
 
 .btn-outline {
@@ -95,80 +92,137 @@ body {
     color: var(--sovcombank-red);
 }
 
-/* Кнопка создания квиза */
+/* Кнопка "Создать квиз" */
 .btn-create {
-    background: transparent;
+    background: white;
+    color: #1e3a8a;
     border: 2px solid white;
-    color: white;
-    padding: 12px 28px;
-    font-size: 16px;
-    font-weight: 600;
-    border-radius: 40px;
+    padding: 14px 36px;
+    font-size: 17px;
+    font-weight: 700;
+    border-radius: 50px;
     cursor: pointer;
-    transition: all 0.3s;
-    backdrop-filter: blur(4px);
+    transition: all 0.3s ease;
 }
 
 .btn-create:hover {
-    background: white;
-    color: var(--sovcombank-blue);
-    border-color: white;
-    transform: scale(1.02);
+    background: transparent;
+    color: white;
+    transform: scale(1.05);
 }
 
 /* Шапка */
 .header {
-    border-bottom: 2px solid var(--sovcombank-blue);
-    padding: 16px 0;
+background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.06);
 }
 
 .header__inner {
-    display: flex;
-    justify-content: flex-end;
-}
-
-/* Герой-блок (вход по коду) с градиентом синий → красный */
-.hero {
-    text-align: center;
-    padding: 80px 0;
-    background: linear-gradient(135deg, var(--sovcombank-blue) 0%, var(--sovcombank-red) 100%);
-    color: white;
-}
-
-.hero__title {
-    font-size: 36px;
-    margin-bottom: 40px;
-}
-
-.code-input {
-    display: flex;
-    gap: 16px;
-    justify-content: center;
-    margin-bottom: 40px;
+display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px;
+    gap: 40px;
     flex-wrap: wrap;
 }
 
-.code-input__field {
-    padding: 14px 20px;
-    font-size: 18px;
-    border: none;
-    border-radius: 8px;
-    width: 200px;
+/* ===================== ГЛАВНАЯ СТРАНИЦА — СОВРЕМЕННЫЙ СТИЛЬ ===================== */
+/* Герой-блок (вход по коду) с градиентом синий → красный */
+.hero {
+    background: linear-gradient(135deg, #1e3a8a 0%, #312e81 60%, #7f1d1d 100%);
+    color: white;
+    padding: 80px 20px 70px;        
     text-align: center;
+    position: relative;
+    overflow: hidden;
+    min-height: auto;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+        radial-gradient(circle at 20% 30%, rgba(239, 68, 68, 0.25) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(37, 99, 235, 0.25) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.hero__title {
+    font-size: 36px;                 
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 16px;
+    max-width: 780px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+h2.hero__title {
+    font-size: 28px;
+    margin: 30px 0 20px;
+    text-align: center;
+}
+
+.hero__subtitle {
+    font-size: 19px;
+    opacity: 0.9;
+    max-width: 620px;
+    margin: 0 auto 40px;
+    font-weight: 400;
+}
+
+/* Поле ввода кода */
+.code-input {
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+.code-input__field {
+    width: 100%;
+    padding: 16px 20px;
+    font-size: 19px;
+    text-align: center;
+    border: none;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.95);
+    color: #1e2937;
     font-weight: 600;
+    letter-spacing: 4px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+.code-input h3 {
+    margin-bottom: 12px;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.code-input__field:focus {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.3);
+    transform: scale(1.02);
 }
 
 .hero__footer {
-    margin-top: 20px;
+    margin-top: 35px;
 }
 
 /* Секции */
 .section-title {
-    font-size: 32px;
+    font-size: 34px;
     text-align: center;
-    margin-bottom: 48px;
-    color: var(--text-dark);
-    position: relative;
+    margin-bottom: 60px;
+    background: linear-gradient(90deg, #1e40af, #ef4444);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
 }
 
 /* Акцентная полоска под заголовком (синяя и красная) */
@@ -203,9 +257,18 @@ body {
     border-top: 3px solid var(--sovcombank-blue);
 }
 
-.feature-card:hover {
-    transform: translateY(-5px);
-    border-top-color: var(--sovcombank-red);
+.feature-card, 
+.mode-card, 
+.advantage-card,
+.scaling-card {
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+}
+.feature-card:hover, 
+.mode-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.12);
 }
 
 .feature-card__icon {
@@ -223,108 +286,119 @@ body {
     color: var(--text-gray);
 }
 
-/* Преимущества */
+/* ===================== ПРЕИМУЩЕСТВА ===================== */
 .advantages {
     padding: 80px 0;
 }
 
 .advantages-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    grid-template-columns: 1fr 1fr;
     gap: 40px;
+    max-width: 1100px;
+    margin: 0 auto;
 }
 
 .advantage-card {
     background: white;
-    padding: 32px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    border-left: 4px solid var(--sovcombank-blue);
+    border-radius: 20px;
+    padding: 40px 36px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.advantage-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+}
+.advantage-card:first-child  {
+    border-top: 5px solid #2563eb;
 }
 
 .advantage-card:last-child {
-    border-left-color: var(--sovcombank-red);
+    border-top: 5px solid #ef4444;
 }
 
 .advantage-card__title {
     font-size: 24px;
-    margin-bottom: 20px;
-    color: var(--sovcombank-blue);
+    font-weight: 700;
+    margin-bottom: 18px;
+    line-height: 1.3;
+    color: #1e2937;
 }
 
 .advantage-card:last-child .advantage-card__title {
     color: var(--sovcombank-red);
 }
 
+.advantage-card:first-child .advantage-card__title {
+    color: var(--sovcombank-blue);
+}
+
 .advantage-card__text {
-    color: var(--text-gray);
-    line-height: 1.6;
+    color: #475569;
+    line-height: 1.7;
+    font-size: 16px;
 }
 
 .advantage-card__list {
     list-style: none;
-    padding-left: 0;
+    padding: 0;
+    margin: 0;
 }
 
 .advantage-card__list li {
-    padding: 8px 0;
-    padding-left: 24px;
+    padding: 10px 0 10px 28px;
     position: relative;
-    color: var(--text-gray);
+    color: #475569;
+    font-size: 16px;
 }
 
 .advantage-card__list li::before {
     content: "✓";
     position: absolute;
     left: 0;
-    color: var(--sovcombank-blue);
+    color: #22c55e;
     font-weight: bold;
+    font-size: 18px;
 }
-
+/* Адаптив */
+@media (max-width: 900px) {
+    .advantages-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+}
 .advantage-card:last-child .advantage-card__list li::before {
     color: var(--sovcombank-red);
 }
 
-/* Режимы игры */
-.modes {
-    padding: 80px 0;
-    background-color: var(--gray-light);
+/* Переключатель режимов */
+.mode-selector {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 35px;
+    flex-wrap: wrap;
 }
 
-.modes-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
+.mode-btn {
+    padding: 12px 26px;
+    border: none;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
-.mode-card {
-    background: white;
-    padding: 32px;
-    border-radius: 12px;
-    text-align: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    transition: all 0.3s;
-    border-bottom: 3px solid var(--sovcombank-blue);
-}
-
-.mode-card:hover {
-    border-bottom-color: var(--sovcombank-red);
-    transform: translateY(-5px);
-}
-
-.mode-card__icon {
-    font-size: 52px;
-    margin-bottom: 16px;
-}
-
-.mode-card__title {
-    font-size: 24px;
-    margin-bottom: 16px;
-    color: var(--sovcombank-red);
-}
-
-.mode-card__text {
-    color: var(--text-gray);
+.mode-btn.active {
+    transform: scale(1.06);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
 }
 
 /* Масштабирование */
@@ -352,27 +426,48 @@ body {
     margin: 0 auto;
 }
 
-/* Призыв к действию */
+/* ===================== CTA ===================== */
 .cta {
-    padding: 80px 0;
-    background-color: var(--gray-light);
+    padding: 100px 20px;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
 }
 
 .cta-card {
     background: white;
-    padding: 60px 40px;
-    border-radius: 16px;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 60px 50px;
+    border-radius: 24px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
     text-align: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    border: 2px solid transparent;
-    background: linear-gradient(white, white) padding-box,
-                linear-gradient(135deg, var(--sovcombank-blue), var(--sovcombank-red)) border-box;
+    border: 1px solid rgba(37, 99, 235, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.cta-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, #2563eb, #ef4444);
 }
 
 .cta-card__title {
-    font-size: 32px;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.3;
     margin-bottom: 32px;
-    color: var(--text-dark);
+    color: #1e2937;
+}
+
+.cta-card .btn {
+    padding: 16px 48px;
+    font-size: 18px;
+    font-weight: 700;
+    border-radius: 50px;
 }
 
 /* Подвал */
@@ -401,6 +496,97 @@ body {
 .footer__copyright {
     color: #6B7280;
     font-size: 14px;
+}
+
+/* ===================== ТРИ РЕЖИМА ИГРЫ — НОВЫЙ СТИЛЬ ===================== */
+.modes {
+    padding: 110px 20px;
+    background: #f8fafc;
+}
+
+.modes .section-title {
+    margin-bottom: 70px;
+}
+
+.modes-grid {
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.modes-grid::before {
+    content: '';
+    position: absolute;
+    left: 48px;
+    top: 40px;
+    bottom: 40px;
+    width: 4px;
+    background: linear-gradient(to bottom, #2563eb, #8b5cf6, #22c55e);
+    border-radius: 2px;
+    z-index: 1;
+}
+
+.mode-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 32px;
+    margin-bottom: 60px;
+    position: relative;
+    z-index: 2;
+}
+
+.mode-item:last-child {
+    margin-bottom: 0;
+}
+
+.mode-item__icon {
+    width: 96px;
+    height: 96px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+    z-index: 2;
+}
+
+.mode-item__content {
+    flex: 1;
+    padding-top: 12px;
+}
+
+.mode-item__title {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #1e2937;
+}
+
+.mode-item__text {
+    font-size: 17px;
+    line-height: 1.75;
+    color: #475569;
+}
+
+/* Цветные акценты */
+.mode-item:nth-child(1) .mode-item__icon { 
+    border: 5px solid #2563eb; 
+}
+.mode-item:nth-child(2) .mode-item__icon { 
+    border: 5px solid #8b5cf6; 
+}
+.mode-item:nth-child(3) .mode-item__icon { 
+    border: 5px solid #22c55e; 
+}
+
+/* Адаптив */
+@media (max-width: 768px) {
+    .mode-card {
+        padding: 24px;
+    }
 }
 
 /* Адаптив */
@@ -561,12 +747,15 @@ body.auth-page {
 }
 
 /* ========== СТРАНИЦА ПРОФИЛЯ (МОИ ВИКТОРИНЫ) ========== */
+/* ========== СТРАНИЦА "МОИ ВИКТОРИНЫ" — ФИНАЛЬНЫЙ ДИЗАЙН ========== */
+
 .profile-main {
-    min-height: calc(100vh - 200px);
-    padding: 40px 0;
-    background-color: var(--gray-light);
+    background: #f8fafc;
+    min-height: calc(100vh - 140px);
+    padding: 40px 20px;
 }
 
+/* Заголовок */
 .profile-header {
     margin-bottom: 40px;
 }
@@ -574,29 +763,167 @@ body.auth-page {
 .profile-title {
     font-size: 32px;
     font-weight: 700;
-    color: var(--text-dark);
-    margin-bottom: 8px;
-}
-
-.quiz-count {
-    font-size: 24px;
-    color: var(--sovcombank-blue);
-    font-weight: 500;
+    color: #1e2937;
 }
 
 .profile-subtitle {
-    color: var(--text-gray);
-    margin-bottom: 24px;
+    color: #64748b;
+    font-size: 17px;
+    margin-top: 8px;
 }
 
+/* Список */
+.quizzes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-bottom: 48px;
+}
+
+/* Карточка */
+.profile-main .quiz-card {
+    display: flex;
+    flex-direction: row;
+    background: white;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s ease;
+    min-height: 190px;
+    gap: 20px;
+}
+
+.profile-main .quiz-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.13);
+}
+
+/* Обложка */
+.profile-main .quiz-card__cover {
+    width: 200px;
+    flex-shrink: 0;
+    background: linear-gradient(155deg, #171ae0e5, #f11010d0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.profile-main .quiz-card__cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-main .quiz-card__placeholder {
+    font-size: 52px;
+    opacity: 0.9;
+}
+
+/* Контент (главная колонка) */
+.profile-main .quiz-card__info {
+    flex: 1;
+    padding: 20px 24px 20px 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Название и описание */
+.profile-main .quiz-card__title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    line-height: 1.3;
+}
+
+.profile-main .quiz-card__desc {
+    font-size: 14.5px;
+    color: #64748b;
+    line-height: 1.45;
+    margin-bottom: 16px;
+    flex-grow: 1;           /* Важно! */
+}
+
+/* Мета */
+.profile-main .quiz-card__meta {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.quiz-card__code {
+    padding: 4px 12px;
+    background: #f1f5f9;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: monospace;
+}
+
+.quiz-card__mode {
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+.profile-main .quiz-card__mode.multi { background: #dbeafe; color: #1e40af; }
+.profile-main .quiz-card__mode.team { background: #f3e8ff; color: #6b21a8; }
+.profile-main .quiz-card__mode.solo { background: #ecfdf5; color: #0f766e; }
+
+/* Кнопки внизу */
+.profile-main .quiz-card__actions {
+    margin-top: auto;           /* Прижимает кнопки вниз */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.profile-main .btn-small {
+    padding: 9px 18px;
+    border-radius: 40px;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.profile-main .btn-small:hover {
+    background: linear-gradient(90deg, #ef4444, #dc2626);
+    transform: translateY(-2px);
+}
+
+.profile-main .btn-delete {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.profile-main .btn-delete:hover {
+    background: #fecaca;
+}
+
+/* Кнопка "Создать викторину" */
 .create-quiz-btn {
-    padding: 12px 24px;
+    background: linear-gradient(90deg, #2563eb, #1e40af);
+    color: white;
+    padding: 12px 28px;
+    border-radius: 50px;
+    font-weight: 600;
     font-size: 16px;
 }
 
-/* Список викторин */
-.quizzes-list {
-    margin-bottom: 48px;
+.create-quiz-btn:hover {
+    background: linear-gradient(90deg, #ef4444, #dc2626);
+    transform: translateY(-2px);
+}
+
+/* Адаптив */
+@media (max-width: 768px) {
+    .profile-main .quiz-card {
+        flex-direction: column;
+    }
+    .profile-main .quiz-card__cover {
+        width: 100%;
+        height: 170px;
+    }
 }
 
 /* Пустое состояние */
@@ -699,42 +1026,60 @@ body.auth-page {
     flex-wrap: wrap;
 }
 
-/* Логотип (ссылка на главную) */
+/* Логотип */
 .logo__link {
-    font-size: 18px;
-    font-weight: 500;
-    color: var(--sovcombank-blue);
+    font-size: 26px;
+    font-weight: 800;
+    color: #1e40af;
     text-decoration: none;
-    transition: color 0.3s;
+    letter-spacing: -1px;
+    transition: all 0.3s ease;
 }
 
 .logo__link:hover {
-    color: var(--sovcombank-red);
+    color: #ef4444;
+    transform: scale(1.05);
 }
 
+.logo__text {
+    background: linear-gradient(90deg, #1e40af, #ef4444);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
 /* Навигация */
 .nav {
     display: flex;
     align-items: center;
-    gap: 24px;
+    gap: 32px;
     flex-wrap: wrap;
 }
 
 .nav__link {
     text-decoration: none;
-    color: var(--text-dark);
+    color: #334155;
     font-weight: 500;
-    transition: color 0.3s;
-    padding: 8px 0;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    position: relative;
 }
 
 .nav__link:hover {
-    color: var(--sovcombank-blue);
+    color: #1e40af;
 }
 
-.nav__link--active {
-    color: var(--sovcombank-blue);
-    font-weight: 600;
+.nav__link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -4px;
+    left: 0;
+    background: linear-gradient(90deg, #2563eb, #ef4444);
+    transition: width 0.3s ease;
+}
+
+.nav__link:hover::after {
+    width: 100%;
 }
 
 /* Правая часть */
@@ -742,6 +1087,60 @@ body.auth-page {
     display: flex;
     align-items: center;
     gap: 16px;
+}
+
+@media (max-width: 768px) {
+    .header__inner {
+        padding: 14px 16px;
+        gap: 16px;
+    }
+    
+    .nav {
+        gap: 20px;
+        justify-content: center;
+        width: 100%;
+        order: 3;
+    }
+    
+    .logo__link {
+        font-size: 24px;
+    }
+}
+/* ===================== КНОПКИ ТОЛЬКО В ШАПКЕ ===================== */
+.header-new .btn-primary {
+    background: linear-gradient(90deg, #2563eb, #1e40af);
+    color: white;
+    padding: 11px 24px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    white-space: nowrap;
+}
+
+.header-new .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+}
+
+.header-new .btn-outline-new {
+    background: transparent;
+    border: 2px solid #e2e8f0;
+    padding: 10px 24px;
+    border-radius: 12px;
+    color: #334155;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.header-new .btn-outline-new:hover {
+    border-color: #2563eb;
+    color: #2563eb;
+    background: rgba(37, 99, 235, 0.05);
 }
 
 /* Кнопки */
@@ -778,9 +1177,9 @@ body.auth-page {
 }
 
 .user-greeting-new {
-    color: var(--sovcombank-blue);
-    font-weight: 500;
-    font-size: 14px;
+    color: #1e40af;
+    font-weight: 600;
+    margin-right: 10px;
 }
 
 /* Адаптив */
@@ -1113,7 +1512,6 @@ body.auth-page {
     padding: 4px 8px;
     border-radius: 6px;
     display: inline-block;
-    margin-bottom: 12px;
     letter-spacing: 1px;
 }
 
@@ -1432,25 +1830,31 @@ body.auth-page {
 }
 
 .quiz-card__cover {
-    width: 100px;
-    height: 100px;
-    flex-shrink: 0;
-    background: #f0f0f0;
-    border-radius: 12px;
+    height: 180px;                /* единая высота */
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    position: relative;
+    border-radius: 16px 16px 0 0; /* скругление сверху, как у карточки */
 }
 
-.quiz-card__image {
+.quiz-card__cover img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: cover;                /* Растягивает по горизонтали красиво */
+    object-position: center;
+    transition: transform 0.4s ease;
+}
+
+.quiz-card:hover .quiz-card__cover img {
+    transform: scale(1.08);           /* Лёгкий зум при наведении */
 }
 
 .quiz-card__placeholder {
-    font-size: 48px;
+    font-size: 56px;
+    opacity: 0.9;
 }
 
 .quiz-card__info {
@@ -1611,191 +2015,204 @@ body.auth-page {
 
 
 
-/* ========== СТРАНИЦА ИГРЫ (ПУБЛИЧНЫЕ ВИКТОРИНЫ) ========== */
+/* ===================== СОВРЕМЕННЫЙ ДИЗАЙН СТРАНИЦЫ ВЫБОРА ВИКТОРИН ===================== */
 .play-page {
-    background: #f8f9fa;
-    min-height: calc(100vh - 200px);
+    background: #f8fafc;
+    min-height: calc(100vh - 140px);
 }
 
 .play-header {
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 50px;
 }
 
 .play-header h1 {
-    font-size: 36px;
-    color: #333;
+    font-size: 34px;
+    font-weight: 700;
+    color: #1e2937;
     margin-bottom: 10px;
 }
 
 .play-header p {
-    font-size: 18px;
-    color: #666;
+    font-size: 17px;
+    color: #64748b;
 }
 
+/* Сетка */
 .quizzes-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 25px;
-    margin-top: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+    gap: 28px;
+    max-width: 1150px;
+    margin: 0 auto;
 }
 
 .quiz-card {
     background: white;
-    border-radius: 16px;
+    border-radius: 22px;
     overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.07);
+    transition: all 0.35s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .quiz-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    transform: translateY(-10px);
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.12);
 }
 
+/* Обложка */
 .quiz-card__cover {
-    height: 160px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    height: 180px;                 /* фиксированная высота */
+    width: 100%;
+    background: linear-gradient(155deg, #171ae0e5, #f11010d0);
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
+    overflow: hidden;
+    border-radius: 16px 16px 0 0;
 }
+
 
 .quiz-card__cover img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center;
 }
 
 .quiz-card__placeholder {
-    font-size: 48px;
+    font-size: 52px;
+    opacity: 0.9;
 }
 
+/* Контент */
 .quiz-card__content {
-    padding: 20px;
+    padding: 22px 22px 22px 52px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .quiz-card__title {
-    font-size: 20px;
-    font-weight: bold;
-    margin: 0 0 8px 0;
-    color: #333;
+    font-size: 19.5px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    line-height: 1.3;
 }
 
 .quiz-card__desc {
-    font-size: 14px;
-    color: #666;
+    font-size: 14.8px;
+    color: #64748b;
     line-height: 1.5;
-    margin: 0 0 15px 0;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    margin-bottom: 16px;
+    flex: 1;
 }
 
+/* Красивые теги режимов */
 .quiz-card__meta {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    font-size: 12px;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
 }
 
 .quiz-card__mode {
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 11px;
+    padding: 7px 18px;
+    border-radius: 30px;
+    font-size: 13.8px;
     font-weight: 600;
+    text-align: center;
+    min-width: 110px;
 }
 
-.quiz-card__mode.solo {
-    background: #e8f5e9;
-    color: #4CAF50;
+.quiz-card__mode.multi { 
+    background: #dbeafe; 
+    color: #1e40af; 
 }
 
-.quiz-card__mode.multi {
-    background: #e3f2fd;
-    color: #2196F3;
+.quiz-card__mode.team { 
+    background: #f3e8ff; 
+    color: #6b21a8; 
 }
 
-.quiz-card__mode.team {
-    background: #fff3e0;
-    color: #FF9800;
+.quiz-card__mode.solo { 
+    background: #ecfdf5; 
+    color: #0f766e; 
 }
 
 .quiz-card__code {
-    background: #f5f5f5;
-    padding: 4px 10px;
-    border-radius: 20px;
+    background: #f1f5f9;
+    padding: 7px 14px;
+    border-radius: 8px;
     font-family: monospace;
-    font-size: 12px;
-    color: #333;
+    font-size: 14px;
+    text-align: center;
 }
 
+/* Кнопки */
 .quiz-card__actions {
     display: flex;
-    gap: 10px;
-    margin-top: 15px;
+    gap: 12px;
+    margin-top: auto;
+    justify-content: center;
 }
 
-.btn-play-solo {
-    flex: 1;
-    background: #4CAF50;
-    color: white;
-    padding: 10px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 600;
-    text-decoration: none;
-    text-align: center;
-    transition: background 0.2s;
-}
-
-.btn-play-solo:hover {
-    background: #45a049;
-}
-
+.btn-play-solo,
 .btn-play-multi {
-    flex: 1;
-    background: #2196F3;
-    color: white;
-    padding: 10px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
+    padding: 13px 32px;
+    border-radius: 12px;
     font-weight: 600;
-    text-decoration: none;
     text-align: center;
-    transition: background 0.2s;
+    text-decoration: none;
+    font-size: 15.5px;
+    transition: all 0.3s ease;
+    background: linear-gradient(90deg, #2563eb, #1e40af);
+    color: white;
+    min-width: 160px;
 }
 
+.btn-play-solo:hover,
 .btn-play-multi:hover {
-    background: #0b7dda;
+    background: linear-gradient(90deg, #ef4444, #dc2626);
+    transform: translateY(-2px);
 }
 
 .btn-copy-code {
-    background: #f5f5f5;
-    border: 1px solid #ddd;
-    padding: 8px 12px;
-    border-radius: 8px;
+    padding: 13px 22px;
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    color: #475569;
+    border-radius: 12px;
     cursor: pointer;
-    font-size: 14px;
-    transition: all 0.2s;
+    font-size: 15px;
 }
 
 .btn-copy-code:hover {
-    background: #e0e0e0;
+    background: #fee2e2;
+    border-color: #ef4444;
 }
 
+/* Пустое состояние */
 .empty-state {
+    text-align: center;
+    padding: 80px 40px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* .empty-state {
     text-align: center;
     padding: 60px 20px;
     background: white;
     border-radius: 16px;
-}
+} */
 
 .empty-state__icon {
     font-size: 64px;
@@ -2044,74 +2461,354 @@ body.auth-page {
 }
 
 /* ========== СТРАНИЦА ИГРОКА (GAME) ========== */
+/* ===================== СТРАНИЦА ИГРЫ (GAME) ===================== */
+
 .game-container {
-    max-width: 800px;
-    margin: 50px auto;
-    text-align: center;
+    max-width: 820px;
+    margin: 40px auto;
+    padding: 20px;
+    font-family: inherit;
 }
 
 .game-container h1 {
+    text-align: center;
+    font-size: 32px;
+    font-weight: 700;
     color: var(--sovcombank-blue);
     margin-bottom: 30px;
+    line-height: 1.2;
 }
 
+/* Основная панель */
 .game-panel {
     background: white;
-    padding: 30px;
-    border-radius: 20px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    border-radius: 24px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
 }
 
+.game-panel:hover {
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+}
+
+/* Экран присоединения */
+#joinScreen h3 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #1e2937;
+    font-size: 24px;
+}
+
+#nicknameInput, #passwordInput {
+    width: 100%;
+    padding: 16px 20px;
+    font-size: 18px;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    transition: all 0.3s;
+}
+
+#nicknameInput:focus, #passwordInput:focus {
+    outline: none;
+    border-color: var(--sovcombank-blue);
+    box-shadow: 0 0 0 4px rgba(1, 55, 145, 0.15);
+}
+
+#joinGameBtn {
+    width: 100%;
+    padding: 18px;
+    font-size: 19px;
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--sovcombank-blue), #1e40af);
+    color: white;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#joinGameBtn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 25px rgba(1, 55, 145, 0.3);
+}
+
+/* Экран ожидания */
+#waitingScreen {
+    text-align: center;
+}
+
+#waitingScreen h2 {
+    color: var(--sovcombank-blue);
+    margin-bottom: 20px;
+}
+
+/* Игровой экран */
 .game-header {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid var(--gray-border);
-    font-weight: 500;
+    align-items: center;
+    padding-bottom: 20px;
+    margin-bottom: 25px;
+    border-bottom: 1px solid #e2e8f0;
+    font-weight: 600;
+    color: #475569;
 }
 
-.question-text {
+#questionText {
     font-size: 24px;
-    margin: 30px 0;
     line-height: 1.4;
+    margin: 25px 0 30px;
+    min-height: 80px;
+    color: #1e2937;
 }
 
-.options-list {
-    margin-top: 30px;
-}
-
+/* Варианты ответов */
 .option-btn {
-    display: block;
     width: 100%;
+    padding: 16px 20px;
     margin: 10px 0;
-    padding: 14px;
     background: white;
-    border: 2px solid var(--gray-border);
-    border-radius: 12px;
-    cursor: pointer;
-    font-size: 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    font-size: 17px;
     text-align: left;
-    transition: all 0.2s;
+    cursor: pointer;
+    transition: all 0.25s ease;
 }
 
 .option-btn:hover {
-    background: var(--gray-light);
     border-color: var(--sovcombank-blue);
+    transform: translateX(8px);
 }
 
+.option-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.9;
+}
+
+/* Таймер */
 .timer {
+    font-size: 32px;
+    font-weight: 700;
+    text-align: center;
+    margin: 25px 0;
+    padding: 12px;
+    border-radius: 16px;
+    background: #f8fafc;
+}
+
+/* Блок результата ответа */
+#resultBlock {
+    background: #f0f9ff;
+    border-left: 5px solid var(--sovcombank-blue);
     margin-top: 20px;
-    font-size: 28px;
-    font-weight: bold;
+    padding: 20px;
+    border-radius: 12px;
+    font-size: 17px;
+}
+
+/* Экран финальных результатов */
+#resultScreen h2 {
+    text-align: center;
+    margin-bottom: 30px;
     color: var(--sovcombank-blue);
 }
 
-.timer.warning {
-    color: var(--sovcombank-red);
-    animation: pulse 0.5s infinite;
+#playerResult {
+    text-align: center;
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    padding: 30px;
+    border-radius: 20px;
+    margin-bottom: 30px;
 }
 
+#resultPlayerName {
+    font-size: 26px;
+    font-weight: 700;
+    color: #1e40af;
+}
+
+#resultScore {
+    font-size: 52px;
+    font-weight: 800;
+    color: var(--sovcombank-red);
+    margin: 12px 0;
+}
+
+#resultPlace {
+    font-size: 22px;
+    color: #334155;
+}
+
+/* Таблица лидеров */
+#leaderboardList {
+    max-height: 420px;
+    overflow-y: auto;
+}
+
+#leaderboardList div {
+    padding: 14px 18px;
+    background: #f8fafc;
+    margin-bottom: 8px;
+    border-radius: 12px;
+    font-size: 17px;
+}
+
+#leaderboardList div.winner {
+    background: linear-gradient(90deg, #fef3c7, #fffbeb);
+    border-left: 5px solid #f59e0b;
+    font-weight: 600;
+}
+
+/* Адаптив */
+@media (max-width: 768px) {
+    .game-panel {
+        padding: 30px 20px;
+    }
+    
+    .game-container h1 {
+        font-size: 26px;
+    }
+    
+    #questionText {
+        font-size: 21px;
+    }
+}
+/* ===================== СОЛО ИГРА — СПЕЦИФИЧНЫЕ СТИЛИ ===================== */
+
+.game-container.solo-game {
+    max-width: 860px;
+    margin: 40px auto;
+    padding: 20px;
+}
+
+.game-container.solo-game h1 {
+    text-align: center;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--sovcombank-blue);
+    margin-bottom: 35px;
+}
+
+/* Основная карточка только для соло */
+.game-container.solo-game .game-panel {
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.1);
+    padding: 42px 40px;
+    margin-bottom: 25px;
+}
+
+.game-container.solo-game .game-panel:hover {
+    box-shadow: 0 20px 55px rgba(0, 0, 0, 0.13);
+}
+
+/* Стартовый экран соло */
+#startScreen h3 {
+    text-align: center;
+    margin-bottom: 13px;
+    font-size: 24px;
+    color: #1e2937;
+}
+
+#playerName, #quizPassword {
+    width: 100%;
+    max-width: 380px;
+    margin: 0 auto 18px;
+    display: block;
+    padding: 16px 20px;
+    font-size: 18px;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+}
+
+#playerName:focus, #quizPassword:focus {
+    border-color: var(--sovcombank-blue);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+}
+
+#startBtn {
+    width: 30%;
+    max-width: 380px;
+    margin: 25px auto 0;
+    display: block;
+    padding: 16px 32px;
+    font-size: 19px;
+    font-weight: 700;
+    background: linear-gradient(90deg, #2563eb, #1e40af);
+    color: white;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+}
+
+#startBtn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(37, 99, 235, 0.35);
+}
+
+/* Игровой процесс соло */
+.game-container.solo-game .question-text {
+    font-size: 24px;
+    line-height: 1.45;
+    margin: 25px 0 32px;
+    color: #1e2937;
+}
+
+.game-container.solo-game .option-btn {
+    width: 100%;
+    padding: 17px 22px;
+    margin: 10px 0;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    font-size: 17px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.game-container.solo-game .option-btn:hover {
+    border-color: #2563eb;
+    transform: translateX(8px);
+}
+
+/* Таймер и результат */
+.game-container.solo-game .timer {
+    font-size: 34px;
+    font-weight: 700;
+    text-align: center;
+    margin: 30px 0;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 16px;
+    color: var(--sovcombank-blue);
+}
+
+.game-container.solo-game #resultBlock {
+    background: #f0f9ff;
+    border-left: 6px solid #22c55e;
+    padding: 20px;
+    border-radius: 12px;
+}
+
+/* Финальный экран */
+.game-container.solo-game .player-result {
+    text-align: center;
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    padding: 40px 30px;
+    border-radius: 24px;
+    margin: 25px 0;
+}
+
+.game-container.solo-game .result-score-value {
+    font-size: 58px;
+    font-weight: 800;
+    color: var(--sovcombank-red);
+}
 @keyframes pulse {
     0% { opacity: 1; }
     50% { opacity: 0.6; }
@@ -2158,95 +2855,120 @@ body.auth-page {
     background: var(--gray-border);
 }
 
-/* ========== РЕЗУЛЬТАТЫ ИГРЫ ========== */
-.result-header {
+/* ===================== ЭКРАН РЕЗУЛЬТАТОВ СОЛО ИГРЫ ===================== */
+
+#resultScreen h2 {
     text-align: center;
+    font-size: 32px;
+    color: var(--sovcombank-blue);
     margin-bottom: 30px;
 }
 
-.player-result {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+#resultScreen .player-result {
+    text-align: center;
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    padding: 45px 35px;
+    border-radius: 24px;
+    margin: 25px 0 35px;
+    box-shadow: 0 10px 30px rgba(37, 99, 235, 0.1);
+}
+
+#resultScreen .player-name-large {
+    font-size: 29px;
+    font-weight: 700;
+    color: #1e40af;
+    margin-bottom: 8px;
+}
+
+#resultScreen .result-score-value {
+    font-size: 62px;
+    font-weight: 800;
+    color:  #dc2626;
+    line-height: 1;
+    margin: 10px 0;
+}
+
+#resultScreen .player-stats span:not(.result-score-value) {
+    font-size: 18px;
+    color: #475569;
+}
+
+/* Кнопка "Пройти заново" */
+#replaySoloBtn {
+    background: linear-gradient(90deg, #2563eb, #1e40af);
     color: white;
-    padding: 30px;
-    border-radius: 20px;
-    margin-bottom: 30px;
-    text-align: center;
-}
-
-.player-name-large {
-    font-size: 28px;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.player-stats {
-    font-size: 36px;
-    margin: 15px 0;
-}
-
-.result-score-value {
-    font-size: 48px;
-    font-weight: bold;
-}
-
-.player-place {
-    font-size: 20px;
-    opacity: 0.9;
-}
-
-.leaderboard-section {
-    margin-top: 30px;
-}
-
-.leaderboard-section h3 {
-    margin-bottom: 15px;
-    color: var(--text-dark);
-}
-
-.leaderboard-table {
-    background: white;
+    padding: 16px 36px;
+    font-size: 17px;
+    font-weight: 700;
+    border: none;
     border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 10px 0;
 }
 
-.leaderboard-header {
-    display: grid;
-    grid-template-columns: 80px 1fr 100px;
-    background: var(--sovcombank-blue);
-    color: white;
-    padding: 12px 16px;
-    font-weight: bold;
+#replaySoloBtn:hover {
+    background: linear-gradient(90deg, #ef4444, #dc2626);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
 }
 
-.leaderboard-list {
-    max-height: 400px;
+/* Таблица лидеров */
+#leaderboardSection h3 {
+    text-align: center;
+    color: #1e2937;
+    margin-bottom: 18px;
+}
+
+#leaderboardList {
+    max-height: 380px;
     overflow-y: auto;
+    padding-right: 8px;
 }
 
-.leaderboard-row {
-    display: grid;
-    grid-template-columns: 80px 1fr 100px;
-    padding: 10px 16px;
-    border-bottom: 1px solid var(--gray-border);
+#leaderboardList .leaderboard-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px;
+    background: #f8fafc;
+    margin-bottom: 8px;
+    border-radius: 12px;
+    font-size: 16.5px;
 }
 
-.leaderboard-row.winner {
-    background: linear-gradient(90deg, #FFF8E1, white);
-    border-left: 4px solid #FFC107;
-}
-
-.leaderboard-row.current-player {
-    background: #E3F2FD;
-    font-weight: bold;
-}
-
-.leaderboard-row .place {
+#leaderboardList .leaderboard-row.winner {
+    background: linear-gradient(90deg, #fefce8, #fef9c3);
+    border-left: 5px solid #eab308;
     font-weight: 600;
 }
 
-.leaderboard-row.winner .place {
-    color: #FF9800;
+#leaderboardList .place {
+    font-weight: 700;
+    color: var(--sovcombank-blue);
+    width: 32px;
+}
+
+#leaderboardList .player-name {
+    flex: 1;
+    color: #1e2937;
+}
+
+#leaderboardList .player-score {
+    font-weight: 600;
+    color: var(--sovcombank-red);
+    margin-right: 10px;
+}
+
+/* Адаптив */
+@media (max-width: 768px) {
+    #resultScreen .player-result {
+        padding: 35px 20px;
+    }
+    
+    #resultScreen .result-score-value {
+        font-size: 52px;
+    }
 }
 
 .result-actions {
@@ -2390,7 +3112,7 @@ body.auth-page {
     border-radius: 6px;
     border: none;
     cursor: pointer;
-    background: #2196F3;
+    background: linear-gradient(90deg, #2563eb, #1e40af);
     color: white;
 }
 
@@ -2422,4 +3144,328 @@ body.auth-page {
 .question-item .correct-answer {
     color: #4caf50;
     font-size: 12px;
+}
+
+/* ===================== TEAM PLAY — КОМАНДНАЯ ИГРА ===================== */
+.team-play-container {
+    max-width: 620px;
+    margin: 40px auto;
+    padding: 20px;
+    font-family: inherit;
+}
+
+.team-play-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.team-play-header h1 {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1e2937;
+    margin-bottom: 8px;
+}
+
+.team-play-code {
+    font-size: 22px;
+    color: #1e40af;
+    font-weight: 600;
+    background: #f1f5f9;
+    padding: 8px 20px;
+    border-radius: 50px;
+    display: inline-block;
+}
+
+.team-play-card {
+    background: #f8fafc;
+    border-radius: 24px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    margin-bottom: 20px;
+}
+
+.team-play-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.team-play-btn {
+    padding: 16px 32px;
+    font-size: 17px;
+    font-weight: 700;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 220px;
+    justify-content: center;
+}
+
+.team-play-btn.create {
+    background: linear-gradient(90deg, #ef4444, #dc2626);
+    color: white;
+}
+
+.team-play-btn.join {
+    background: linear-gradient(90deg, #3b82f6, #1e40af);
+    color: white;
+}
+
+.team-play-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+}
+
+/* Формы */
+.team-play-form {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+    margin-bottom: 20px;
+}
+
+.team-play-form h3 {
+    text-align: center;
+    margin-bottom: 24px;
+    color: #1e2937;
+}
+
+.team-play-form input {
+    width: 100%;
+    padding: 14px 18px;
+    margin-bottom: 14px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 16px;
+}
+
+.team-play-form input:focus {
+    border-color: #1e40af;
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(30, 64, 175, 0.1);
+}
+
+.team-play-form-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+/* Экраны игры */
+.team-play-screen {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+    margin-bottom: 20px;
+}
+
+/* Игровой экран */
+.team-play-game-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+.option-btn {
+    display: block;
+    width: 100%;
+    padding: 14px 18px;
+    margin: 10px 0;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 16.5px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.25s;
+}
+
+.option-btn:hover {
+    border-color: #3b82f6;
+    transform: translateX(6px);
+}
+
+/* Результаты */
+.team-play-leaderboard div {
+    padding: 14px 18px;
+    background: #f8fafc;
+    margin: 8px 0;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.hidden {
+    display: none !important;
+}
+
+
+.toast-notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1f2937;
+    color: white;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+    min-width: 280px;
+    text-align: center;
+    font-size: 16px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    border-left: 5px solid #3b82f6;
+}
+
+.toast-notification.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(10px);
+}
+
+.toast-notification.error {
+    border-left-color: #ef4444;
+}
+
+.toast-notification.success {
+    border-left-color: #22c55e;
+}
+/* ===================== ТАРИФЫ — УЛУЧШЕННАЯ ВЕРСИЯ ===================== */
+.pricing {
+    padding: 100px 20px;
+    background: #f8fafc;
+}
+
+.pricing-subtitle {
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto 60px;
+    font-size: 18px;
+    color: #64748b;
+}
+
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 30px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.pricing-card {
+    background: white;
+    border-radius: 24px;
+    padding: 40px 32px 48px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s ease;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;                    /* важно для выравнивания кнопок */
+}
+
+.pricing-card:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.12);
+}
+
+.pricing-card.popular {
+    border: 3px solid #f59e0b;
+    transform: scale(1.04);
+}
+
+.popular-badge {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #f59e0b;
+    color: white;
+    padding: 6px 22px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.pricing-icon {
+    font-size: 56px;
+    margin-bottom: 20px;
+}
+
+.pricing-name {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.pricing-price {
+    font-size: 42px;
+    font-weight: 800;
+    color: #1e2937;
+    margin: 12px 0 4px;
+}
+
+.pricing-period {
+    color: #64748b;
+    font-size: 16px;
+}
+
+.pricing-features {
+    text-align: left;
+    list-style: none;
+    padding: 28px 0;
+    margin: 0 0 30px 0;
+    flex-grow: 1;                    /* растягивает карточку */
+    border-top: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.pricing-features li {
+    padding: 9px 0;
+    font-size: 16.2px;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.check {
+    color: #22c55e;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.pricing-btn {
+    width: 100%;
+    padding: 14px 24px;
+    font-size: 17px;
+    font-weight: 600;
+    border-radius: 14px;
+    margin-top: auto;
+    transition: all 0.3s ease;
+    border: none !important;           /* убираем обводку */
+    text-decoration: none !important;  /* убираем подчёркивание */
+    color: white;
+}
+
+.pricing-card.popular .pricing-btn {
+    background: linear-gradient(90deg, #f59e0b, #fb923c);
+    color: white;
+}
+
+.pricing-card.popular .pricing-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4);
 }

@@ -3,95 +3,98 @@
 {% block title %}Главная - Quiz Platform{% endblock %}
 
 {% block content %}
-    <!-- Главный блок: выбор режима -->
-    <section class="hero">
-        <div class="container">
-            <h1 class="hero__title">Выберите режим игры</h1>
-            
-            <!-- Выбор режима -->
-            <div class="mode-selector" style="display: flex; gap: 15px; justify-content: center; margin-bottom: 40px;">
-                <button id="selectMultiplayer" class="mode-btn active" style="background: #2196F3; color: white; padding: 12px 30px; border: none; border-radius: 30px; cursor: pointer;">👥 Мультиплеер</button>
-                <button id="selectTeam" class="mode-btn" style="background: #9C27B0; color: white; padding: 12px 30px; border: none; border-radius: 30px; cursor: pointer;">🏆 Командный</button>
-                <button id="selectSolo" class="mode-btn" style="background: #4CAF50; color: white; padding: 12px 30px; border: none; border-radius: 30px; cursor: pointer;">🎮 Одиночный</button>
-            </div>
-            
-            <!-- Форма для мультиплеера -->
-            <div id="multiplayerForm" class="code-input" style="max-width: 500px; margin: 0 auto;">
-                <h3 style="margin-bottom: 20px;">👥 Введите код игры</h3>
-                <input type="text" id="multiplayerCode" class="code-input__field" placeholder="КВИЗ КОД" maxlength="6" style="width: 100%; padding: 15px; font-size: 18px; text-align: center;">
-                <button id="joinMultiplayerBtn" class="btn btn-blue btn-large" style="margin-top: 15px; width: 100%;">ПОДКЛЮЧИТЬСЯ</button>
-            </div>
-            
-            <!-- Форма для командного режима -->
-            <div id="teamForm" class="code-input" style="display: none; max-width: 500px; margin: 0 auto;">
-                <h3 style="margin-bottom: 20px;">🏆 Введите код игры</h3>
-                <input type="text" id="teamCode" class="code-input__field" placeholder="КВИЗ КОД" maxlength="6" style="width: 100%; padding: 15px; font-size: 18px; text-align: center;">
-                <button id="joinTeamBtn" class="btn btn-purple btn-large" style="margin-top: 15px; width: 100%; background: #9C27B0;">ВОЙТИ В КОМАНДНУЮ ИГРУ</button>
-            </div>
-            
-            <!-- Форма для одиночного режима -->
-            <div id="soloForm" class="code-input" style="display: none; max-width: 500px; margin: 0 auto;">
-                <h3 style="margin-bottom: 20px;">🎮 Введите код игры</h3>
-                <input type="text" id="soloCode" class="code-input__field" placeholder="КВИЗ КОД" maxlength="6" style="width: 100%; padding: 15px; font-size: 18px; text-align: center;">
-                <button id="joinSoloBtn" class="btn btn-green btn-large" style="margin-top: 15px; width: 100%; background: #4CAF50;">ИГРАТЬ ОДИНОЧНО</button>
-            </div>
-            
-            <div class="hero__footer" style="margin-top: 40px;">
-                <button id="createQuizBtn" class="btn-create">Создайте свой квиз бесплатно</button>
-            </div>
+<!-- Главный блок: выбор режима -->
+<section class="hero">
+    <div class="container">
+        <h1 class="hero__title">Создавай викторины.<br>Играй с друзьями и коллегами.</h1>
+        <p class="hero__subtitle">Мощная платформа для интерактивных игр, командных соревнований и масштабных мероприятий</p>
+
+        <h2 class="hero__title" style="font-size: 28px; margin: 30px auto 20px; text-align: center; width: 100%;">Выберите режим игры</h2>
+        
+        <!-- Выбор режима -->
+        <div class="mode-selector">
+            <button id="selectMultiplayer" class="mode-btn active" style="background: #2563eb;">Мультиплеер</button>
+            <button id="selectTeam" class="mode-btn" style="background: #8b5cf6;">Командный</button>
+            <button id="selectSolo" class="mode-btn" style="background: #22c55e;">Одиночный</button>
         </div>
-    </section>
+        
+        <!-- Форма для мультиплеера -->
+        <div id="multiplayerForm" class="code-input">
+            <h3>Введите код игры</h3>
+            <input type="text" id="multiplayerCode" class="code-input__field" placeholder="КВИЗ КОД" maxlength="6">
+            <button id="joinMultiplayerBtn" class="btn btn-blue btn-large" style="color: white;">ПОДКЛЮЧИТЬСЯ</button>
+        </div>
+        
+        <!-- Форма для командного режима -->
+        <div id="teamForm" class="code-input" style="display: none;">
+            <h3>Введите код игры</h3>
+            <input type="text" id="teamCode" class="code-input__field" placeholder="КВИЗ КОД" maxlength="6">
+            <button id="joinTeamBtn" class="btn btn-purple btn-large" style="color: white;">ВОЙТИ В КОМАНДНУЮ ИГРУ</button>
+        </div>
+        
+        <!-- Форма для одиночного режима -->
+        <div id="soloForm" class="code-input" style="display: none;">
+            <h3>Введите код игры</h3>
+            <input type="text" id="soloCode" class="code-input__field" placeholder="КВИЗ КОД" maxlength="6">
+            <button id="joinSoloBtn" class="btn btn-green btn-large">ИГРАТЬ ОДИНОЧНО</button>
+        </div>
+        
+        <div class="hero__footer">
+            <button id="createQuizBtn" class="btn-create">Создайте свой квиз бесплатно →</button>
+        </div>
+    </div>
+</section>
 
     <!-- Блок: возможности платформы -->
     <section class="features">
         <div class="container">
             <h2 class="section-title">Используйте нашу платформу для</h2>
             
-            <div class="features-grid">
+            <div class="features-grid" style="margin-top: 20px;">
                 <div class="feature-card">
-                    <div class="feature-card__icon">🎮</div>
+                    <div class="feature-card__icon"></div>
                     <h3 class="feature-card__title">Спорта и киберспорта</h3>
                     <p class="feature-card__text">Проводите викторины для болельщиков и фанатов</p>
                 </div>
                 
                 <div class="feature-card">
-                    <div class="feature-card__icon">📢</div>
+                    <div class="feature-card__icon"></div>
                     <h3 class="feature-card__title">Рекламы бренда</h3>
                     <p class="feature-card__text">Вовлекайте аудиторию в интерактивном формате</p>
                 </div>
                 
                 <div class="feature-card">
-                    <div class="feature-card__icon">🎯</div>
+                    <div class="feature-card__icon"></div>
                     <h3 class="feature-card__title">Лидогенерации</h3>
                     <p class="feature-card__text">Собирайте контакты через игровые механики</p>
                 </div>
                 
                 <div class="feature-card">
-                    <div class="feature-card__icon">🎪</div>
+                    <div class="feature-card__icon"></div>
                     <h3 class="feature-card__title">Уникальных мероприятий</h3>
                     <p class="feature-card__text">Создавайте незабываемые впечатления для гостей</p>
                 </div>
                 
                 <div class="feature-card">
-                    <div class="feature-card__icon">🏛️</div>
+                    <div class="feature-card__icon"></div>
                     <h3 class="feature-card__title">Конференций и выставок</h3>
                     <p class="feature-card__text">Оживляйте деловые мероприятия</p>
                 </div>
                 
                 <div class="feature-card">
-                    <div class="feature-card__icon">💼</div>
+                    <div class="feature-card__icon"></div>
                     <h3 class="feature-card__title">HR-коммуникаций</h3>
                     <p class="feature-card__text">Обучайте и сплачивайте сотрудников</p>
                 </div>
                 
                 <div class="feature-card">
-                    <div class="feature-card__icon">📚</div>
+                    <div class="feature-card__icon"></div>
                     <h3 class="feature-card__title">Тренингов и вебинаров</h3>
                     <p class="feature-card__text">Проверяйте знания в интерактивном формате</p>
                 </div>
                 
                 <div class="feature-card">
-                    <div class="feature-card__icon">🎓</div>
+                    <div class="feature-card__icon"></div>
                     <h3 class="feature-card__title">Обучения</h3>
                     <p class="feature-card__text">Превращайте скучные тесты в увлекательные викторины</p>
                 </div>
@@ -99,59 +102,67 @@
         </div>
     </section>
 
-    <!-- Блок: преимущества -->
-    <section class="advantages">
-        <div class="container">
-            <h2 class="section-title">Преимущества нашей платформы</h2>
+<!-- Блок: преимущества -->
+<section class="advantages">
+    <div class="container">
+        <h2 class="section-title" style="margin-bottom: 20px;">Преимущества нашей платформы</h2>
+        
+        <div class="advantages-grid">
+            <div class="advantage-card">
+                <h3 class="advantage-card__title">Интуитивно понятный редактор</h3>
+                <p class="advantage-card__text">Продвинутый редактор викторин разделен на две секции: настройки викторины и настройки вопросов. Контролируйте ЧТО, КОГДА, ДЛЯ КОГО и КАК вы будете проводить.</p>
+            </div>
             
-            <div class="advantages-grid">
-                <div class="advantage-card">
-                    <h3 class="advantage-card__title">📝 Интуитивно понятный редактор</h3>
-                    <p class="advantage-card__text">Продвинутый редактор викторин разделен на две секции: настройки викторины и настройки вопросов. Контролируйте ЧТО, КОГДА, ДЛЯ КОГО и КАК вы будете проводить.</p>
-                </div>
-                
-                <div class="advantage-card">
-                    <h3 class="advantage-card__title">🎯 Разные типы вопросов, раунды и слайды</h3>
-                    <ul class="advantage-card__list">
-                        <li>Вопросы с выбором варианта ответа</li>
-                        <li>Открытые вопросы</li>
-                        <li>Интерактивные опросы</li>
-                        <li>Вопросы с картинкой в качестве ответа</li>
-                        <li>Презентации и слайды (импорт из Google Slides)</li>
-                        <li>Облако слов</li>
-                        <li>Вопросы, где ответ нужно нарисовать</li>
-                    </ul>
-                </div>
+            <div class="advantage-card">
+                <h3 class="advantage-card__title">Разные типы вопросов, раунды и слайды</h3>
+                <ul class="advantage-card__list">
+                    <li>Вопросы с выбором варианта ответа</li>
+                    <li>Открытые вопросы</li>
+                    <li>Интерактивные опросы</li>
+                    <li>Вопросы с картинкой в качестве ответа</li>
+                    <li>Презентации и слайды (импорт из Google Slides)</li>
+                    <li>Облако слов</li>
+                    <li>Вопросы, где ответ нужно нарисовать</li>
+                </ul>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Блок: режимы игры -->
-    <section class="modes">
-        <div class="container">
-            <h2 class="section-title">Три режима игры</h2>
+<!-- Блок: режимы игры -->
+<section class="modes">
+    <div class="container">
+        <h2 class="section-title">Три режима игры</h2>
+        
+        <div class="modes-grid">
             
-            <div class="modes-grid">
-                <div class="mode-card">
-                    <div class="mode-card__icon">👥</div>
-                    <h3 class="mode-card__title">Мультиплеер</h3>
-                    <p class="mode-card__text">В викторине одновременно участвуют много игроков, играя друг против друга</p>
-                </div>
-                
-                <div class="mode-card">
-                    <div class="mode-card__icon">🏆</div>
-                    <h3 class="mode-card__title">Командный режим</h3>
-                    <p class="mode-card__text">Для проведения командных соревнований. Побеждает команда, ответившая на большее число вопросов и затратившая меньше всего времени</p>
-                </div>
-                
-                <div class="mode-card">
-                    <div class="mode-card__icon">📊</div>
-                    <h3 class="mode-card__title">Одиночный режим</h3>
-                    <p class="mode-card__text">Игроки соревнуются друг с другом в викторине, которая доступна определенный промежуток времени</p>
+            <div class="mode-item">
+                <div class="mode-item__icon">💬</div>
+                <div class="mode-item__content">
+                    <h3 class="mode-item__title">Мультиплеер</h3>
+                    <p class="mode-item__text">В викторине одновременно участвуют много игроков, играя друг против друга в реальном времени</p>
                 </div>
             </div>
+
+            <div class="mode-item">
+                <div class="mode-item__icon">👥</div>
+                <div class="mode-item__content">
+                    <h3 class="mode-item__title">Командный режим</h3>
+                    <p class="mode-item__text">Соревнование команд. Победа зависит от правильности ответов и затраченного времени</p>
+                </div>
+            </div>
+
+            <div class="mode-item">
+                <div class="mode-item__icon">👤</div>
+                <div class="mode-item__content">
+                    <h3 class="mode-item__title">Одиночный режим</h3>
+                    <p class="mode-item__text">Игроки проходят викторину индивидуально. Результаты попадают в общую таблицу лидеров</p>
+                </div>
+            </div>
+
         </div>
-    </section>
+    </div>
+</section>
 
     <!-- Блок: масштабирование -->
     <section class="scaling">
@@ -161,17 +172,14 @@
                 <p class="scaling-card__text">Проводите мероприятия до 100 000 одновременных участников. Платформа использует облачные технологии, которые позволяют эффективно масштабировать сервис в соответствии с нагрузкой.</p>
             </div>
         </div>
+
+        <div class="container" style="margin-top: 50px;">
+            <h2 class="cta-card__title" style="text-align: center; width: 100%;">Создайте первую интерактивную викторину прямо сейчас!</h2>
+            <button id="ctaCreateBtn" class="btn btn-blue btn-large" style="display: block; margin: 0 auto; padding: 15px 23px; font-size: 20px; color: white; width: fit-content; border-radius: 35px;">Попробовать бесплатно →</button>
+        </div>
+    </div>
     </section>
 
-    <!-- Призыв к действию -->
-    <section class="cta">
-        <div class="container">
-            <div class="cta-card">
-                <h2 class="cta-card__title">Создайте первую интерактивную викторину прямо сейчас!</h2>
-                <button id="ctaCreateBtn" class="btn btn-red btn-large">Попробовать бесплатно</button>
-            </div>
-        </div>
-    </section>
 {% endblock %}
 
 {% block extra_js %}
@@ -270,7 +278,7 @@
                 const statusData = await statusRes.json();
                 
                 if (statusData.success && statusData.is_closed) {
-                    alert('❌ Эта викторина неактивна! Организатор закрыл доступ.');
+                    alert('Эта викторина неактивна! Организатор закрыл доступ.');
                     return;
                 }
                 

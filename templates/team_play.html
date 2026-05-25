@@ -3,87 +3,93 @@
 {% block title %}Командная игра - {{ quiz.title }}{% endblock %}
 
 {% block content %}
-<div style="max-width: 600px; margin: 50px auto; text-align: center;">
-    <h1>🏆 {{ quiz.title }}</h1>
-    <p>Код игры: <strong style="font-size: 24px; color: #2196F3;">{{ code }}</strong></p>
-    
-    <div id="actionScreen" style="background: #f5f5f5; padding: 30px; border-radius: 20px;">
-        <div id="autoStartInfo" style="display: none; margin-bottom: 15px; padding: 10px; background: #FFF3E0; border-radius: 8px; color: #FF9800;">
-            ⏰ <span id="autoStartText"></span>
-        </div>
-        <div style="display: flex; gap: 20px; justify-content: center;">
-            <button id="createTeamBtn" style="background: #4CAF50; color: white; padding: 15px 30px; border: none; border-radius: 10px; cursor: pointer;">➕ Создать команду</button>
-            <button id="joinTeamBtn" style="background: #2196F3; color: white; padding: 15px 30px; border: none; border-radius: 10px; cursor: pointer;">🔍 Выбрать команду</button>
+<div class="team-play-container">
+    <div class="team-play-header">
+        <h1>{{ quiz.title }}</h1>
+        <p class="team-play-code">Код игры: <strong>{{ code }}</strong></p>
+    </div>
+
+    <!-- Главный экран выбора -->
+    <div id="actionScreen" class="team-play-card">
+        <div class="team-play-actions">
+            <button id="createTeamBtn" class="team-play-btn create">Создать команду</button>
+            <button id="joinTeamBtn" class="team-play-btn join">Выбрать команду</button>
         </div>
     </div>
-    
-    <div id="createScreen" style="display: none; background: #f5f5f5; padding: 30px; border-radius: 20px;">
-        <h3>Создать команду</h3>
-        <input type="text" id="newTeamName" placeholder="Название команды" style="padding: 10px; width: 80%; margin: 10px;"><br>
-        <input type="text" id="newPlayerName" placeholder="Ваше имя" style="padding: 10px; width: 80%; margin: 10px;"><br>
-        <div id="createPasswordField" style="display: none; margin: 10px;">
-            <input type="password" id="createPassword" placeholder="Пароль" style="padding: 10px; width: 80%;">
+
+    <!-- Создать команду -->
+    <div id="createScreen" class="team-play-form hidden">
+        <h3>Создать новую команду</h3>
+        <input type="text" id="newTeamName" placeholder="Название команды">
+        <input type="text" id="newPlayerName" placeholder="Ваше имя">
+        <div id="createPasswordField" style="display: none;">
+            <input type="password" id="createPassword" placeholder="Пароль игры">
         </div>
-        <button id="confirmCreateBtn" style="background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 8px;">✅ Создать</button>
-        <button id="backCreateBtn" style="background: #666; color: white; padding: 10px 20px; border: none; border-radius: 8px;">← Назад</button>
+        <div class="team-play-form-buttons">
+            <button id="backCreateBtn" class="btn-outline">← Назад</button>
+            <button id="confirmCreateBtn" class="btn-primary">Создать команду</button>
+        </div>
     </div>
-    
-    <div id="joinScreen" style="display: none; background: #f5f5f5; padding: 30px; border-radius: 20px;">
+
+    <!-- Присоединиться к команде -->
+    <div id="joinScreen" class="team-play-form hidden">
         <h3>Выберите команду</h3>
-        <div id="teamsList" style="margin: 20px 0;"></div>
-        <input type="text" id="joinPlayerName" placeholder="Ваше имя" style="padding: 10px; width: 80%; margin: 10px;"><br>
-        <div id="joinPasswordField" style="display: none; margin: 10px;">
-            <input type="password" id="joinPassword" placeholder="Пароль" style="padding: 10px; width: 80%;">
+        <div id="teamsList"></div>
+        <input type="text" id="joinPlayerName" placeholder="Ваше имя">
+        <div id="joinPasswordField" style="display: none;">
+            <input type="password" id="joinPassword" placeholder="Пароль игры">
         </div>
-        <button id="backJoinBtn" style="background: #666; color: white; padding: 10px 20px; border: none; border-radius: 8px;">← Назад</button>
+        <div class="team-play-form-buttons">
+            <button id="backJoinBtn" class="btn-outline">← Назад</button>
+        </div>
     </div>
-    
-    <div id="waitingScreen" style="display: none; background: #f5f5f5; padding: 30px; border-radius: 20px;">
+
+    <!-- Ожидание начала -->
+    <div id="waitingScreen" class="team-play-screen hidden">
         <h2>Команда: <span id="waitingTeamName"></span></h2>
         <div id="membersList"></div>
-        <p>⏳ Ожидание начала игры...</p>
-        <div id="waitingStartInfo" style="display: none; margin-top: 15px; padding: 10px; background: #FFF3E0; border-radius: 8px;">
-            ⏰ <span id="waitingStartText"></span>
-        </div>
+        <p>Ожидание начала игры...</p>
     </div>
-    
-    <div id="gameScreen" style="display: none; background: #f5f5f5; padding: 30px; border-radius: 20px;">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-            <div>
-                <span>Вопрос <span id="currentQ">1</span>/<span id="totalQ">0</span></span>
-                <span id="roundBadge" class="round-badge" style="display: none; margin-left: 15px;">📁 <span id="roundName"></span></span>
-            </div>
-            <span>🏆 <span id="gameTeamScore">0</span> очков</span>
+
+    <!-- Игровой экран -->
+    <div id="gameScreen" class="team-play-screen hidden">
+        <div class="team-play-game-header">
+            <div>Вопрос <span id="currentQ">1</span>/<span id="totalQ">0</span></div>
+            <div><span id="gameTeamScore">0</span> очков</div>
         </div>
-        <h3 id="questionText" style="margin: 30px 0; min-height: 100px;"></h3>
+        <h3 id="questionText"></h3>
         <div id="optionsDiv"></div>
-        <div id="timerDiv" class="timer" style="margin-top: 20px; font-size: 24px; font-weight: bold; color: #2196F3;"></div>
-        <div id="resultBlock" style="display: none; margin-top: 20px; padding: 15px; border-radius: 12px; text-align: center;"></div>
-        <div id="waitingNextDiv" style="margin-top: 20px; display: none;">
-            <p>⏳ Ожидание следующего вопроса... <span id="nextTimer"></span></p>
-        </div>
+        <div id="timerDiv" style="margin-top: 20px; font-size: 24px; font-weight: bold; text-align: center;"></div>
+        <div id="resultBlock" style="display: none; margin-top: 20px;"></div>
     </div>
-    
-    <div id="resultScreen" style="display: none;">
-        <h1>🏆 Игра окончена!</h1>
-        <div style="background: #f5f5f5; padding: 30px; border-radius: 20px; margin: 30px 0;">
-            <h2>Твоя команда: <span id="finalTeamName"></span></h2>
-            <h2 style="color: #4CAF50;">Счёт: <span id="finalTeamScore">0</span> очков</h2>
+
+    <!-- Результаты -->
+    <div id="resultScreen" class="team-play-screen hidden">
+        <h1 style="text-align: center;">Игра окончена!</h1>
+        <div style="text-align: center; margin: 25px 0;">
+            <h2>Команда: <span id="finalTeamName"></span></h2>
+            <h2 style="color: #22c55e;">Счёт: <span id="finalTeamScore">0</span></h2>
         </div>
-        <div style="background: white; border-radius: 20px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-            <h3>🏆 Таблица лидеров команд</h3>
-            <div id="leaderboardList" style="margin-top: 20px;"></div>
+        <div class="team-play-leaderboard">
+            <h3>Таблица лидеров</h3>
+            <div id="leaderboardList"></div>
         </div>
-        <div style="margin-top: 20px;">
-            <a href="/" class="btn-outline-new">🏠 На главную</a>
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="/" class="btn-outline-new">На главную</a>
         </div>
     </div>
 </div>
 
+<!-- Toast уведомление -->
+<div id="toast" class="toast-notification">
+    <div id="toast-message"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
 <script>
 const gameCode = '{{ code }}';
 let currentTeam = null;
-let currentPlayer = null;
 let nickname = null;
 let intervalId = null;
 let currentQuestionIndex = -1;
@@ -95,11 +101,12 @@ let selectedAnswer = null;
 let timeShowAnswer = 10;
 let totalQuestions = 0;
 let needPassword = false;
-let countdownInterval = null;
+
+
 
 async function loadQuizSettings() {
     try {
-        const res = await fetch(`/api/team/status?game_code=${gameCode}&team_name=`);
+        const res = await fetch(`/api/team/status?game_code=${gameCode}`);
         const data = await res.json();
         if (data.success) {
             needPassword = data.need_password || false;
@@ -107,33 +114,39 @@ async function loadQuizSettings() {
                 document.getElementById('createPasswordField').style.display = 'block';
                 document.getElementById('joinPasswordField').style.display = 'block';
             }
-            if (data.start_datetime) {
-                document.getElementById('autoStartInfo').style.display = 'block';
-                document.getElementById('autoStartText').innerText = `Игра начнётся автоматически: ${data.start_datetime}`;
-            }
         }
     } catch (error) {
         console.error('Ошибка загрузки настроек:', error);
     }
 }
+// Красивый Toast
+function showToast(message, type = 'error') {
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toast-message');
+    
+    toastMessage.textContent = message;
+    toast.className = `toast-notification ${type}`;
+    toast.classList.add('show');
+    
+    setTimeout(() => toast.classList.remove('show'), 4000);
+}
 
-document.getElementById('createTeamBtn').onclick = () => {
-    document.getElementById('actionScreen').style.display = 'none';
-    document.getElementById('createScreen').style.display = 'block';
-};
+function showScreen(screenId) {
+    document.querySelectorAll('.team-play-card, .team-play-form, .team-play-screen').forEach(el => {
+        el.classList.add('hidden');
+    });
+    document.getElementById(screenId).classList.remove('hidden');
+}
+
+// Кнопки
+document.getElementById('createTeamBtn').onclick = () => showScreen('createScreen');
 document.getElementById('joinTeamBtn').onclick = () => {
-    document.getElementById('actionScreen').style.display = 'none';
-    document.getElementById('joinScreen').style.display = 'block';
+    showScreen('joinScreen');
     loadTeams();
 };
-document.getElementById('backCreateBtn').onclick = () => {
-    document.getElementById('createScreen').style.display = 'none';
-    document.getElementById('actionScreen').style.display = 'block';
-};
-document.getElementById('backJoinBtn').onclick = () => {
-    document.getElementById('joinScreen').style.display = 'none';
-    document.getElementById('actionScreen').style.display = 'block';
-};
+
+document.getElementById('backCreateBtn').onclick = () => showScreen('actionScreen');
+document.getElementById('backJoinBtn').onclick = () => showScreen('actionScreen');
 
 document.getElementById('confirmCreateBtn').onclick = async () => {
     const teamName = document.getElementById('newTeamName').value.trim();
@@ -141,7 +154,7 @@ document.getElementById('confirmCreateBtn').onclick = async () => {
     const password = document.getElementById('createPassword')?.value || '';
     
     if (!teamName || !playerName) {
-        alert('Заполните все поля');
+        showToast('Заполните все поля', 'error');
         return;
     }
     
@@ -162,7 +175,7 @@ document.getElementById('confirmCreateBtn').onclick = async () => {
         nickname = playerName;
         startWaiting();
     } else {
-        alert(data.error);
+        showToast(data.error || 'Ошибка создания команды', 'error');
     }
 };
 
@@ -173,8 +186,9 @@ async function loadTeams() {
     
     if (data.success && data.teams && data.teams.length > 0) {
         container.innerHTML = data.teams.map(team => `
-            <button class="teamSelectBtn" data-team="${team.name}" style="display: block; width: 100%; margin: 10px 0; padding: 12px; background: white; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;">
-                🏆 ${team.name} (${team.members_count} игроков)
+            <button class="teamSelectBtn" data-team="${team.name}" 
+                    style="display: block; width: 100%; margin: 8px 0; padding: 14px; background: white; border: 2px solid #ddd; border-radius: 12px; cursor: pointer; text-align: left; font-size: 16px;">
+                ${team.name} (${team.members_count} игроков)
             </button>
         `).join('');
         
@@ -182,7 +196,7 @@ async function loadTeams() {
             btn.onclick = () => joinTeam(btn.getAttribute('data-team'));
         });
     } else {
-        container.innerHTML = '<p>Нет команд. Создайте первую!</p>';
+        container.innerHTML = '<p style="text-align:center; padding:20px;">Пока нет команд. Создайте первую!</p>';
     }
 }
 
@@ -191,7 +205,7 @@ async function joinTeam(teamName) {
     const password = document.getElementById('joinPassword')?.value || '';
     
     if (!playerName) {
-        alert('Введите ваше имя');
+        showToast('Введите ваше имя', 'error');
         return;
     }
     
@@ -212,20 +226,15 @@ async function joinTeam(teamName) {
         nickname = playerName;
         startWaiting();
     } else {
-        alert(data.error);
+        showToast(data.error || 'Ошибка присоединения', 'error');
     }
 }
 
 function startWaiting() {
-    document.getElementById('createScreen').style.display = 'none';
-    document.getElementById('joinScreen').style.display = 'none';
-    document.getElementById('actionScreen').style.display = 'none';
-    document.getElementById('waitingScreen').style.display = 'block';
+    showScreen('waitingScreen');
     document.getElementById('waitingTeamName').innerText = currentTeam;
-    
     updateMembers();
     setInterval(updateMembers, 3000);
-    
     startPolling();
 }
 
@@ -237,7 +246,7 @@ async function updateMembers() {
         if (myTeam) {
             document.getElementById('membersList').innerHTML = `
                 <h4>Участники (${myTeam.members_count}):</h4>
-                ${myTeam.members_count > 0 ? '👤 '.repeat(myTeam.members_count) : 'Пока никого'}
+                <p>${myTeam.members_count > 0 ? '👤 '.repeat(myTeam.members_count) : 'Пока никого'}</p>
             `;
         }
     }
@@ -245,7 +254,7 @@ async function updateMembers() {
 
 function startPolling() {
     intervalId = setInterval(async () => {
-        const res = await fetch(`/api/team/status?game_code=${gameCode}&team_name=${currentTeam}`);
+        const res = await fetch(`/api/team/status?game_code=${gameCode}&team_name=${encodeURIComponent(currentTeam)}`);
         const data = await res.json();
         if (!data.success) return;
 
@@ -279,7 +288,7 @@ function startPolling() {
             // Таймер обновляется всегда, даже после ответа (но не во время показа ответа)
             if (data.time_left !== null && !awaitingResult) {
                 const timerDiv = document.getElementById('timerDiv');
-                timerDiv.innerHTML = `⏱️ ${data.time_left} сек`;
+                timerDiv.innerHTML = `⏱ ${data.time_left} сек`;
                 timerDiv.style.display = 'block';
                 timerDiv.style.color = data.time_left <= 5 ? '#f44336' : '#2196F3';
             }
@@ -407,11 +416,11 @@ function showAnswerResult(data) {
     resultBlock.style.display = 'block';
     let message = '';
     if (selectedAnswer === null) {
-        message = `⏰ Время вышло! Правильный ответ: ${correctAnswer}`;
+        message = `Время вышло! Правильный ответ: ${correctAnswer}`;
     } else if (isUserCorrect) {
-        message = `✅ Правильно! Команда получает ${pointsPerQuestion} баллов`;
+        message = `Правильно! Команда получает ${pointsPerQuestion} баллов`;
     } else {
-        message = `❌ Неправильно! Правильный ответ: ${correctAnswer}`;
+        message = `Неправильно! Правильный ответ: ${correctAnswer}`;
     }
     
     const isLastQuestion = (data.question_index + 1 >= data.total_questions);
@@ -464,5 +473,10 @@ function escapeHtml(text) {
 }
 
 loadQuizSettings();
+
+document.addEventListener('DOMContentLoaded', () => {
+    // При загрузке показываем только главный экран
+    showScreen('actionScreen');
+});
 </script>
 {% endblock %}

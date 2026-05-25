@@ -3,52 +3,88 @@
 {% block title %}Тарифы - Quiz Platform{% endblock %}
 
 {% block content %}
-<div class="container" style="max-width: 1200px; margin: 0 auto; padding: 40px 20px;">
-    <h1 style="text-align: center; margin-bottom: 40px;">Выберите тариф</h1>
-    
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 30px;">
-        
-        <!-- Бесплатный -->
-        <div style="background: white; border-radius: 20px; padding: 30px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-            <div style="font-size: 48px; margin-bottom: 20px;">🔵</div>
-            <h2>Бесплатный</h2>
-            <div style="font-size: 36px; font-weight: bold; margin: 20px 0;">0 ₽</div>
-            <ul style="text-align: left; list-style: none; padding: 0;">
-                <li style="padding: 8px 0;">✅ До 35 игроков</li>
-                <li style="padding: 8px 0;">✅ Неограниченные викторины</li>
-                <li style="padding: 8px 0;">✅ Одиночный режим</li>
-                <li style="padding: 8px 0;">✅ Мультиплеер</li>
-            </ul>
-            <a href="/register" class="btn btn-blue" style="display: inline-block; margin-top: 20px; background: #2196F3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px;">Начать бесплатно</a>
-        </div>
-        
-        <!-- Базовый -->
-        <div style="background: white; border-radius: 20px; padding: 30px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 2px solid #FF9800;">
-            <div style="font-size: 48px; margin-bottom: 20px;">🟠</div>
-            <h2>Базовый</h2>
-            <div style="font-size: 36px; font-weight: bold; margin: 20px 0;">990 ₽<span style="font-size: 16px;">/мес</span></div>
-            <ul style="text-align: left; list-style: none; padding: 0;">
-                <li style="padding: 8px 0;">✅ До 200 игроков</li>
-                <li style="padding: 8px 0;">✅ Все режимы игры</li>
-                <li style="padding: 8px 0;">✅ Командный режим</li>
-                <li style="padding: 8px 0;">✅ Статистика игроков</li>
-            </ul>
-            <button class="btn btn-orange" style="background: #FF9800; color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer;" onclick="alert('Свяжитесь с нами для подключения')">Выбрать тариф</button>
-        </div>
-        
-        <!-- Профессиональный -->
-        <div style="background: white; border-radius: 20px; padding: 30px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-            <div style="font-size: 48px; margin-bottom: 20px;">💎</div>
-            <h2>Профессиональный</h2>
-            <div style="font-size: 36px; font-weight: bold; margin: 20px 0;">2 490 ₽<span style="font-size: 16px;">/мес</span></div>
-            <ul style="text-align: left; list-style: none; padding: 0;">
-                <li style="padding: 8px 0;">✅ До 1000 игроков</li>
-                <li style="padding: 8px 0;">✅ Свой брендинг</li>
-                <li style="padding: 8px 0;">✅ API доступ</li>
-                <li style="padding: 8px 0;">✅ Приоритетная поддержка</li>
-            </ul>
-            <button class="btn btn-purple" style="background: #9C27B0; color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer;" onclick="alert('Свяжитесь с нами для подключения')">Связаться</button>
+<section class="pricing">
+    <div class="container">
+        <h1 class="hero__title">Выберите тариф</h1>
+        <p class="pricing-subtitle">Подходите к любому масштабу — от небольших игр до крупных мероприятий</p>
+
+        <div class="pricing-grid">
+            
+            <!-- Бесплатный -->
+            <div class="pricing-card">
+                <div class="pricing-icon">🔵</div>
+                <h2 class="pricing-name">Бесплатный</h2>
+                <div class="pricing-price">0 ₽</div>
+                <div class="pricing-period">навсегда</div>
+                
+                <ul class="pricing-features">
+                    <li><span class="check">✔</span> До 35 игроков</li>
+                    <li><span class="check">✔</span> Неограниченные викторины</li>
+                    <li><span class="check">✔</span> Одиночный и мультиплеер</li>
+                    <li><span class="check">✔</span> Базовая статистика</li>
+                </ul>
+                
+                <a href="/register" class="pricing-btn btn-blue" style="color: white;">Начать бесплатно</a>
+            </div>
+
+            <!-- Базовый (рекомендуемый) -->
+            <div class="pricing-card popular">
+                <div class="popular-badge">Самый популярный</div>
+                <div class="pricing-icon">🟠</div>
+                <h2 class="pricing-name">Базовый</h2>
+                <div class="pricing-price">990 ₽</div>
+                <div class="pricing-period">в месяц</div>
+                
+                <ul class="pricing-features">
+                    <li><span class="check">✔</span> До 200 игроков</li>
+                    <li><span class="check">✔</span> Все режимы игры</li>
+                    <li><span class="check">✔</span> Командный режим</li>
+                    <li><span class="check">✔</span> Полная статистика</li>
+                    <li><span class="check">✔</span> Без брендинга платформы</li>
+                </ul>
+                
+                <button onclick="alert('Функция в разработке')" class="pricing-btn btn-orange" style="cursor: pointer;">Выбрать тариф</button>
+            </div>
+
+            <!-- Профессиональный -->
+            <div class="pricing-card">
+                <div class="pricing-icon">🔴</div>
+                <h2 class="pricing-name">Профессиональный</h2>
+                <div class="pricing-price">2 490 ₽</div>
+                <div class="pricing-period">в месяц</div>
+                
+                <ul class="pricing-features">
+                    <li><span class="check">✔</span> До 1000 игроков</li>
+                    <li><span class="check">✔</span> Свой брендинг</li>
+                    <li><span class="check">✔</span> API доступ</li>
+                    <li><span class="check">✔</span> Приоритетная поддержка</li>
+                    <li><span class="check">✔</span> Индивидуальные решения</li>
+                </ul>
+                
+                <button onclick="alert('Свяжитесь с нами для подключения')" class="pricing-btn" style="color: white; background-color: #FF4963; cursor: pointer;" >Связаться</button>
+            </div>
         </div>
     </div>
-</div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Анимация появления карточек при скролле
+    function animateOnScroll() {
+        const cards = document.querySelectorAll('.pricing-card');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.2 });
+
+        cards.forEach(card => observer.observe(card));
+    }
+
+    // Запуск анимации после загрузки
+    window.addEventListener('load', animateOnScroll);
+</script>
 {% endblock %}

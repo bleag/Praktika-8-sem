@@ -6,10 +6,10 @@
 <div class="profile-main">
     <div class="container">
         <!-- Заголовок -->
-        <div class="profile-header">
+        <div class="profile-header" style="">
             <h1 class="profile-title">Мои викторины <span class="quiz-count">({{ quizzes|length }})</span></h1>
-            <p class="profile-subtitle">Выберите викторину для редактирования, просмотра и управления.</p>
-            <button type="button" class="btn btn-blue create-quiz-btn" onclick="window.location.href='/quiz/create'">+ Создать викторину</button>
+            <p class="profile-subtitle" style="margin-top: 10px">Выберите викторину для редактирования, просмотра и управления.</p>
+            <button type="button" class="btn btn-blue create-quiz-btn" onclick="window.location.href='/quiz/create'" style="color: white; margin-left: 930px; ">+ Создать викторину</button>
         </div>
 
         <!-- Фильтр по режимам -->
@@ -23,7 +23,7 @@
         <!-- Поиск -->
         <div class="search-bar">
             <input type="text" id="searchInput" class="search-input" placeholder="Введите поисковой запрос">
-            <button class="search-btn">🔍</button>
+            <button class="search-btn">Найти</button>
         </div>
 
         <!-- Список викторин -->
@@ -34,49 +34,48 @@
                 <div class="quiz-card" data-quiz-id="{{ quiz.id }}" data-mode="{{ mode }}">
                     <div class="quiz-card__cover">
                         {% if quiz.cover_data %}
-                            <img src="{{ quiz.cover_data }}" class="quiz-card__image">
+                            <img src="{{ quiz.cover_data }}" alt="{{ quiz.title }}">
                         {% else %}
-                            <div class="quiz-card__placeholder">🎮</div>
+                            <div class="quiz-card__placeholder">♪</div>
                         {% endif %}
                     </div>
-                    <div class="quiz-card__info">
+
+                    <div class="quiz-card__content">
                         <h3 class="quiz-card__title">{{ quiz.title }}</h3>
-                        <p class="quiz-card__desc">{{ quiz.description[:80] }}{% if quiz.description and quiz.description|length > 80 %}...{% endif %}</p>
+                        <p class="quiz-card__desc">{{ quiz.description[:120] }}{% if quiz.description and quiz.description|length > 120 %}...{% endif %}</p>
+                        
                         <div class="quiz-card__meta">
-                            <span class="quiz-card__code">🔑 Код: {{ quiz.quiz_code }}</span>
-                            <span class="quiz-card__mode">
-                                {% if mode == 'multiplayer' %}👥 Мультиплеер
-                                {% elif mode == 'team' %}🏆 Командный
-                                {% else %}📊 Одиночный{% endif %}
+                            <span class="quiz-card__code">Код: {{ quiz.quiz_code }}</span>
+                            <span class="quiz-card__mode {{ mode if mode else 'multiplayer' }}">
+                                {% if mode == 'multiplayer' %}Мультиплеер
+                                {% elif mode == 'team' %}Командный
+                                {% else %}Одиночный{% endif %}
                             </span>
                         </div>
-                    </div>
-                    <div class="quiz-card__actions">
-                        <!-- Панель ведущего -->
-                        {% if mode == 'solo' %}
-                            <a href="/quizmaster/solo/{{ quiz.id }}" class="btn-small btn-master">🎮 Панель ведущего</a>
-                        {% elif mode == 'team' %}
-                            <a href="/team/leader/{{ quiz.id }}" class="btn-small btn-master">🏆 Панель ведущего</a>
-                        {% else %}
-                            <a href="/quizmaster/{{ quiz.quiz_code }}" class="btn-small btn-master">🎮 Панель ведущего</a>
-                        {% endif %}
 
-                        <a href="/quiz/stats/{{ quiz.id }}" class="btn-small btn-stats">📊 Аналитика</a>
-                        
-                        <!-- Редактировать -->
-                        <a href="/quiz/edit/{{ quiz.id }}" class="btn-small btn-edit">✏️ Редактировать</a>
-                        
-                        <!-- Играть -->
-                        {% if mode == 'solo' %}
-                            <a href="/solo/code/{{ quiz.quiz_code }}" class="btn-small btn-play">🎮 Играть</a>
-                        {% elif mode == 'team' %}
-                            <a href="/team/play/{{ quiz.quiz_code }}" class="btn-small btn-play">🏆 Играть командой</a>
-                        {% else %}
-                            <a href="/play/{{ quiz.quiz_code }}" class="btn-small btn-play">👥 Играть</a>
-                        {% endif %}
-                        
-                        <!-- Удалить -->
-                        <button class="btn-small btn-delete" data-id="{{ quiz.id }}">🗑️ Удалить</button>
+                        <div class="quiz-card__actions">
+                            <!-- Панель ведущего -->
+                            {% if mode == 'solo' %}
+                                <a href="/quizmaster/solo/{{ quiz.id }}" class="btn-small">Панель ведущего</a>
+                            {% elif mode == 'team' %}
+                                <a href="/team/leader/{{ quiz.id }}" class="btn-small">Панель ведущего</a>
+                            {% else %}
+                                <a href="/quizmaster/{{ quiz.quiz_code }}" class="btn-small">Панель ведущего</a>
+                            {% endif %}
+
+                            <a href="/quiz/stats/{{ quiz.id }}" class="btn-small">Аналитика</a>
+                            <a href="/quiz/edit/{{ quiz.id }}" class="btn-small">Редактировать</a>
+                            
+                            {% if mode == 'solo' %}
+                                <a href="/solo/code/{{ quiz.quiz_code }}" class="btn-small">Играть</a>
+                            {% elif mode == 'team' %}
+                                <a href="/team/play/{{ quiz.quiz_code }}" class="btn-small">Играть</a>
+                            {% else %}
+                                <a href="/play/{{ quiz.quiz_code }}" class="btn-small">Играть</a>
+                            {% endif %}
+                            
+                            <button class="btn-small btn-delete" data-id="{{ quiz.id }}">Удалить</button>
+                        </div>
                     </div>
                 </div>
                 {% endfor %}
@@ -95,7 +94,7 @@
             <div class="tariff-card">
                 <div class="tariff-card__badge">Бесплатный тариф</div>
                 <div class="tariff-card__content">
-                    <span class="tariff-card__icon">🎮</span>
+                    <span class="tariff-card__icon"></span>
                     <span class="tariff-card__text">до <strong>35</strong> игроков</span>
                 </div>
                 <div class="tariff-card__note">
