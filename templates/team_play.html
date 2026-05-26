@@ -2,6 +2,10 @@
 
 {% block title %}Командная игра - {{ quiz.title }}{% endblock %}
 
+{% block extra_css %}
+    <link rel="stylesheet" href="/static/css/pages/game.css">
+{% endblock %}
+
 {% block content %}
 <div class="team-play-container">
     <div class="team-play-header">
@@ -288,7 +292,7 @@ function startPolling() {
             // Таймер обновляется всегда, даже после ответа (но не во время показа ответа)
             if (data.time_left !== null && !awaitingResult) {
                 const timerDiv = document.getElementById('timerDiv');
-                timerDiv.innerHTML = `⏱ ${data.time_left} сек`;
+                timerDiv.innerHTML = ` ${data.time_left} сек`;
                 timerDiv.style.display = 'block';
                 timerDiv.style.color = data.time_left <= 5 ? '#f44336' : '#2196F3';
             }

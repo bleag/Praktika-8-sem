@@ -2,20 +2,24 @@
 
 {% block title %}Аналитика - {{ quiz.title }}{% endblock %}
 
+{% block extra_css %}
+    <link rel="stylesheet" href="/static/css/pages/stats.css">
+{% endblock %}
+
 {% block content %}
 <div style="max-width: 1200px; margin: 0 auto; padding: 40px 20px;">
     
     <div style="text-align: center; margin-bottom: 40px;">
-        <h1>📊 Аналитика викторины</h1>
+        <h1>Аналитика викторины</h1>
         <h2>{{ quiz.title }}</h2>
         
         <!-- Показываем режим викторины -->
         <div style="margin-top: 10px;">
             <span style="background: #2196F3; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px;">
                 {% set mode = quiz.settings.gameMode if quiz.settings else 'multiplayer' %}
-                {% if mode == 'solo' %}🎮 Одиночный режим
-                {% elif mode == 'team' %}🏆 Командный режим
-                {% else %}👥 Мультиплеер{% endif %}
+                {% if mode == 'solo' %}Одиночный режим
+                {% elif mode == 'team' %} Командный режим
+                {% else %} Мультиплеер{% endif %}
             </span>
         </div>
     </div>
@@ -38,13 +42,13 @@
     
     <!-- Топ лидеров -->
     <div style="background: white; border-radius: 20px; padding: 25px; margin-bottom: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-        <h3 id="topTitle">🏆 Топ-10 игроков</h3>
+        <h3 id="topTitle"> Топ-10 игроков</h3>
         <div id="topPlayersList"></div>
     </div>
     
     <!-- Все результаты -->
     <div style="background: white; border-radius: 20px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-        <h3 id="allTitle">📋 Все игроки</h3>
+        <h3 id="allTitle">Все игроки</h3>
         <div id="allPlayersList" style="max-height: 400px; overflow-y: auto;"></div>
     </div>
     
@@ -120,8 +124,8 @@ function renderPlayersTab() {
     document.getElementById('totalLabel').innerText = isTeamMode ? 'Всего команд' : 'Всего игроков';
     document.getElementById('avgScore').innerText = avg.toFixed(1);
     document.getElementById('maxScore').innerText = max;
-    document.getElementById('topTitle').innerHTML = isTeamMode ? '🏆 Топ-10 команд' : '🏆 Топ-10 игроков';
-    document.getElementById('allTitle').innerHTML = isTeamMode ? '📋 Все команды' : '📋 Все игроки';
+    document.getElementById('topTitle').innerHTML = isTeamMode ? ' Топ-10 команд' : ' Топ-10 игроков';
+    document.getElementById('allTitle').innerHTML = isTeamMode ? 'Все команды' : ' Все игроки';
     
     const topPlayers = allResults.slice(0, 10);
     

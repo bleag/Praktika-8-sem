@@ -2,6 +2,10 @@
 
 {% block title %}Рисование - {{ quiz.title }}{% endblock %}
 
+{% block extra_css %}
+    <link rel="stylesheet" href="/static/css/pages/game.css">
+{% endblock %}
+
 {% block content %}
 <div style="max-width: 800px; margin: 0 auto; padding: 20px;">
     <h2>{{ question.text }}</h2>

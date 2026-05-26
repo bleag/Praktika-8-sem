@@ -1,4 +1,3 @@
-/* quizmaster.html, quizmaster_solo.html */
 /* ========== ПАНЕЛЬ ВЕДУЩЕГО (QUIZMASTER) ========== */
 .quizmaster-container {
     padding: 40px 0;
@@ -50,7 +49,6 @@
     gap: 30px;
 }
 
-/* Карточки управления */
 .control-card, .players-card {
     background: white;
     border-radius: 20px;
@@ -65,7 +63,6 @@
     color: var(--text-dark);
 }
 
-/* Статус игры */
 .game-status {
     margin-bottom: 20px;
     padding: 12px;
@@ -89,22 +86,11 @@
     font-weight: 600;
 }
 
-.status-badge.waiting {
-    background: #FF9800;
-    color: white;
-}
+.status-badge.waiting { background: #FF9800; color: white; }
+.status-badge.active { background: #4CAF50; color: white; }
+.status-badge.paused { background: #FFC107; color: #333; }
+.status-badge.finished { background: #9E9E9E; color: white; }
 
-.status-badge.active {
-    background: #4CAF50;
-    color: white;
-}
-
-.status-badge.finished {
-    background: #9E9E9E;
-    color: white;
-}
-
-/* Кнопки управления */
 .control-buttons {
     display: flex;
     flex-wrap: wrap;
@@ -112,16 +98,21 @@
     margin-bottom: 30px;
 }
 
+/* Дополнительные цвета кнопок */
+.btn-green { background: #4CAF50; color: white; }
+.btn-green:hover { background: #45a049; }
+.btn-yellow { background: #FFC107; color: #333; }
+.btn-yellow:hover { background: #e0a800; }
+.btn-red { background: var(--sovcombank-red); color: white; }
+.btn-red:hover { background: var(--red-dark); }
+.btn-purple { background: #9C27B0; color: white; }
+.btn-purple:hover { background: #7B1FA2; }
+
 /* Информация о вопросе */
 .question-info {
     margin-top: 20px;
     padding-top: 20px;
     border-top: 1px solid var(--gray-border);
-}
-
-.question-info h4 {
-    color: var(--text-dark);
-    margin-bottom: 10px;
 }
 
 .current-question {
@@ -133,7 +124,78 @@
     line-height: 1.5;
 }
 
-/* ========== СПИСОК ИГРОКОВ ========== */
+/* Список вариантов ответа */
+.question-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.option-item {
+    padding: 8px 12px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.option-item.correct {
+    background: #e8f5e9;
+    border-left: 4px solid #4caf50;
+}
+
+/* Панель со всеми вопросами (для ведущего) */
+.questions-list-panel {
+    margin-top: 20px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.all-questions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.question-item {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 15px;
+}
+
+.question-item .question-text {
+    font-weight: 600;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.question-item .options-list {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.question-item .option {
+    padding: 6px 12px;
+    background: #f5f5f5;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.question-item .option.correct {
+    background: #c8e6c9;
+    border-left: 3px solid #4caf50;
+}
+
+.timer-display {
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--sovcombank-blue);
+}
+
+/* Список игроков */
 .players-list {
     max-height: 500px;
     overflow-y: auto;
@@ -167,23 +229,57 @@
     color: var(--text-gray);
 }
 
-/* Действия внизу */
 .quizmaster-actions {
     margin-top: 30px;
     text-align: center;
 }
 
-/* Дополнительный адаптив для панели ведущего (если ещё нет) */
+.btn-copy {
+    background: var(--gray-light);
+    border: 1px solid var(--gray-border);
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 6px;
+}
+
+/* Адаптив */
 @media (max-width: 768px) {
     .quizmaster-grid {
         grid-template-columns: 1fr;
     }
-    
     .control-buttons {
         justify-content: center;
     }
-    
     .quiz-code-box strong {
         font-size: 20px;
     }
+}
+
+/* ========== КОМАНДНАЯ ИГРА – СПИСОК КОМАНД ========== */
+.team-list {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.team-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid var(--gray-border);
+}
+
+.team-name {
+    font-weight: 500;
+    flex: 1;
+}
+
+.team-score {
+    color: var(--sovcombank-blue);
+    font-weight: bold;
+}
+
+.team-play-container .players-card,
+.team-play-container .control-card {
+    margin-bottom: 20px;
 }

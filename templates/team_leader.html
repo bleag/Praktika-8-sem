@@ -2,16 +2,21 @@
 
 {% block title %}Панель ведущего - Командная игра{% endblock %}
 
+{% block extra_css %}
+    <link rel="stylesheet" href="/static/css/pages/quizmaster.css">
+    <link rel="stylesheet" href="/static/css/pages/game.css">
+{% endblock %}
+
 {% block content %}
 <div class="quizmaster-container">
     <div class="container">
         <div class="quizmaster-header">
-            <h1>🏆 Панель ведущего (Командный режим)</h1>
+            <h1>Панель ведущего (Командный режим)</h1>
             <h2>{{ quiz.title }}</h2>
             <div class="quiz-code-box">
                 <span>Код игры:</span>
                 <strong id="gameCodeDisplay">{{ quiz.quiz_code }}</strong>
-                <button onclick="copyCode()" class="btn-small btn-copy">📋 Копировать</button>
+                <button onclick="copyCode()" class="btn-small btn-copy"> Копировать</button>
             </div>
         </div>
 
@@ -26,11 +31,11 @@
                     </div>
                     
                     <div class="control-buttons">
-                        <button id="startBtn" class="btn btn-green">🚀 Старт игры</button>
-                        <button id="pauseBtn" class="btn btn-yellow">⏸️ Пауза</button>
-                        <button id="resumeBtn" class="btn btn-green" style="display: none;">▶️ Возобновить</button>
-                        <button id="stopBtn" class="btn btn-red">⏹️ Завершить игру</button>
-                        <button id="replayBtn" class="btn btn-purple" style="display: none;">🔄 Перезапустить игру</button>
+                        <button id="startBtn" class="btn btn-green">Старт игры</button>
+                        <button id="pauseBtn" class="btn btn-yellow">Пауза</button>
+                        <button id="resumeBtn" class="btn btn-green" style="display: none;">Возобновить</button>
+                        <button id="stopBtn" class="btn btn-red">Завершить игру</button>
+                        <button id="replayBtn" class="btn btn-purple" style="display: none;">Перезапустить игру</button>
                     </div>
                     
                     <div class="question-info">
@@ -53,7 +58,7 @@
             
             <div class="quizmaster-players">
                 <div class="players-card">
-                    <h3>🏆 Команды <span id="teamsCount">0</span></h3>
+                    <h3>Команды <span id="teamsCount">0</span></h3>
                     <div id="teamsList" class="players-list">
                         <div class="empty-players">Ожидание подключения команд...</div>
                     </div>
@@ -66,242 +71,6 @@
         </div>
     </div>
 </div>
-
-<style>
-.quizmaster-container {
-    padding: 40px 0;
-    background: var(--gray-light);
-    min-height: calc(100vh - 200px);
-}
-.quizmaster-header {
-    text-align: center;
-    margin-bottom: 40px;
-}
-.quizmaster-header h1 {
-    color: var(--sovcombank-blue);
-    margin-bottom: 10px;
-}
-.quizmaster-header h2 {
-    color: var(--text-dark);
-    margin-bottom: 15px;
-}
-.quiz-code-box {
-    background: white;
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 20px;
-    border-radius: 12px;
-    margin-top: 15px;
-    font-size: 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-.quiz-code-box strong {
-    font-size: 28px;
-    font-family: monospace;
-    letter-spacing: 2px;
-    color: var(--sovcombank-blue);
-}
-.quizmaster-grid {
-    display: grid;
-    grid-template-columns: 1fr 350px;
-    gap: 30px;
-}
-.control-card, .players-card {
-    background: white;
-    border-radius: 20px;
-    padding: 24px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-}
-.control-card h3, .players-card h3 {
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid var(--gray-border);
-}
-.game-status {
-    margin-bottom: 20px;
-    padding: 12px;
-    background: var(--gray-light);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-.status-label {
-    font-weight: 500;
-}
-.status-badge {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 600;
-}
-.status-badge.waiting { background: #FF9800; color: white; }
-.status-badge.active { background: #4CAF50; color: white; }
-.status-badge.paused { background: #FFC107; color: #333; }
-.status-badge.finished { background: #9E9E9E; color: white; }
-.control-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 20px;
-}
-.btn-green {
-    background: #4CAF50;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-}
-.btn-green:hover {
-    background: #45a049;
-}
-.btn-yellow {
-    background: #FFC107;
-    color: #333;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-}
-.btn-yellow:hover {
-    background: #e0a800;
-}
-.btn-red {
-    background: var(--sovcombank-red);
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-}
-.btn-red:hover {
-    background: var(--red-dark);
-}
-.btn-purple {
-    background: #9C27B0;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-}
-.btn-purple:hover {
-    background: #7B1FA2;
-}
-.question-info {
-    margin-top: 20px;
-    padding-top: 15px;
-    border-top: 1px solid var(--gray-border);
-}
-.current-question {
-    background: var(--gray-light);
-    padding: 15px;
-    border-radius: 12px;
-    margin-top: 10px;
-    font-size: 16px;
-    line-height: 1.5;
-}
-.question-options {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-.option-item {
-    padding: 8px 12px;
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-}
-.option-item.correct {
-    background: #e8f5e9;
-    border-left: 4px solid #4caf50;
-}
-.questions-list-panel {
-    margin-top: 20px;
-    max-height: 500px;
-    overflow-y: auto;
-}
-.all-questions-list {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-.question-item {
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 12px;
-    padding: 15px;
-}
-.question-item .question-text {
-    font-weight: 600;
-    margin-bottom: 10px;
-    font-size: 16px;
-}
-.question-item .options-list {
-    margin-top: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-.question-item .option {
-    padding: 6px 12px;
-    background: #f5f5f5;
-    border-radius: 6px;
-    font-size: 14px;
-}
-.question-item .option.correct {
-    background: #c8e6c9;
-    border-left: 3px solid #4caf50;
-}
-.timer-display {
-    font-size: 20px;
-    font-weight: bold;
-    color: var(--sovcombank-blue);
-}
-.players-list {
-    max-height: 500px;
-    overflow-y: auto;
-}
-.team-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px;
-    border-bottom: 1px solid var(--gray-border);
-}
-.team-name {
-    font-weight: 500;
-    flex: 1;
-}
-.team-score {
-    color: var(--sovcombank-blue);
-    font-weight: bold;
-}
-.empty-players {
-    text-align: center;
-    padding: 40px;
-    color: var(--text-gray);
-}
-.quizmaster-actions {
-    margin-top: 30px;
-    text-align: center;
-}
-.btn-copy {
-    background: var(--gray-light);
-    border: 1px solid var(--gray-border);
-    cursor: pointer;
-    padding: 4px 10px;
-    border-radius: 6px;
-}
-@media (max-width: 768px) {
-    .quizmaster-grid {
-        grid-template-columns: 1fr;
-    }
-}
-</style>
 
 <script>
 const gameCode = '{{ quiz.quiz_code }}';
@@ -422,7 +191,7 @@ async function updateGameStatus() {
                     
                     allQuestionsList.innerHTML = data.all_questions.map(q => `
                         <div class="question-item">
-                            <div class="question-text">📝 ${escapeHtml(q.text)}</div>
+                            <div class="question-text"> ${escapeHtml(q.text)}</div>
                             <div class="options-list">
                                 ${q.options ? q.options.map(opt => `
                                     <div class="option ${opt === q.correct_answer ? 'correct' : ''}">
@@ -430,7 +199,7 @@ async function updateGameStatus() {
                                     </div>
                                 `).join('') : ''}
                             </div>
-                            ${q.correct_answer ? `<div style="margin-top: 8px; color: #4caf50; font-size: 13px;">✅ Правильный ответ: ${escapeHtml(q.correct_answer)}</div>` : ''}
+                            ${q.correct_answer ? `<div style="margin-top: 8px; color: #4caf50; font-size: 13px;">Правильный ответ: ${escapeHtml(q.correct_answer)}</div>` : ''}
                         </div>
                     `).join('');
                 } 
@@ -447,7 +216,7 @@ async function updateGameStatus() {
                         const correctAnswer = data.current_question.correct_answer;
                         currentQuestionOptions.innerHTML = data.current_question.options.map(opt => `
                             <div class="option-item ${opt === correctAnswer ? 'correct' : ''}">
-                                ${escapeHtml(opt)} ${opt === correctAnswer ? '✅ Правильный ответ' : ''}
+                                ${escapeHtml(opt)} ${opt === correctAnswer ? 'Правильный ответ' : ''}
                             </div>
                         `).join('');
                     } else {
@@ -473,7 +242,7 @@ async function updateGameStatus() {
                 questionHeader.innerHTML = 'Текущий вопрос';
                 currentQuestionDisplay.style.display = 'block';
                 questionsListPanel.style.display = 'none';
-                currentQuestionText.innerHTML = '⏸️ Игра на паузе';
+                currentQuestionText.innerHTML = ' Игра на паузе';
                 currentQuestionOptions.innerHTML = '';
                 currentQuestionTimer.innerHTML = '';
             } 
@@ -482,7 +251,7 @@ async function updateGameStatus() {
                 questionHeader.innerHTML = 'Текущий вопрос';
                 currentQuestionDisplay.style.display = 'block';
                 questionsListPanel.style.display = 'none';
-                currentQuestionText.innerHTML = `⏰ Игра начнётся автоматически: ${data.start_datetime}`;
+                currentQuestionText.innerHTML = ` Игра начнётся автоматически: ${data.start_datetime}`;
                 currentQuestionOptions.innerHTML = '';
                 currentQuestionTimer.innerHTML = '';
             }
@@ -522,9 +291,9 @@ document.getElementById('startBtn').onclick = async () => {
     });
     const data = await response.json();
     if (data.success) {
-        alert('✅ Игра начата!');
+        alert('Игра начата!');
     } else {
-        alert('❌ Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+        alert(' Ошибка: ' + (data.error || 'Неизвестная ошибка'));
     }
 };
 
@@ -537,7 +306,7 @@ document.getElementById('pauseBtn').onclick = async () => {
     });
     const data = await response.json();
     if (data.success) {
-        alert('⏸️ Игра на паузе');
+        alert('Игра на паузе');
     }
 };
 
@@ -550,7 +319,7 @@ document.getElementById('resumeBtn').onclick = async () => {
     });
     const data = await response.json();
     if (data.success) {
-        alert('▶️ Игра возобновлена');
+        alert('Игра возобновлена');
     }
 };
 
@@ -564,11 +333,11 @@ document.getElementById('stopBtn').onclick = async () => {
         });
         const data = await response.json();
         if (data.success) {
-            alert('✅ Игра завершена, результаты сохранены!');
+            alert('Игра завершена, результаты сохранены!');
             updateGameStatus();
             updateTeams();
         } else {
-            alert('❌ Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+            alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
         }
     }
 };
@@ -583,12 +352,12 @@ document.getElementById('replayBtn').onclick = async () => {
         });
         const data = await response.json();
         if (data.success) {
-            alert('🔄 Игра перезапущена! Команды могут подключаться заново.');
+            alert('Игра перезапущена! Команды могут подключаться заново.');
             document.getElementById('replayBtn').style.display = 'none';
             updateGameStatus();
             updateTeams();
         } else {
-            alert('❌ Ошибка перезапуска: ' + (data.error || 'Неизвестная ошибка'));
+            alert('Ошибка перезапуска: ' + (data.error || 'Неизвестная ошибка'));
         }
     }
 };

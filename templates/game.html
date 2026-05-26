@@ -2,6 +2,10 @@
 
 {% block title %}Игра: {{ quiz.title }}{% endblock %}
 
+{% block extra_css %}
+    <link rel="stylesheet" href="/static/css/pages/game.css">
+{% endblock %}
+
 {% block content %}
 <div class="game-container">
     <h1>{{ quiz.title }}</h1>

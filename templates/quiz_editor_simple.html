@@ -2,6 +2,10 @@
 
 {% block title %}Редактор викторины - Quiz Platform{% endblock %}
 
+{% block extra_css %}
+    <link rel="stylesheet" href="/static/css/pages/quiz_editor.css">
+{% endblock %}
+
 {% block content %}
 <div class="editor-container">
     <div class="editor-sidebar">
@@ -324,52 +328,6 @@
     </div>
 </div>
 
-<style>
-.editor-container { display: flex; gap: 30px; max-width: 1200px; margin: 0 auto; padding: 20px; }
-.editor-sidebar { width: 200px; }
-.sidebar-nav__btn { display: block; width: 100%; padding: 12px; margin-bottom: 10px; background: #f0f0f0; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-.sidebar-nav__btn.active { background: #1e40af; color: white; }
-.editor-main { flex: 1; }
-.editor-tab { display: none; }
-.editor-tab.active { display: block; }
-.settings-section { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-.form-group { margin-bottom: 15px; }
-.form-input, .form-textarea { width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; }
-.btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; }
-.btn-blue { background: linear-gradient(90deg, #2563eb, #1e40af); color: white; }
-.btn-red { background: #f44336; color: white; }
-.btn-outline-new { background: none; border: 1px solid #ddd; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
-.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center; }
-.modal-content { background: white; width: 500px; border-radius: 12px; padding: 20px; max-height: 80vh; overflow-y: auto; }
-.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.modal-close { font-size: 24px; cursor: pointer; }
-.option-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
-.option-row .form-input { flex: 1; }
-.remove-option { background: none; border: none; cursor: pointer; color: #999; font-size: 16px; }
-.remove-option:hover { color: #f44336; }
-.editor-actions { display: flex; gap: 15px; margin-top: 20px; }
-.checkbox-label, .radio-label { display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 12px; }
-.indent { margin-left: 24px; margin-top: 12px; margin-bottom: 12px; }
-.form-hint { display: block; font-size: 12px; color: #666; margin-top: 4px; }
-.sub-block { background: #f9f9f9; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
-.sub-block__title { font-size: 16px; font-weight: 600; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #1e40af; display: inline-block; }
-.tariff-banner { background: #e3f2fd; border-radius: 12px; padding: 16px; margin-bottom: 24px; }
-.form-row { display: flex; gap: 20px; }
-.form-group.half { flex: 1; }
-.section-divider { margin: 20px 0; border: none; border-top: 1px solid #eee; }
-.subsection-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: #f44336; }
-.rounds-section { background: #f8f9fa; border-radius: 12px; padding: 15px; margin-bottom: 20px; }
-.rounds-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-.rounds-list { display: flex; flex-wrap: wrap; gap: 10px; }
-.round-item { background: white; border: 1px solid #ddd; border-radius: 20px; padding: 8px 16px; cursor: pointer; display: flex; align-items: center; gap: 10px; }
-.round-item.active { background: #1e40af; border-color: #2196F3; color: white; }
-.round-actions { display: flex; gap: 5px; margin-left: 10px; }
-.round-actions button { background: none; border: none; cursor: pointer; color: inherit; }
-.questions-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.btn-small { padding: 5px 12px; border-radius: 6px; border: none; cursor: pointer; background: #1e40af; color: white; font-size: 12px; }
-.current-round-indicator { background: #e3f2fd; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
-</style>
-
 <script>
 let currentQuizId = null;
 {% if quiz %}
@@ -418,7 +376,7 @@ async function renderRounds() {
     const defaultCount = await getQuestionsCount(null);
     
     let html = `<div class="round-item ${currentRoundId === null ? 'active' : ''}" data-round-id="">
-        <span class="round-name">📁 Общие вопросы</span>
+        <span class="round-name">Общие вопросы</span>
         <span class="round-questions-count">${defaultCount}</span>
     </div>`;
     
@@ -715,7 +673,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const result = await response.json();
             if (result.success) {
                 if (!currentQuizId && result.quiz_id) currentQuizId = result.quiz_id;
-                alert('✅ Викторина сохранена!');
+                alert('Викторина сохранена!');
             } else {
                 alert('Ошибка: ' + result.error);
             }

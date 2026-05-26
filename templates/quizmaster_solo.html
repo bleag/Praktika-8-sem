@@ -2,16 +2,20 @@
 
 {% block title %}Панель ведущего - {{ quiz.title }}{% endblock %}
 
+{% block extra_css %}
+    <link rel="stylesheet" href="/static/css/pages/quizmaster.css">
+{% endblock %}
+
 {% block content %}
 <div class="quizmaster-container">
     <div class="container">
         <div class="quizmaster-header">
-            <h1>🎮 Панель ведущего (Одиночный режим)</h1>
+            <h1>Панель ведущего (Одиночный режим)</h1>
             <h2>{{ quiz.title }}</h2>
             <div class="quiz-code-box">
                 <span>Код для игроков:</span>
                 <strong>{{ quiz.quiz_code }}</strong>
-                <button onclick="copyCode()" class="btn-small btn-copy">📋 Копировать</button>
+                <button onclick="copyCode()" class="btn-small btn-copy"> Копировать</button>
             </div>
         </div>
 
@@ -26,17 +30,17 @@
                     </div>
                     
                     <div id="autoStartInfo" class="info-box" style="display: none; margin-top: 15px;">
-                        <p>⏰ <strong>Автоматический запуск:</strong></p>
+                        <p><strong>Автоматический запуск:</strong></p>
                         <p id="autoStartText">Доступ будет открыт автоматически</p>
                     </div>
                     
                     <div class="control-buttons">
-                        <button id="closeAccessBtn" class="btn btn-red">🔒 Закрыть доступ</button>
-                        <button id="openAccessBtn" class="btn btn-green" style="display: none;">🔓 Открыть доступ</button>
+                        <button id="closeAccessBtn" class="btn btn-red">Закрыть доступ</button>
+                        <button id="openAccessBtn" class="btn btn-green" style="display: none;">Открыть доступ</button>
                     </div>
                     
                     <div class="info-box" style="margin-top: 20px;">
-                        <p>📌 <strong>Как это работает:</strong></p>
+                        <p><strong>Как это работает:</strong></p>
                         <ul>
                             <li>Игроки заходят по коду викторины: <strong>{{ quiz.quiz_code }}</strong></li>
                             <li>Когда доступ открыт — игроки могут начать игру</li>
@@ -50,7 +54,7 @@
             
             <div class="quizmaster-players">
                 <div class="players-card">
-                    <h3>🏆 Таблица лидеров <span id="playersCount">0</span></h3>
+                    <h3>Таблица лидеров <span id="playersCount">0</span></h3>
                     <div id="playersList" class="players-list">
                         <div class="empty-players">Нет результатов</div>
                     </div>
@@ -63,170 +67,6 @@
         </div>
     </div>
 </div>
-
-<style>
-.quizmaster-container {
-    padding: 40px 0;
-    background: var(--gray-light);
-    min-height: calc(100vh - 200px);
-}
-.quizmaster-header {
-    text-align: center;
-    margin-bottom: 40px;
-}
-.quizmaster-header h1 {
-    color: var(--sovcombank-blue);
-    margin-bottom: 10px;
-}
-.quizmaster-header h2 {
-    color: var(--text-dark);
-    margin-bottom: 15px;
-}
-.quiz-code-box {
-    background: white;
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 20px;
-    border-radius: 12px;
-    margin-top: 15px;
-    font-size: 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-.quiz-code-box strong {
-    font-size: 28px;
-    font-family: monospace;
-    letter-spacing: 2px;
-    color: var(--sovcombank-blue);
-}
-.quizmaster-grid {
-    display: grid;
-    grid-template-columns: 1fr 350px;
-    gap: 30px;
-}
-.control-card, .players-card {
-    background: white;
-    border-radius: 20px;
-    padding: 24px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-}
-.control-card h3, .players-card h3 {
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid var(--gray-border);
-}
-.game-status {
-    margin-bottom: 20px;
-    padding: 12px;
-    background: var(--gray-light);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-.status-label {
-    font-weight: 500;
-}
-.status-badge {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 600;
-}
-.status-badge.waiting { background: #FF9800; color: white; }
-.status-badge.active { background: #4CAF50; color: white; }
-.status-badge.finished { background: #9E9E9E; color: white; }
-.control-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 30px;
-}
-.btn-green {
-    background: #4CAF50;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-}
-.btn-green:hover {
-    background: #45a049;
-}
-.btn-red {
-    background: var(--sovcombank-red);
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-}
-.btn-red:hover {
-    background: var(--red-dark);
-}
-.info-box {
-    background: #e3f2fd;
-    border-radius: 12px;
-    padding: 15px;
-    font-size: 14px;
-}
-.info-box ul {
-    margin: 10px 0 0 20px;
-    padding: 0;
-}
-.info-box li {
-    margin: 5px 0;
-}
-.players-list {
-    max-height: 500px;
-    overflow-y: auto;
-}
-.player-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px;
-    border-bottom: 1px solid var(--gray-border);
-}
-.player-name {
-    font-weight: 500;
-    flex: 1;
-}
-.player-score {
-    color: var(--sovcombank-blue);
-    font-weight: bold;
-    margin-right: 15px;
-}
-.player-detail {
-    color: var(--text-gray);
-    font-size: 12px;
-}
-.empty-players {
-    text-align: center;
-    padding: 40px;
-    color: var(--text-gray);
-}
-.quizmaster-actions {
-    margin-top: 30px;
-    text-align: center;
-}
-.btn-copy {
-    background: var(--gray-light);
-    border: 1px solid var(--gray-border);
-    cursor: pointer;
-    padding: 4px 10px;
-    border-radius: 6px;
-}
-@media (max-width: 768px) {
-    .quizmaster-grid {
-        grid-template-columns: 1fr;
-    }
-    .quiz-code-box strong {
-        font-size: 20px;
-    }
-}
-</style>
 
 <script>
 const quizId = {{ quiz.id }};
@@ -266,13 +106,13 @@ async function updateStatus() {
                 // Доступ ещё не открыт, показываем время открытия
                 const dateStr = new Date(startTime).toLocaleString('ru-RU');
                 autoStartInfoDiv.style.display = 'block';
-                autoStartTextSpan.innerHTML = `⏰ Доступ будет открыт автоматически ${dateStr}`;
+                autoStartTextSpan.innerHTML = `Доступ будет открыт автоматически ${dateStr}`;
                 
                 if (statusData.success && statusData.is_closed) {
-                    gameStatusSpan.textContent = `🔒 Доступ закрыт (откроется ${dateStr})`;
+                    gameStatusSpan.textContent = `Доступ закрыт (откроется ${dateStr})`;
                     gameStatusSpan.className = 'status-badge waiting';
                 } else {
-                    gameStatusSpan.textContent = `⏳ Ожидание автоматического запуска (${dateStr})`;
+                    gameStatusSpan.textContent = `Ожидание автоматического запуска (${dateStr})`;
                     gameStatusSpan.className = 'status-badge waiting';
                 }
                 
@@ -294,12 +134,12 @@ async function updateStatus() {
                 autoStartInfoDiv.style.display = 'none';
                 
                 if (statusData.success && statusData.is_closed) {
-                    gameStatusSpan.textContent = '🔒 Доступ закрыт';
+                    gameStatusSpan.textContent = 'Доступ закрыт';
                     gameStatusSpan.className = 'status-badge finished';
                     closeBtn.style.display = 'none';
                     openBtn.style.display = 'inline-block';
                 } else {
-                    gameStatusSpan.textContent = '✅ Доступ открыт';
+                    gameStatusSpan.textContent = 'Доступ открыт';
                     gameStatusSpan.className = 'status-badge active';
                     closeBtn.style.display = 'inline-block';
                     openBtn.style.display = 'none';
@@ -310,12 +150,12 @@ async function updateStatus() {
             autoStartInfoDiv.style.display = 'none';
             
             if (statusData.success && statusData.is_closed) {
-                gameStatusSpan.textContent = '🔒 Доступ закрыт';
+                gameStatusSpan.textContent = 'Доступ закрыт';
                 gameStatusSpan.className = 'status-badge finished';
                 closeBtn.style.display = 'none';
                 openBtn.style.display = 'inline-block';
             } else {
-                gameStatusSpan.textContent = '✅ Доступ открыт';
+                gameStatusSpan.textContent = 'Доступ открыт';
                 gameStatusSpan.className = 'status-badge active';
                 closeBtn.style.display = 'inline-block';
                 openBtn.style.display = 'none';
@@ -349,10 +189,10 @@ closeBtn.onclick = async () => {
         const response = await fetch(`/api/solo/${quizId}/close`, { method: 'POST' });
         const data = await response.json();
         if (data.success) {
-            alert('✅ Доступ закрыт');
+            alert('Доступ закрыт');
             updateStatus();
         } else {
-            alert('❌ Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+            alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
         }
     }
 };
@@ -362,10 +202,10 @@ openBtn.onclick = async () => {
         const response = await fetch(`/api/solo/${quizId}/open`, { method: 'POST' });
         const data = await response.json();
         if (data.success) {
-            alert('✅ Доступ открыт');
+            alert('Доступ открыт');
             updateStatus();
         } else {
-            alert('❌ Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+            alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
         }
     }
 };
