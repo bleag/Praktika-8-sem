@@ -11,15 +11,15 @@
         <canvas id="drawCanvas" width="600" height="400" style="border: 2px solid #333; background: white; cursor: crosshair;"></canvas>
         
         <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
-            <button id="clearBtn" class="btn btn-yellow">🧽 Очистить</button>
-            <button id="undoBtn" class="btn btn-blue">↩️ Отменить</button>
-            <button id="submitBtn" class="btn btn-green">✅ Отправить рисунок</button>
+            <button id="clearBtn" class="btn btn-yellow">Очистить</button>
+            <button id="undoBtn" class="btn btn-blue">Отменить</button>
+            <button id="submitBtn" class="btn btn-green">Отправить рисунок</button>
         </div>
         
         <div style="margin-top: 10px;">
-            <label>🎨 Цвет: </label>
+            <label>Цвет: </label>
             <input type="color" id="colorPicker" value="#000000">
-            <label>✏️ Размер: </label>
+            <label>Размер: </label>
             <input type="range" id="brushSize" min="1" max="20" value="3">
         </div>
     </div>
@@ -125,10 +125,10 @@ document.getElementById('submitBtn').onclick = async () => {
     
     const data = await response.json();
     if (data.success) {
-        alert('✅ Рисунок отправлен!');
+        alert('Рисунок отправлен!');
         window.location.href = `/play/{{ code }}`;
     } else {
-        alert('❌ Ошибка: ' + data.error);
+        alert('Ошибка: ' + data.error);
     }
 };
 </script>
