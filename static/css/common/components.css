@@ -1,0 +1,358 @@
+/* Кнопки */
+.btn {
+    display: inline-block;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+}
+
+/* Большая кнопка */
+.btn-large {
+    width: 100%;
+    padding: 16px 24px;
+    font-size: 18px;
+    font-weight: 700;
+    border-radius: 16px;
+    margin-top: 16px;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-blue { background: linear-gradient(90deg, #2563eb, #1e40af); }
+.btn-purple { background: linear-gradient(90deg, #8b5cf6, #7c3aed); }
+.btn-green { background: linear-gradient(90deg, #22c55e, #16a34a); }
+
+.btn-large:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid var(--gray-border);
+    padding: 8px 16px;
+    border-radius: 8px;
+    color: var(--text-dark);
+    text-decoration: none;
+    margin-left: 12px;
+}
+
+.btn-outline:hover {
+    border-color: var(--sovcombank-blue);
+    color: var(--sovcombank-blue);
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: var(--sovcombank-blue);
+    cursor: pointer;
+    font-size: 16px;
+    text-decoration: underline;
+}
+
+.btn-link:hover {
+    color: var(--sovcombank-red);
+}
+
+/* Кнопка "Создать квиз" */
+.btn-create {
+    background: white;
+    color: #1e3a8a;
+    border: 2px solid white;
+    padding: 14px 36px;
+    font-size: 17px;
+    font-weight: 700;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-create:hover {
+    background: transparent;
+    color: white;
+    transform: scale(1.05);
+}
+
+/* Кнопка .btn-primary (используется в шапке и других местах) */
+.btn-primary {
+    background-color: var(--sovcombank-blue);
+    color: white;
+    padding: 8px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: background 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: var(--blue-light);
+}
+
+/* Специальная кнопка в шапке .btn-primary (можно переопределить, но оставим общий стиль) 
+   Если нужны уникальные стили именно для шапки, они уже есть в layout.css 
+   ( .header-new .btn-primary ) – это более специфичный селектор, он перекроет общий. */
+
+/* Кнопка .btn-outline-new (используется в шапке и других местах) */
+.btn-outline-new {
+    background: transparent;
+    border: 1px solid var(--gray-border);
+    padding: 8px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text-dark);
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.btn-outline-new:hover {
+    border-color: var(--sovcombank-blue);
+    color: var(--sovcombank-blue);
+}
+
+/* Активная кнопка в шапке */
+.btn-outline.active {
+    border-color: var(--sovcombank-blue);
+    color: var(--sovcombank-blue);
+    background-color: rgba(1, 55, 145, 0.1);
+}
+
+/* Дополнительные цветовые варианты кнопок */
+.btn-green {
+    background: #4CAF50;
+    color: white;
+}
+
+.btn-green:hover {
+    background: #45a049;
+}
+
+.btn-orange {
+    background: #FF9800;
+    color: white;
+}
+
+.btn-orange:hover {
+    background: #e68900;
+}
+
+.btn-yellow {
+    background: #FFC107;
+    color: #333;
+}
+
+.btn-yellow:hover {
+    background: #e0a800;
+}
+
+/* Общее для disabled-кнопок */
+.btn-green:disabled, 
+.btn-blue:disabled, 
+.btn-orange:disabled, 
+.btn-yellow:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ========== МОДАЛЬНОЕ ОКНО ========== */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    width: 500px;
+    max-width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-close {
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-footer {
+    padding: 16px 20px;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+/* ========== ПУСТОЕ СОСТОЯНИЕ (ОБЩИЙ КОМПОНЕНТ) ========== */
+.empty-state {
+    text-align: center;
+    padding: 80px 40px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.empty-state__icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+}
+
+.empty-state__title {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.empty-state__text {
+    color: #666;
+    margin-bottom: 25px;
+}
+
+/* Дополнительные кнопки и утилиты */
+.btn-small {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    border: none;
+}
+
+.btn-copy {
+    background: var(--gray-light);
+    border: 1px solid var(--gray-border);
+}
+
+.btn-copy:hover {
+    background: var(--gray-border);
+}
+
+.btn-master {
+    background: #9C27B0;
+    color: white;
+}
+.btn-master:hover {
+    background: #7B1FA2;
+}
+
+/* Анимация пульсации (общая) */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+/* Общий класс для ника (если используется в нескольких местах) */
+.nickname-input {
+    padding: 12px;
+    width: 250px;
+    border: 2px solid var(--gray-border);
+    border-radius: 10px;
+    font-size: 16px;
+    text-align: center;
+}
+
+.waiting-message {
+    padding: 30px;
+    text-align: center;
+}
+
+.result-score {
+    font-size: 48px;
+    color: var(--sovcombank-red);
+    margin: 20px 0;
+}
+
+/* Дополнительные кнопки статистики и мастер */
+.btn-stats {
+    background: #9C27B0;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 12px;
+    display: inline-block;
+}
+.btn-stats:hover {
+    background: #7B1FA2;
+}
+
+/* Переопределение .btn-small (если уже есть, дополнить) */
+.btn-small {
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(90deg, #2563eb, #1e40af);
+    color: white;
+}
+
+/* Уведомления (toast) */
+.toast-notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1f2937;
+    color: white;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+    min-width: 280px;
+    text-align: center;
+    font-size: 16px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    border-left: 5px solid #3b82f6;
+}
+
+.toast-notification.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(10px);
+}
+
+.toast-notification.error {
+    border-left-color: #ef4444;
+}
+
+.toast-notification.success {
+    border-left-color: #22c55e;
+}
+
+/* Утилита скрытия */
+.hidden {
+    display: none !important;
+}

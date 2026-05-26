@@ -1,0 +1,259 @@
+/* prices.html */
+/* Карточка тарифа (страница цен) */
+.tariff-info {
+    margin-top: 40px;
+    padding-top: 40px;
+    border-top: 1px solid var(--gray-border);
+}
+
+.tariff-card {
+    background: linear-gradient(135deg, #FFF5F5 0%, #FFFFFF 100%);
+    border: 1px solid var(--gray-border);
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    position: relative;
+}
+
+.tariff-card__badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--sovcombank-blue);
+    color: white;
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.tariff-card__title {
+    font-size: 20px;
+    color: var(--sovcombank-red);
+    margin-bottom: 8px;
+    margin-top: 8px;
+}
+
+.tariff-card__text {
+    color: var(--text-gray);
+    margin-bottom: 16px;
+}
+
+.tariff-card__note {
+    font-size: 14px;
+    color: var(--text-gray);
+    background: #FEF3C7;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+/* Дополнительные стили для карточки тарифа */
+.tariff-card__icon {
+    font-size: 28px;
+}
+
+.tariff-card__text {
+    font-size: 18px;
+    color: var(--text-dark);
+}
+
+.tariff-card__text strong {
+    color: var(--sovcombank-red);
+    font-size: 24px;
+}
+
+.tariff-card__note {
+    font-size: 13px;
+    color: var(--text-gray);
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--gray-border);
+}
+
+/* ===================== ТАРИФЫ — УЛУЧШЕННАЯ ВЕРСИЯ ===================== */
+.pricing {
+    padding: 100px 20px;
+    background: #f8fafc;
+}
+
+.pricing-subtitle {
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto 60px;
+    font-size: 18px;
+    color: #64748b;
+}
+
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 30px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.pricing-card {
+    background: white;
+    border-radius: 24px;
+    padding: 40px 32px 48px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s ease;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.pricing-card:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.12);
+}
+
+.pricing-card.popular {
+    border: 3px solid #f59e0b;
+    transform: scale(1.04);
+}
+
+.popular-badge {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #f59e0b;
+    color: white;
+    padding: 6px 22px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* ===================== УЛУЧШЕННАЯ ВЕРСИЯ ТАРИФОВ (НОВЫЙ ДИЗАЙН) ===================== */
+.pricing {
+    padding: 100px 20px;
+    background: #f8fafc;
+}
+
+.pricing-subtitle {
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto 60px;
+    font-size: 18px;
+    color: #64748b;
+}
+
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 30px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.pricing-card {
+    background: white;
+    border-radius: 24px;
+    padding: 40px 32px 48px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s ease;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.pricing-card:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.12);
+}
+
+.pricing-card.popular {
+    border: 3px solid #f59e0b;
+    transform: scale(1.04);
+}
+
+.popular-badge {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #f59e0b;
+    color: white;
+    padding: 6px 22px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.pricing-icon {
+    font-size: 56px;
+    margin-bottom: 20px;
+}
+
+.pricing-name {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.pricing-price {
+    font-size: 42px;
+    font-weight: 800;
+    color: #1e2937;
+    margin: 12px 0 4px;
+}
+
+.pricing-period {
+    color: #64748b;
+    font-size: 16px;
+}
+
+.pricing-features {
+    text-align: left;
+    list-style: none;
+    padding: 28px 0;
+    margin: 0 0 30px 0;
+    flex-grow: 1;
+    border-top: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.pricing-features li {
+    padding: 9px 0;
+    font-size: 16.2px;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.check {
+    color: #22c55e;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.pricing-btn {
+    width: 100%;
+    padding: 14px 24px;
+    font-size: 17px;
+    font-weight: 600;
+    border-radius: 14px;
+    margin-top: auto;
+    transition: all 0.3s ease;
+    border: none !important;
+    text-decoration: none !important;
+    color: white;
+}
+
+.pricing-card.popular .pricing-btn {
+    background: linear-gradient(90deg, #f59e0b, #fb923c);
+    color: white;
+}
+
+.pricing-card.popular .pricing-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4);
+}

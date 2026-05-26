@@ -1,0 +1,178 @@
+/* шапка, подвал, контейнеры, навигация */
+/* Подвал */
+.footer {
+    background-color: #1F2937;
+    color: white;
+    padding: 40px 0;
+    text-align: center;
+}
+
+.footer__links {
+    margin-bottom: 20px;
+}
+
+.footer__links a {
+    color: #9CA3AF;
+    text-decoration: none;
+    margin: 0 16px;
+    font-size: 14px;
+}
+
+.footer__links a:hover {
+    color: var(--sovcombank-blue);
+}
+
+.footer__copyright {
+    color: #6B7280;
+    font-size: 14px;
+}
+
+/* ========== ШАПКА ========== */
+.header-new {
+    background: white;
+    border-bottom: 1px solid var(--gray-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.header-new__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    gap: 32px;
+    flex-wrap: wrap;
+}
+
+/* Логотип */
+.logo__link {
+    font-size: 26px;
+    font-weight: 800;
+    color: #1e40af;
+    text-decoration: none;
+    letter-spacing: -1px;
+    transition: all 0.3s ease;
+}
+
+.logo__link:hover {
+    color: #ef4444;
+    transform: scale(1.05);
+}
+
+.logo__text {
+    background: linear-gradient(90deg, #1e40af, #ef4444);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Навигация */
+.nav {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    flex-wrap: wrap;
+}
+
+.nav__link {
+    text-decoration: none;
+    color: #334155;
+    font-weight: 500;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.nav__link:hover {
+    color: #1e40af;
+}
+
+.nav__link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -4px;
+    left: 0;
+    background: linear-gradient(90deg, #2563eb, #ef4444);
+    transition: width 0.3s ease;
+}
+
+.nav__link:hover::after {
+    width: 100%;
+}
+
+/* Правая часть */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.user-greeting-new {
+    color: #1e40af;
+    font-weight: 600;
+    margin-right: 10px;
+}
+
+/* Адаптив для шапки */
+@media (max-width: 768px) {
+    .header-new__inner {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+    }
+    
+    .nav {
+        justify-content: center;
+        gap: 20px;
+        width: 100%;
+        order: 3;
+    }
+    
+    .header-actions {
+        justify-content: center;
+    }
+    
+    .logo__link {
+        font-size: 24px;
+    }
+}
+
+/* Стили кнопок ТОЛЬКО для шапки (переопределяют общие) */
+.header-new .btn-primary {
+    background: linear-gradient(90deg, #2563eb, #1e40af);
+    color: white;
+    padding: 11px 24px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    white-space: nowrap;
+}
+
+.header-new .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+}
+
+.header-new .btn-outline-new {
+    background: transparent;
+    border: 2px solid #e2e8f0;
+    padding: 10px 24px;
+    border-radius: 12px;
+    color: #334155;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.header-new .btn-outline-new:hover {
+    border-color: #2563eb;
+    color: #2563eb;
+    background: rgba(37, 99, 235, 0.05);
+}

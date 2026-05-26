@@ -1,0 +1,716 @@
+/* общие стили для игровых режимов (solo, team, play) */
+/* ========== КАРТОЧКИ ВИКТОРИН (ВАРИАНТ ДЛЯ ИГРОВЫХ СТРАНИЦ) ========== */
+.quiz-card {
+    display: flex;
+    gap: 20px;
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    align-items: center;
+}
+
+.quiz-card__cover {
+    height: 180px;                /* единая высота */
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    border-radius: 16px 16px 0 0; /* скругление сверху, как у карточки */
+}
+
+.quiz-card__cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;                /* Растягивает по горизонтали красиво */
+    object-position: center;
+    transition: transform 0.4s ease;
+}
+
+.quiz-card:hover .quiz-card__cover img {
+    transform: scale(1.08);           /* Лёгкий зум при наведении */
+}
+
+.quiz-card__placeholder {
+    font-size: 56px;
+    opacity: 0.9;
+}
+
+.quiz-card__info {
+    flex: 1;
+}
+
+.quiz-card__title {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+}
+
+.quiz-card__desc {
+    color: #666;
+    font-size: 14px;
+    margin: 0 0 8px 0;
+}
+
+.quiz-card__meta {
+    display: flex;
+    gap: 16px;
+    font-size: 13px;
+    color: #888;
+}
+
+.quiz-card__actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+/* ========== СТРАНИЦА ИГРОКА (SOLO / TEAM / MULTIPLAYER) ========== */
+.game-container {
+    max-width: 820px;
+    margin: 40px auto;
+    padding: 20px;
+    font-family: inherit;
+}
+
+.game-container h1 {
+    text-align: center;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--sovcombank-blue);
+    margin-bottom: 30px;
+    line-height: 1.2;
+}
+
+/* Основная панель */
+.game-panel {
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.game-panel:hover {
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+}
+
+/* Экран присоединения */
+#joinScreen h3 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #1e2937;
+    font-size: 24px;
+}
+
+#nicknameInput, #passwordInput {
+    width: 100%;
+    padding: 16px 20px;
+    font-size: 18px;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    transition: all 0.3s;
+}
+
+#nicknameInput:focus, #passwordInput:focus {
+    outline: none;
+    border-color: var(--sovcombank-blue);
+    box-shadow: 0 0 0 4px rgba(1, 55, 145, 0.15);
+}
+
+#joinGameBtn {
+    width: 100%;
+    padding: 18px;
+    font-size: 19px;
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--sovcombank-blue), #1e40af);
+    color: white;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#joinGameBtn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 25px rgba(1, 55, 145, 0.3);
+}
+
+/* Экран ожидания */
+#waitingScreen {
+    text-align: center;
+}
+
+#waitingScreen h2 {
+    color: var(--sovcombank-blue);
+    margin-bottom: 20px;
+}
+
+/* Игровой экран */
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 20px;
+    margin-bottom: 25px;
+    border-bottom: 1px solid #e2e8f0;
+    font-weight: 600;
+    color: #475569;
+}
+
+#questionText {
+    font-size: 24px;
+    line-height: 1.4;
+    margin: 25px 0 30px;
+    min-height: 80px;
+    color: #1e2937;
+}
+
+/* Варианты ответов */
+.option-btn {
+    width: 100%;
+    padding: 16px 20px;
+    margin: 10px 0;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    font-size: 17px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.option-btn:hover {
+    border-color: var(--sovcombank-blue);
+    transform: translateX(8px);
+}
+
+.option-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.9;
+}
+
+/* Таймер */
+.timer {
+    font-size: 32px;
+    font-weight: 700;
+    text-align: center;
+    margin: 25px 0;
+    padding: 12px;
+    border-radius: 16px;
+    background: #f8fafc;
+}
+
+/* Правильный ответ (может показываться после ответа) */
+.correct-answer {
+    margin-top: 10px;
+    padding: 10px;
+    background: #E8F5E9;
+    border-radius: 8px;
+    color: #2E7D32;
+    font-weight: 500;
+}
+
+/* ========== БЛОК РЕЗУЛЬТАТА ОТВЕТА ========== */
+#resultBlock {
+    background: #f0f9ff;
+    border-left: 5px solid var(--sovcombank-blue);
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 12px;
+    font-size: 17px;
+}
+
+/* ========== ЭКРАН ФИНАЛЬНЫХ РЕЗУЛЬТАТОВ ========== */
+#resultScreen h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: var(--sovcombank-blue);
+}
+
+#playerResult {
+    text-align: center;
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    padding: 30px;
+    border-radius: 20px;
+    margin-bottom: 30px;
+}
+
+#resultPlayerName {
+    font-size: 26px;
+    font-weight: 700;
+    color: #1e40af;
+}
+
+#resultScore {
+    font-size: 52px;
+    font-weight: 800;
+    color: var(--sovcombank-red);
+    margin: 12px 0;
+}
+
+#resultPlace {
+    font-size: 22px;
+    color: #334155;
+}
+
+/* ========== ТАБЛИЦА ЛИДЕРОВ ========== */
+#leaderboardList {
+    max-height: 420px;
+    overflow-y: auto;
+}
+
+#leaderboardList div {
+    padding: 14px 18px;
+    background: #f8fafc;
+    margin-bottom: 8px;
+    border-radius: 12px;
+    font-size: 17px;
+}
+
+#leaderboardList div.winner {
+    background: linear-gradient(90deg, #fef3c7, #fffbeb);
+    border-left: 5px solid #f59e0b;
+    font-weight: 600;
+}
+
+/* ========== ОБЩИЙ АДАПТИВ ДЛЯ ИГРОВЫХ СТРАНИЦ ========== */
+@media (max-width: 768px) {
+    .game-panel {
+        padding: 30px 20px;
+    }
+    
+    .game-container h1 {
+        font-size: 26px;
+    }
+    
+    #questionText {
+        font-size: 21px;
+    }
+}
+
+/* ===================== СОЛО ИГРА — СПЕЦИФИЧНЫЕ СТИЛИ ===================== */
+.game-container.solo-game {
+    max-width: 860px;
+    margin: 40px auto;
+    padding: 20px;
+}
+
+.game-container.solo-game h1 {
+    text-align: center;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--sovcombank-blue);
+    margin-bottom: 35px;
+}
+
+/* Основная карточка только для соло */
+.game-container.solo-game .game-panel {
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.1);
+    padding: 42px 40px;
+    margin-bottom: 25px;
+}
+
+.game-container.solo-game .game-panel:hover {
+    box-shadow: 0 20px 55px rgba(0, 0, 0, 0.13);
+}
+
+/* Стартовый экран соло */
+#startScreen h3 {
+    text-align: center;
+    margin-bottom: 13px;
+    font-size: 24px;
+    color: #1e2937;
+}
+
+#playerName, #quizPassword {
+    width: 100%;
+    max-width: 380px;
+    margin: 0 auto 18px;
+    display: block;
+    padding: 16px 20px;
+    font-size: 18px;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+}
+
+#playerName:focus, #quizPassword:focus {
+    border-color: var(--sovcombank-blue);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+}
+
+#startBtn {
+    width: 30%;
+    max-width: 380px;
+    margin: 25px auto 0;
+    display: block;
+    padding: 16px 32px;
+    font-size: 19px;
+    font-weight: 700;
+    background: linear-gradient(90deg, #2563eb, #1e40af);
+    color: white;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+}
+
+#startBtn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(37, 99, 235, 0.35);
+}
+
+/* Игровой процесс соло (переопределения) */
+.game-container.solo-game .question-text {
+    font-size: 24px;
+    line-height: 1.45;
+    margin: 25px 0 32px;
+    color: #1e2937;
+}
+
+.game-container.solo-game .option-btn {
+    width: 100%;
+    padding: 17px 22px;
+    margin: 10px 0;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    font-size: 17px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.game-container.solo-game .option-btn:hover {
+    border-color: #2563eb;
+    transform: translateX(8px);
+}
+
+/* Таймер и результат для соло */
+.game-container.solo-game .timer {
+    font-size: 34px;
+    font-weight: 700;
+    text-align: center;
+    margin: 30px 0;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 16px;
+    color: var(--sovcombank-blue);
+}
+
+.game-container.solo-game #resultBlock {
+    background: #f0f9ff;
+    border-left: 6px solid #22c55e;
+    padding: 20px;
+    border-radius: 12px;
+}
+
+/* ========== ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ДЛЯ СОЛО-РЕЗУЛЬТАТОВ ========== */
+.game-container.solo-game .player-result {
+    text-align: center;
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    padding: 40px 30px;
+    border-radius: 24px;
+    margin: 25px 0;
+}
+
+.game-container.solo-game .result-score-value {
+    font-size: 58px;
+    font-weight: 800;
+    color: var(--sovcombank-red);
+}
+
+/* Результаты (общие, вне .solo-game) */
+#resultScreen h2 {
+    text-align: center;
+    font-size: 32px;
+    color: var(--sovcombank-blue);
+    margin-bottom: 30px;
+}
+
+#resultScreen .player-result {
+    text-align: center;
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    padding: 45px 35px;
+    border-radius: 24px;
+    margin: 25px 0 35px;
+    box-shadow: 0 10px 30px rgba(37, 99, 235, 0.1);
+}
+
+#resultScreen .player-name-large {
+    font-size: 29px;
+    font-weight: 700;
+    color: #1e40af;
+    margin-bottom: 8px;
+}
+
+#resultScreen .result-score-value {
+    font-size: 62px;
+    font-weight: 800;
+    color: #dc2626;
+    line-height: 1;
+    margin: 10px 0;
+}
+
+#resultScreen .player-stats span:not(.result-score-value) {
+    font-size: 18px;
+    color: #475569;
+}
+
+/* Кнопка "Пройти заново" */
+#replaySoloBtn {
+    background: linear-gradient(90deg, #2563eb, #1e40af);
+    color: white;
+    padding: 16px 36px;
+    font-size: 17px;
+    font-weight: 700;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 10px 0;
+}
+
+#replaySoloBtn:hover {
+    background: linear-gradient(90deg, #ef4444, #dc2626);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+}
+
+/* Таблица лидеров (дополнительный вариант с .leaderboard-row) */
+#leaderboardSection h3 {
+    text-align: center;
+    color: #1e2937;
+    margin-bottom: 18px;
+}
+
+#leaderboardList .leaderboard-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px;
+    background: #f8fafc;
+    margin-bottom: 8px;
+    border-radius: 12px;
+    font-size: 16.5px;
+}
+
+#leaderboardList .leaderboard-row.winner {
+    background: linear-gradient(90deg, #fefce8, #fef9c3);
+    border-left: 5px solid #eab308;
+    font-weight: 600;
+}
+
+#leaderboardList .place {
+    font-weight: 700;
+    color: var(--sovcombank-blue);
+    width: 32px;
+}
+
+#leaderboardList .player-name {
+    flex: 1;
+    color: #1e2937;
+}
+
+#leaderboardList .player-score {
+    font-weight: 600;
+    color: var(--sovcombank-red);
+    margin-right: 10px;
+}
+
+/* Дополнительные элементы результата */
+.result-actions {
+    margin-top: 30px;
+    text-align: center;
+}
+
+.correct-answer-info {
+    margin-top: 20px;
+    padding: 12px;
+    background: #E8F5E9;
+    border-radius: 8px;
+    color: #2E7D32;
+    font-weight: 500;
+}
+
+.answer-result {
+    text-align: center;
+    padding: 20px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+/* Адаптив для результата */
+@media (max-width: 768px) {
+    #resultScreen .player-result {
+        padding: 35px 20px;
+    }
+    
+    #resultScreen .result-score-value {
+        font-size: 52px;
+    }
+}
+
+/* ===================== TEAM PLAY — КОМАНДНАЯ ИГРА ===================== */
+.team-play-container {
+    max-width: 620px;
+    margin: 40px auto;
+    padding: 20px;
+    font-family: inherit;
+}
+
+.team-play-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.team-play-header h1 {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1e2937;
+    margin-bottom: 8px;
+}
+
+.team-play-code {
+    font-size: 22px;
+    color: #1e40af;
+    font-weight: 600;
+    background: #f1f5f9;
+    padding: 8px 20px;
+    border-radius: 50px;
+    display: inline-block;
+}
+
+.team-play-card {
+    background: #f8fafc;
+    border-radius: 24px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    margin-bottom: 20px;
+}
+
+.team-play-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* ========== КОМАНДНАЯ ИГРА — ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ========== */
+.team-play-btn {
+    padding: 16px 32px;
+    font-size: 17px;
+    font-weight: 700;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 220px;
+    justify-content: center;
+}
+
+.team-play-btn.create {
+    background: linear-gradient(90deg, #ef4444, #dc2626);
+    color: white;
+}
+
+.team-play-btn.join {
+    background: linear-gradient(90deg, #3b82f6, #1e40af);
+    color: white;
+}
+
+.team-play-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+}
+
+/* Формы командной игры */
+.team-play-form {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+    margin-bottom: 20px;
+}
+
+.team-play-form h3 {
+    text-align: center;
+    margin-bottom: 24px;
+    color: #1e2937;
+}
+
+.team-play-form input {
+    width: 100%;
+    padding: 14px 18px;
+    margin-bottom: 14px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 16px;
+}
+
+.team-play-form input:focus {
+    border-color: #1e40af;
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(30, 64, 175, 0.1);
+}
+
+.team-play-form-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+/* Экраны игры команд */
+.team-play-screen {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+    margin-bottom: 20px;
+}
+
+.team-play-game-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+/* Опции ответов (переопределение, если нужно) */
+.option-btn {
+    display: block;
+    width: 100%;
+    padding: 14px 18px;
+    margin: 10px 0;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 16.5px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.25s;
+}
+
+.option-btn:hover {
+    border-color: #3b82f6;
+    transform: translateX(6px);
+}
+
+/* Таблица лидеров команд */
+.team-play-leaderboard div {
+    padding: 14px 18px;
+    background: #f8fafc;
+    margin: 8px 0;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}

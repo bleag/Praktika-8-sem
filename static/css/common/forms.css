@@ -1,0 +1,118 @@
+/* стили для всех форм (input, button, select) */
+/* ========== ОБЩИЕ ЭЛЕМЕНТЫ ФОРМ ========== */
+
+/* Разделители */
+.section-divider {
+    margin: 24px 0;
+    border: none;
+    border-top: 1px solid var(--gray-border);
+}
+
+.subsection-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--sovcombank-red);
+    margin-bottom: 16px;
+}
+
+/* Инструменты */
+.label-with-icon {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-weight: 500;
+}
+
+.tooltip {
+    cursor: help;
+    color: var(--text-gray);
+    font-size: 14px;
+}
+
+.radio-group {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 16px;
+}
+
+.indent {
+    margin-left: 24px;
+    margin-top: 12px;
+    margin-bottom: 12px;
+}
+
+/* Информационный блок */
+.info-box {
+    background: white;
+    border-left: 4px solid var(--sovcombank-blue);
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-top: 8px;
+    font-size: 13px;
+}
+
+.info-box p {
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.info-box ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.info-box li {
+    margin: 4px 0;
+    color: var(--text-gray);
+}
+
+/* Всплывающая подсказка (tooltip) */
+.tooltip-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    background: var(--sovcombank-blue);
+    color: white;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: 8px;
+    position: relative;
+}
+
+.tooltip-icon:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1F2937;
+    color: white;
+    font-size: 12px;
+    font-weight: normal;
+    padding: 10px 14px;
+    border-radius: 8px;
+    white-space: nowrap;
+    z-index: 100;
+    margin-bottom: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    white-space: normal;
+    width: 300px;
+    text-align: left;
+    line-height: 1.4;
+}
+
+.tooltip-icon:hover::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #1F2937;
+    margin-bottom: 2px;
+}
