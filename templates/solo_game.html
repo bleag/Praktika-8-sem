@@ -70,6 +70,7 @@
 <div id="toast" class="toast-notification">
     <div id="toast-message"></div>
 </div>
+
 <script>
 const quizId = {{ quiz.id }};
 let questions = [];
@@ -84,8 +85,9 @@ let timePerQuestion = 25;
 let randomQuestions = false;
 let randomOptions = false;
 let pointsPerQuestion = 100;
-let needPassword = false;
-let currentRoundName = '';
+// === НОВЫЕ ПЕРЕМЕННЫЕ ===
+let currentQuestion = null;
+
 
 // Красивый Toast
 function showToast(message, type = 'error') {
@@ -242,88 +244,276 @@ function showQuestion() {
         endGame();
         return;
     }
-    
-    const q = questions[currentIndex];
+
+    currentQuestion = questions[currentIndex];
     document.getElementById('currentQ').innerText = currentIndex + 1;
     document.getElementById('score').innerText = score;
-    document.getElementById('questionText').innerHTML = q.text;
-    
-    // Отображение раунда
-    if (q.round_name) {
-        document.getElementById('roundBadge').style.display = 'inline-block';
-        document.getElementById('roundName').innerText = q.round_name;
+    document.getElementById('questionText').innerHTML = currentQuestion.text || '';
+
+    const roundBadge = document.getElementById('roundBadge');
+    if (currentQuestion.round_name) {
+        roundBadge.style.display = 'inline-block';
+        document.getElementById('roundName').innerText = currentQuestion.round_name;
     } else {
-        document.getElementById('roundBadge').style.display = 'none';
+        roundBadge.style.display = 'none';
     }
-    
+
     const optionsDiv = document.getElementById('optionsDiv');
     optionsDiv.innerHTML = '';
-    
-    if (q.type === 'choice' && q.options) {
-        let options = [...q.options];
-        if (randomOptions) {
-            for (let i = options.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [options[i], options[j]] = [options[j], options[i]];
-            }
-        }
-        options.forEach(opt => {
-            const btn = document.createElement('button');
-            btn.innerHTML = opt;
-            btn.className = 'option-btn';
-            btn.onclick = () => checkAnswer(opt, btn);
-            optionsDiv.appendChild(btn);
-        });
+    document.getElementById('resultBlock').style.display = 'none';
+
+    switch (currentQuestion.type) {
+        case 'choice': renderChoiceQuestion(); break;
+        case 'open': renderOpenQuestion(); break;
+        case 'poll': renderPollQuestion(); break;
+        case 'wordcloud': renderWordcloudQuestion(); break;
+        case 'draw': renderDrawQuestion(); break;
+        case 'dance': renderDanceQuestion(); break;
+        case 'slide': renderSlideQuestion(); break;
+        default: renderChoiceQuestion();
     }
-    
+
     startTimer(timePerQuestion);
 }
 
-function checkAnswer(answer, btnElement) {
-    document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
+// ==================== РЕНДЕРЫ ====================
+
+function renderChoiceQuestion() {
+    let opts = [...(currentQuestion.options || [])];
+    if (randomOptions) opts.sort(() => Math.random() - 0.5);
+
+    opts.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.textContent = opt;
+        btn.className = 'option-btn';
+        btn.onclick = () => checkAnswer(opt, btn);
+        document.getElementById('optionsDiv').appendChild(btn);
+    });
+}
+
+function renderOpenQuestion() {
+    const html = `
+        <input type="text" id="openInput" class="form-input open-input" placeholder="Ваш ответ...">
+        <button onclick="submitOpenAnswer()" class="btn btn-blue" style="width:100%; margin-top:15px; padding:14px;">Ответить</button>
+    `;
+    document.getElementById('optionsDiv').innerHTML = html;
+}
+
+window.submitOpenAnswer = function() {
+    const answer = document.getElementById('openInput').value.trim();
+    if (!answer) return showToast('Введите ответ', 'error');
+
+    const correct = (currentQuestion.correct_answer || []).map(a => a.toLowerCase());
+    const isCorrect = correct.some(c => 
+        answer.toLowerCase().includes(c) || c.includes(answer.toLowerCase())
+    );
+
+    handleAnswerResult(isCorrect, answer);
+};
+
+function renderPollQuestion() {
+    const div = document.getElementById('optionsDiv');
+    (currentQuestion.options || []).forEach(opt => {
+        const btn = document.createElement('button');
+        btn.textContent = opt;
+        btn.className = 'option-btn';
+        btn.onclick = () => handleAnswerResult(true, opt, 50);
+        div.appendChild(btn);
+    });
+}
+
+function renderWordcloudQuestion() {
+    const html = `
+        <p style="color:#555; margin-bottom:10px; font-size:15px;">Напишите слова/ассоциации (через запятую)</p>
+        <input type="text" id="wordcloudInput" class="form-input wordcloud-input" 
+               placeholder="например: космос, звезда, ракета" style="font-size:17px;">
+        <button onclick="submitWordcloud()" class="btn btn-blue" style="width:100%; margin-top:12px; padding:14px;">Отправить</button>
+        <div id="wordcloudPreview" style="margin-top:25px; min-height:160px; text-align:center; padding:15px; background:#f8fafc; border-radius:12px;"></div>
+    `;
+    document.getElementById('optionsDiv').innerHTML = html;
+}
+
+window.submitWordcloud = function() {
+    const input = document.getElementById('wordcloudInput').value.trim();
+    if (!input) return;
+
+    const words = input.split(',').map(w => w.trim()).filter(Boolean);
+    let html = '<div style="display:flex; flex-wrap:wrap; gap:14px; justify-content:center; align-items:center;">';
     
-    const q = questions[currentIndex];
-    const isCorrect = q.correct_answer && q.correct_answer.includes(answer);
+    words.forEach(word => {
+        const size = 24 + Math.random() * 20;
+        const color = `hsl(${Math.random()*50 + 210}, 75%, 45%)`;
+        html += `<span style="font-size:${size}px; font-weight:700; color:${color}; padding:4px 8px;">${word}</span>`;
+    });
+    html += '</div>';
     
-    if (isCorrect) {
-        score += pointsPerQuestion;
+    document.getElementById('wordcloudPreview').innerHTML = html;
+    handleAnswerResult(true, input, null);
+};
+
+function renderDrawQuestion() {
+    const task = currentQuestion.additional_data?.task || currentQuestion.text || 'Нарисуйте что-то';
+    const html = `
+        <p style="margin-bottom:12px; font-weight:500;">${task}</p>
+        <canvas id="drawCanvas" width="720" height="460" 
+                style="width:100%; border:3px solid #e5e7eb; border-radius:16px; background:#fafafa; display:block; margin:0 auto; touch-action:none;"></canvas>
+        <div style="margin-top:18px; text-align:center;">
+            <button onclick="clearCanvas()" class="btn-outline-new">🗑 Очистить</button>
+            <button onclick="submitDrawing()" class="btn btn-blue" style="margin-left:12px;">Я нарисовал</button>
+            <button onclick="skipQuestion()" class="btn-outline-new" style="margin-left:12px;">Пропустить</button>
+        </div>
+    `;
+    document.getElementById('optionsDiv').innerHTML = html;
+    initCanvas();
+}
+
+function initCanvas() {
+    canvas = document.getElementById('drawCanvas');
+    ctx = canvas.getContext('2d');
+    ctx.lineWidth = 6;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#1e40af';
+
+    let drawing = false;
+
+    function startDraw(e) {
+        drawing = true;
+        draw(e);
+    }
+
+    function endDraw() {
+        drawing = false;
+        ctx.beginPath();
+    }
+
+    function draw(e) {
+        if (!drawing || !ctx) return;
+        e.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
+        const y = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
+
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+    }
+
+    // Mouse
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mouseup', endDraw);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseleave', endDraw);
+
+    // Touch
+    canvas.addEventListener('touchstart', startDraw);
+    canvas.addEventListener('touchend', endDraw);
+    canvas.addEventListener('touchmove', draw);
+}
+
+window.clearCanvas = () => {
+    if (ctx && canvas) ctx.clearRect(0, 0, canvas.width, canvas.height);
+};
+
+window.submitDrawing = () => handleAnswerResult(true, "Нарисовано", null);  // null = использовать баллы вопроса
+window.submitDance = () => handleAnswerResult(true, "Танец выполнен", null);
+
+function renderDanceQuestion() {
+    const task = currentQuestion.additional_data?.task || 'Выполните танцевальное задание';
+    const html = `
+        <p style="font-size:18px; font-weight:500;">${task}</p>
+        <div style="background:#f8fafc; padding:40px; border-radius:16px; text-align:center; margin:20px 0; border:2px dashed #cbd5e1;">
+            <p style="font-size:48px; margin:20px 0;"></p>
+            <p style="color:#64748b;">Представьте видео с танцем здесь</p>
+        </div>
+        <button onclick="submitDance()" class="btn btn-blue" style="width:100%;">Я выполнил(а)</button>
+        <button onclick="skipQuestion()" class="btn-outline-new" style="width:100%; margin-top:10px;">Пропустить</button>
+    `;
+    document.getElementById('optionsDiv').innerHTML = html;
+}
+
+window.submitDance = () => handleAnswerResult(true, "Танец выполнен", null);
+
+function renderSlideQuestion() {
+    let content = currentQuestion.additional_data?.content || currentQuestion.text || 'Слайд без содержания';
+    let html = '';
+
+    if (content.match(/^https?:\/\//i)) {
+        html = `<img src="${content}" style="max-width:100%; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">`;
+    } else {
+        html = `
+            <div id="slideContent" contenteditable="true" 
+                 style="background:white; padding:40px; border-radius:16px; border:2px solid #e2e8f0; min-height:380px; font-size:18px; line-height:1.7; outline:none;">
+                ${content}
+            </div>
+        `;
+    }
+
+    document.getElementById('optionsDiv').innerHTML = `
+        ${html}
+        <button onclick="submitSlide()" class="btn btn-blue" style="width:100%; margin-top:25px; padding:16px;">Продолжить</button>
+    `;
+}
+
+window.submitSlide = () => {
+    handleAnswerResult(true, "Слайд просмотрен", null);  // ← начисляем баллы за слайд
+};
+
+// ==================== ОБРАБОТКА ОТВЕТОВ ====================
+
+function handleAnswerResult(isCorrect, userAnswer, customPoints = null) {
+    if (timerInterval) clearInterval(timerInterval);
+
+    // Приоритет баллов:
+    // 1. customPoints (из dance/draw и т.д.)
+    // 2. баллы конкретного вопроса (если заданы)
+    // 3. глобальная настройка из викторины
+    let pointsToAdd = customPoints !== null 
+        ? customPoints 
+        : (currentQuestion.points || pointsPerQuestion);
+
+    if (isCorrect && pointsToAdd > 0) {
+        score += pointsToAdd;
         correctCount++;
         document.getElementById('score').innerText = score;
-        btnElement.style.background = '#4caf50';
-    } else {
-        btnElement.style.background = '#f44336';
-        document.querySelectorAll('.option-btn').forEach(btn => {
-            if (q.correct_answer && q.correct_answer.includes(btn.innerHTML)) {
-                btn.style.background = '#4caf50';
-            }
-        });
     }
-    
-    if (timerInterval) clearInterval(timerInterval);
-    document.getElementById('timerDiv').style.display = 'none';
-    
-    const optionsDiv = document.getElementById('optionsDiv');
-    const correctAnswer = q.correct_answer ? q.correct_answer.join(', ') : '?';
-    const oldResult = document.querySelector('.answer-result');
-    if (oldResult) oldResult.remove();
-    
-    const resultBlock = document.createElement('div');
-    resultBlock.className = 'answer-result';
-    resultBlock.innerHTML = `<strong>Правильный ответ: ${correctAnswer}</strong><br>Следующий вопрос через <span id="answerTimer">${timeShowAnswer}</span> сек...`;
-    resultBlock.style.cssText = 'margin-top: 20px; padding: 15px; background: #e8f5e9; border-radius: 12px; text-align: center;';
-    optionsDiv.appendChild(resultBlock);
-    
-    let answerTimeLeft = timeShowAnswer;
-    const answerTimerSpan = document.getElementById('answerTimer');
-    const answerTimer = setInterval(() => {
-        answerTimeLeft--;
-        if (answerTimerSpan) answerTimerSpan.innerText = answerTimeLeft;
-        if (answerTimeLeft <= 0) {
-            clearInterval(answerTimer);
+
+    const resultBlock = document.getElementById('resultBlock');
+    resultBlock.style.display = 'block';
+
+    let message = '';
+    if (['choice', 'open'].includes(currentQuestion.type)) {
+        const correctText = currentQuestion.correct_answer ? currentQuestion.correct_answer.join(', ') : '?';
+        message = isCorrect ? 
+            `<strong style="color:#22c55e">Правильно! +${pointsToAdd}</strong>` : 
+            `<strong style="color:#ef4444">Неправильно.</strong> Правильный: <strong>${correctText}</strong>`;
+    } else {
+        message = `<strong style="color:#22c55e">Принято! +${pointsToAdd}</strong>`;
+    }
+
+    resultBlock.innerHTML = `
+        ${message}<br>
+        Следующий вопрос через <span id="answerTimer">${timeShowAnswer}</span> сек...
+    `;
+
+    let timeLeft = timeShowAnswer;
+    const t = setInterval(() => {
+        timeLeft--;
+        const el = document.getElementById('answerTimer');
+        if (el) el.textContent = timeLeft;
+        if (timeLeft <= 0) {
+            clearInterval(t);
             currentIndex++;
             showQuestion();
         }
     }, 1000);
+}
+
+function checkAnswer(answer, btn) {
+    document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+    const isCorrect = (currentQuestion.correct_answer || []).includes(answer);
+    handleAnswerResult(isCorrect, answer);
 }
 
 function startTimer(seconds) {

@@ -15,7 +15,7 @@
             <div class="quiz-code-box">
                 <span>Код игры:</span>
                 <strong id="quizCode">{{ code }}</strong>
-                <button onclick="navigator.clipboard.writeText('{{ code }}')" class="btn-small btn-copy">📋</button>
+                <button onclick="navigator.clipboard.writeText('{{ code }}')" class="btn-small btn-copy" style="color: black;">Копировать</button>
             </div>
         </div>
 
@@ -123,7 +123,7 @@ async function updateStatus() {
                 startBtn.disabled = false;
                 pauseBtn.disabled = true;
                 resumeBtn.disabled = true;
-                stopBtn.disabled = true;
+                stopBtn.disabled = false;
                 replayBtn.style.display = 'none';
             } 
             else if (data.status === 'active') {
@@ -184,7 +184,7 @@ async function updateStatus() {
                     
                     allQuestionsList.innerHTML = data.all_questions.map(q => `
                         <div class="question-item">
-                            <div class="question-text">📝 ${escapeHtml(q.text)}</div>
+                            <div class="question-text">${escapeHtml(q.text)}</div>
                             <div class="options-list">
                                 ${q.options ? q.options.map(opt => `
                                     <div class="option ${opt === q.correct_answer ? 'correct' : ''}">
@@ -217,7 +217,7 @@ async function updateStatus() {
                     }
                     
                     if (data.time_left !== null) {
-                        currentQuestionTimer.innerHTML = `⏱️ Осталось времени: ${data.time_left} сек`;
+                        currentQuestionTimer.innerHTML = `⏱ Осталось времени: ${data.time_left} сек`;
                         currentQuestionTimer.style.color = data.time_left <= 5 ? '#f44336' : 'var(--sovcombank-blue)';
                     } else {
                         currentQuestionTimer.innerHTML = '';
@@ -235,7 +235,7 @@ async function updateStatus() {
                 questionHeader.innerHTML = 'Текущий вопрос';
                 currentQuestionDisplay.style.display = 'block';
                 questionsListPanel.style.display = 'none';
-                currentQuestionText.innerHTML = '⏸️ Игра на паузе';
+                currentQuestionText.innerHTML = '⏸ Игра на паузе';
                 currentQuestionOptions.innerHTML = '';
                 currentQuestionTimer.innerHTML = '';
             } 

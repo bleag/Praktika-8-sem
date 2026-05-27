@@ -16,7 +16,7 @@
             <div class="quiz-code-box">
                 <span>Код игры:</span>
                 <strong id="gameCodeDisplay">{{ quiz.quiz_code }}</strong>
-                <button onclick="copyCode()" class="btn-small btn-copy"> Копировать</button>
+                <button onclick="copyCode()" class="btn-small btn-copy" style="color: black;"> Копировать</button>
             </div>
         </div>
 
@@ -100,7 +100,7 @@ async function updateTeams() {
             `).join('');
             document.getElementById('teamsCount').innerText = data.teams.length;
         } else {
-            teamsDiv.innerHTML = '<div class="empty-players">⏳ Ожидание подключения команд...</div>';
+            teamsDiv.innerHTML = '<div class="empty-players">Ожидание подключения команд...</div>';
             document.getElementById('teamsCount').innerText = '0';
         }
     } catch (error) {
@@ -145,7 +145,7 @@ async function updateGameStatus() {
                 startBtn.disabled = false;
                 pauseBtn.disabled = true;
                 resumeBtn.style.display = 'none';
-                stopBtn.disabled = true;
+                stopBtn.disabled = false;
                 replayBtn.style.display = 'none';
             } 
             else if (data.status === 'active') {
@@ -224,7 +224,7 @@ async function updateGameStatus() {
                     }
                     
                     if (data.time_left !== null && data.time_left !== undefined) {
-                        currentQuestionTimer.innerHTML = `⏱️ Осталось времени: ${data.time_left} сек`;
+                        currentQuestionTimer.innerHTML = `⏱ Осталось времени: ${data.time_left} сек`;
                         currentQuestionTimer.style.color = data.time_left <= 5 ? '#f44336' : 'var(--sovcombank-blue)';
                     } else {
                         currentQuestionTimer.innerHTML = '';

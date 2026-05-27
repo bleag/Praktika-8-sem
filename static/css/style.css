@@ -2560,7 +2560,7 @@ body.auth-page {
 #questionText {
     font-size: 24px;
     line-height: 1.4;
-    margin: 25px 0 30px;
+    margin: 25px 0 10px;
     min-height: 80px;
     color: #1e2937;
 }

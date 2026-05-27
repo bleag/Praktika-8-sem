@@ -242,7 +242,12 @@
                 <label>Текст вопроса *</label>
                 <textarea id="questionText" class="form-textarea" rows="3"></textarea>
             </div>
-            
+
+            <div class="form-group">
+                <label>Баллы за правильный ответ</label>
+                <input type="number" id="questionPoints" class="form-input" value="100" min="10" max="1000">
+            </div>
+                        
             <div id="choiceBlock">
                 <label>Варианты ответов</label>
                 <div id="optionsList">
@@ -501,13 +506,13 @@ async function loadQuestions() {
                 <div style="background: #f5f5f5; border-radius: 12px; padding: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
                     <div><strong>${escapeHtml(q.text)}</strong></div>
                     <div>
-                        <button onclick="editQuestion(${q.id})" style="margin-right: 5px; cursor: pointer;">✏️</button>
-                        <button onclick="deleteQuestion(${q.id})" style="cursor: pointer;">🗑️</button>
+                        <button onclick="editQuestion(${q.id})" style="margin-right: 5px; cursor: pointer;">Изменить</button>
+                        <button onclick="deleteQuestion(${q.id})" style="cursor: pointer;">Удалить</button>
                     </div>
                 </div>
             `).join('');
         } else {
-            container.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">📝<p>Нет вопросов. Нажмите «+ Добавить вопрос»</p></div>';
+            container.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;"><p>Нет вопросов. Нажмите «+ Добавить вопрос»</p></div>';
         }
     } catch (error) {
         console.error('Ошибка загрузки вопросов:', error);
@@ -586,7 +591,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (removeCoverBtn) {
             removeCoverBtn.onclick = () => {
                 coverData = null;
-                coverPreview.innerHTML = '<span class="cover-placeholder">📷</span>';
+                coverPreview.innerHTML = '<span class="cover-placeholder">[ ◉¯]</span>';
                 coverInput.value = '';
                 removeCoverBtn.style.display = 'none';
             };
@@ -713,6 +718,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.openModal = function(questionId = null) {
         if (!modal) return;
         modal.style.display = 'flex';
+        document.getElementById('questionPoints').value = 100;
         document.getElementById('questionText').value = '';
         document.getElementById('roundTitle').value = '';
         document.getElementById('optionsList').innerHTML = `
@@ -849,14 +855,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 method: method,
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
-                    type: type,
-                    text: text,
-                    options: options,
-                    correct_answer: correctAnswer,
-                    order: 0,
-                    round_id: currentRoundId,
-                    additional_data: additionalData
-                })
+                type: type,
+                text: text,
+                options: options,
+                correct_answer: correctAnswer,
+                points: parseInt(document.getElementById('questionPoints').value) || 100,   // ← НОВОЕ
+                order: 0,
+                round_id: currentRoundId,
+                additional_data: additionalData
+            })
             });
             
             const result = await response.json();
@@ -941,6 +948,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const q = data.question;
             document.getElementById('questionText').value = q.text;
             document.getElementById('questionType').value = q.type;
+            document.getElementById('questionPoints').value = q.points || 100;
             
             const list = document.getElementById('optionsList');
             list.innerHTML = '';
