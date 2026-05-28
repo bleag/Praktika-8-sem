@@ -1,16 +1,22 @@
-/* ========== СТРАНИЦА ЦЕН (prices.html) ========== */
+/* prices.css — страница тарифов (prices.html)*/
 
-/* Основной блок */
+/* ОСНОВНАЯ ОБЁРТКА И ЗАГОЛОВКИ */
 .pricing {
     padding: 60px 20px 80px 20px;
     background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
 }
 
-/* Заголовок страницы (если используется .section-title) */
+/* Заголовок страницы (универсальный) */
 .pricing .section-title,
-.pricing h2 {
+.pricing h2,
+.pricing .hero__title,
+.pricing h1.hero__title {
     text-align: center !important;
-    font-size: 34px;
+    display: block !important;
+    width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    font-size: 36px;
     font-weight: 700;
     background: linear-gradient(90deg, #1e40af, #ef4444);
     -webkit-background-clip: text;
@@ -28,7 +34,7 @@
     color: #64748b;
 }
 
-/* Сетка карточек */
+/* СЕТКА КАРТОЧЕК ТАРИФОВ */
 .pricing-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
@@ -74,15 +80,19 @@
     font-weight: 600;
 }
 
+/* СОДЕРЖИМОЕ КАРТОЧКИ */
 .pricing-icon {
     font-size: 56px;
     margin-bottom: 20px;
 }
 
+/* Название тарифа*/
 .pricing-name {
-    font-size: 24px;
+    font-size: 27px !important;
     font-weight: 700;
     margin-bottom: 8px;
+    word-break: break-word;
+    white-space: normal;
 }
 
 .pricing-price {
@@ -146,7 +156,7 @@
     box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4);
 }
 
-/* ===== СТАРЫЕ СТИЛИ ДЛЯ ТАРИФНОЙ КАРТОЧКИ (если используется) ===== */
+/* СТАРАЯ ТАРИФНАЯ КАРТОЧКА */
 .tariff-info {
     margin-top: 40px;
     padding-top: 40px;
@@ -200,35 +210,4 @@
     margin-top: 12px;
     padding-top: 12px;
     border-top: 1px solid #e2e8f0;
-}
-
-/* ========== ЦЕНТРИРОВАНИЕ ЗАГОЛОВКА НА СТРАНИЦЕ ЦЕН ========== */
-
-/* Заголовок "Выберите тариф" */
-.pricing .hero__title,
-.pricing h1.hero__title {
-    text-align: center !important;
-    display: block !important;
-    width: 100% !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    font-size: 36px;
-    font-weight: 700;
-    background: linear-gradient(90deg, #1e40af, #ef4444);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    margin-bottom: 20px;
-}
-
-/* Уменьшаем размер длинных названий в карточках */
-.pricing-name {
-    font-size: 27px !important;
-    word-break: break-word;
-    white-space: normal;
-}
-
-/* Особенно для "Профессиональный" */
-.pricing-card .pricing-name {
-    font-size: 27px !important;
 }

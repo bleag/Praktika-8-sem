@@ -1,19 +1,22 @@
-/* ========== РЕДАКТОР ВИКТОРИН ========== */
+/* quiz_editor.css — редактор викторин (quiz_editor_simple.html) */
+
+/* ОСНОВНОЙ КОНТЕЙНЕР */
 .editor-container {
     display: flex;
     gap: 30px;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 40px 20px;
     min-height: calc(100vh - 140px);
-    background: var(--gray-light);
+    background: linear-gradient(135deg, #1e3b8ac8 0%, #312e81bc 60%, #7f1d1dd2 100%);
 }
 
-/* Боковая панель */
+/* БОКОВАЯ ПАНЕЛЬ */
 .editor-sidebar {
     width: 200px;
-    background: white;
-    border-right: 1px solid var(--gray-border);
+    background: rgba(255, 255, 255, 0.5) !important;
+    backdrop-filter: blur(10px);
+    border-right: none !important;
     padding: 24px 0;
 }
 
@@ -40,7 +43,7 @@
     color: white;
 }
 
-/* Основная область */
+/* ОСНОВНАЯ ОБЛАСТЬ */
 .editor-main {
     flex: 1;
     padding: 32px 40px;
@@ -55,30 +58,65 @@
     display: block;
 }
 
-/* Секции настроек */
+/* СЕКЦИИ НАСТРОЕК*/
 .settings-section {
-    background: white;
-    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 24px;
     padding: 20px;
     margin-bottom: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
+.sub-block {
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+/* Заголовки секций */
 .section-title {
     font-size: 20px;
+    font-weight: 700;
+    color: white !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    border-left: 4px solid #ef4444;
+    padding-left: 15px;
+    margin-bottom: 20px;
+}
+
+.subsection-title {
+    font-size: 16px;
     font-weight: 600;
-    color: var(--sovcombank-blue);
-    margin-bottom: 8px;
+    color: #fbbf24 !important;
+    border-left: 3px solid #1e40af;
+    padding-left: 12px;
+    margin-bottom: 16px;
+}
+
+.sub-block__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: white !important;
+    border-bottom: 2px solid #fbbf24 !important;
+    display: inline-block;
+    padding-bottom: 8px;
+    margin-bottom: 16px;
 }
 
 .section-desc {
     font-size: 14px;
-    color: var(--text-gray);
+    color: rgba(255, 255, 255, 0.9) !important;
     margin-bottom: 20px;
     padding-bottom: 12px;
     border-bottom: 1px solid var(--gray-border);
 }
 
+/* ПОЛЯ ВВОДА И ФОРМЫ */
 .form-row {
     display: flex;
     gap: 20px;
@@ -96,21 +134,25 @@
     display: block;
     margin-bottom: 8px;
     font-weight: 500;
-    color: var(--text-dark);
+    color: white !important;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
 }
 
-.form-input, .form-textarea, .form-input select {
+.form-input, .form-textarea, select.form-input {
     width: 100%;
     padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 16px !important;
     font-size: 14px;
-    transition: border-color 0.3s;
+    color: #1e293b !important;
+    transition: all 0.2s;
 }
 
 .form-input:focus, .form-textarea:focus {
     outline: none;
-    border-color: var(--sovcombank-blue);
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3) !important;
 }
 
 .form-textarea {
@@ -122,7 +164,14 @@
     display: block;
     text-align: right;
     font-size: 12px;
-    color: var(--text-gray);
+    color: rgba(255, 255, 255, 0.7) !important;
+    margin-top: 4px;
+}
+
+.form-hint {
+    display: block;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8) !important;
     margin-top: 4px;
 }
 
@@ -134,27 +183,76 @@
     cursor: pointer;
     margin-bottom: 12px;
     font-weight: normal;
+    color: white !important;
 }
 
 .checkbox-label input, .radio-label input {
     width: auto;
     margin: 0;
+    accent-color: #2563eb;
 }
 
-/* Баннер тарифа */
-.tariff-banner {
-    background: #e3f2fd;
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 24px;
+.indent {
+    margin-left: 24px;
+    margin-top: 12px;
+    margin-bottom: 12px;
 }
 
-.tariff-banner p {
-    margin: 4px 0;
-    font-size: 14px;
+/* КНОПКИ РЕДАКТОРА */
+.btn-blue {
+    background: linear-gradient(90deg, #1e40af, #2563eb);
+    border: none;
+    border-radius: 40px;
+    padding: 12px 28px;
+    font-weight: 600;
+    color: white;
+    transition: all 0.2s;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+}
+.btn-blue:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
 }
 
-/* Кнопки редактора */
+.btn-red {
+    background: linear-gradient(90deg, #ef4444, #dc2626);
+    border: none;
+    border-radius: 40px;
+    padding: 12px 28px;
+    font-weight: 600;
+    color: white;
+    transition: all 0.2s;
+    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);
+}
+.btn-red:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+}
+
+.btn-outline-new {
+    background: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 40px;
+    padding: 10px 24px;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+.btn-outline-new:hover {
+    border-color: #1e40af;
+    color: #1e40af;
+    transform: translateY(-2px);
+}
+
+.btn-small {
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    background: #1e40af;
+    color: white;
+    font-size: 12px;
+}
+
 .editor-actions {
     display: flex;
     gap: 15px;
@@ -164,46 +262,123 @@
     padding-top: 24px;
 }
 
-/* Пустое состояние для вопросов */
-.empty-state__note {
-    font-size: 13px;
-    color: var(--text-gray);
-    margin-top: 16px;
-    padding: 12px;
-    background: var(--gray-light);
-    border-radius: 8px;
+/* БАННЕР ТАРИФА */
+.tariff-banner {
+    background: rgba(0, 0, 0, 0.3) !important;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 16px;
+    margin-bottom: 24px;
+    color: white !important;
+}
+.tariff-banner p {
+    margin: 0;
+    font-weight: 500;
+    color: white !important;
+}
+.tariff-banner strong {
+    color: #fbbf24 !important;
 }
 
-/* Адаптив для редактора */
-@media (max-width: 768px) {
-    .editor-container {
-        flex-direction: column;
-    }
-    
-    .editor-sidebar {
-        width: 100%;
-        display: flex;
-        border-right: none;
-        border-bottom: 1px solid var(--gray-border);
-        padding: 0;
-    }
-    
-    .sidebar-nav__btn {
-        text-align: center;
-        flex: 1;
-    }
-    
-    .editor-main {
-        padding: 20px;
-    }
-    
-    .form-row {
-        flex-direction: column;
-        gap: 0;
-    }
+/* МОДАЛЬНОЕ ОКНО */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* ========== ЗАГРУЗКА ОБЛОЖКИ ========== */
+.modal-content {
+    background: white;
+    width: 500px;
+    border-radius: 32px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    padding: 20px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    background: linear-gradient(90deg, #f8fafc, #ffffff);
+    border-radius: 32px 32px 0 0;
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0;
+}
+.modal-header h3 {
+    color: #1e40af;
+}
+
+.modal-close {
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.modal-body {
+    padding: 20px;
+    color: #1e293b;
+}
+
+.modal-footer {
+    padding: 20px 24px;
+    background: #f9fafb;
+    border-radius: 0 0 32px 32px;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 0;
+}
+
+/* Заголовки в модальном окне */
+#questionModal .modal-body label,
+#choiceBlock label,
+#pollBlock label {
+    color: #1e293b !important;
+    font-weight: 600 !important;
+}
+
+#questionModal .form-hint {
+    color: #64748b !important;
+}
+
+/* ОПЦИИ ВОПРОСОВ */
+.option-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+.option-row .form-input {
+    flex: 1;
+}
+.remove-option {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #999;
+    font-size: 16px;
+}
+.remove-option:hover {
+    color: #f44336;
+}
+
+.question-type-block {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+/* ЗАГРУЗКА ОБЛОЖКИ */
 .cover-upload {
     display: flex;
     flex-direction: column;
@@ -235,13 +410,12 @@
     object-fit: cover;
 }
 
-/* ========== ТИПЫ ВОПРОСОВ ========== */
+/* ТИПЫ ВОПРОСОВ */
 .question-types-preview {
     margin-top: 24px;
     padding-top: 20px;
     border-top: 1px solid var(--gray-border);
 }
-
 .question-types-preview p {
     margin-bottom: 12px;
     font-weight: 500;
@@ -261,31 +435,51 @@
     color: var(--text-dark);
 }
 
-/* ========== ПОДБЛОКИ В НАСТРОЙКАХ ========== */
-.sub-block {
-    background: #f9f9f9;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 24px;
-}
-
-.sub-block__title {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 16px;
-    padding-bottom: 8px;
-    border-bottom: 2px solid var(--sovcombank-blue);
-    display: inline-block;
-}
-
-/* ========== СПИСОК ВОПРОСОВ ========== */
+/* СПИСОК ВОПРОСОВ*/
 .questions-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
 }
+.questions-header h4 {
+    color: white !important;
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
 
+#addQuestionBtn {
+    background: linear-gradient(90deg, #ef4444, #dc2626);
+    border: none;
+    border-radius: 40px;
+    padding: 12px 28px;
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+    transition: all 0.2s;
+}
+#addQuestionBtn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.5);
+}
+
+#backToSettingsBtn {
+    color: white;
+    border-color: white;
+    background: transparent;
+    padding: 10px 24px;
+    border-radius: 40px;
+    transition: all 0.2s;
+}
+#backToSettingsBtn:hover {
+    background: rgba(255,255,255,0.2);
+    transform: translateX(-4px);
+}
+
+/* Карточки вопросов (общие и переопределённые) */
 .question-item {
     background: #f5f5f5;
     border-radius: 12px;
@@ -294,108 +488,105 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s;
 }
-
+.question-item:hover {
+    border-color: #1e40af;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+.question-item .question-text {
+    color: #1e293b;
+    font-weight: 600;
+}
 .question-item__info {
     flex: 1;
 }
-
 .question-item__type {
     font-size: 12px;
     color: #888;
     margin-bottom: 5px;
 }
-
 .question-item__text {
     font-weight: 500;
 }
-
 .question-item__actions {
     display: flex;
     gap: 8px;
 }
 
-/* Маленькие кнопки */
-.btn-small {
-    padding: 5px 12px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    background: #1e40af;
-    color: white;
-    font-size: 12px;
+/* Кнопки в карточках вопросов */
+#questionsList button,
+.question-item button,
+.question-item__actions button {
+    background: #e2e8f0 !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 6px 12px !important;
+    margin-left: 8px !important;
+    cursor: pointer !important;
+    font-size: 14px !important;
+    transition: all 0.2s ease !important;
+    color: #1e293b !important;
+}
+#questionsList button:first-child:hover,
+.question-item button:first-child:hover {
+    background: #2563eb !important;
+    color: white !important;
+    transform: translateY(-2px);
+}
+#questionsList button:last-child:hover,
+.question-item button:last-child:hover {
+    background: #ef4444 !important;
+    color: white !important;
+    transform: translateY(-2px);
 }
 
-/* Модальное окно (локальное для редактора, но использует общий класс .modal) */
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.modal-content {
-    background: white;
-    width: 500px;
-    border-radius: 12px;
+/* Контейнер списка вопросов и карточки */
+#questionsTab {
+    background: rgba(0,0,0,0.1);
+    border-radius: 32px;
     padding: 20px;
-    max-height: 80vh;
-    overflow-y: auto;
+    margin-top: 10px;
 }
 
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+#questionsList > div {
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 24px;
+    padding: 15px !important;
+    margin-bottom: 12px;
+}
+
+#questionsList strong,
+.question-item strong,
+.question-item__text,
+#questionsList .question-item div:first-child strong {
+    color: #1e40af !important;
+}
+
+/* Пустое состояние */
+#questionsList > div:first-child {
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(8px);
+    border-radius: 24px;
+    padding: 15px !important;
+    text-align: center;
+    color: white !important;
+    font-size: 15px;
+    border: 1px solid rgba(255,255,255,0.3);
+    margin-top: 20px;
+}
+#questionsList > div:first-child p {
+    color: white !important;
     margin-bottom: 20px;
 }
-
-.modal-close {
-    font-size: 24px;
-    cursor: pointer;
+#questionsList .empty-questions {
+    color: white !important;
 }
 
-.modal-footer {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    margin-top: 20px;
-}
-
-/* Опции вопросов */
-.option-row {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 10px;
-    align-items: center;
-}
-.option-row .form-input {
-    flex: 1;
-}
-.remove-option {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #999;
-    font-size: 16px;
-}
-.remove-option:hover {
-    color: #f44336;
-}
-
-.question-type-block {
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
-}
-
-/* Раунды */
+/* РАУНДЫ */
 .rounds-section {
     background: #f8f9fa;
     border-radius: 12px;
@@ -415,9 +606,9 @@
 }
 .round-item {
     background: white;
-    border: 1px solid #ddd;
-    border-radius: 20px;
-    padding: 8px 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 40px;
+    padding: 6px 16px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -425,18 +616,20 @@
     transition: all 0.2s;
 }
 .round-item.active {
-    background: #1e40af;
-    border-color: #2196F3;
+    background: linear-gradient(90deg, #1e40af, #2563eb);
+    border: none;
     color: white;
+    box-shadow: 0 2px 8px rgba(30, 64, 175, 0.3);
 }
 .round-item .round-name {
     font-size: 14px;
 }
 .round-item .round-questions-count {
     font-size: 12px;
-    background: #eee;
+    background: #e2e8f0;
+    color: #1e293b;
+    border-radius: 30px;
     padding: 2px 6px;
-    border-radius: 10px;
 }
 .round-item.active .round-questions-count {
     background: rgba(255,255,255,0.3);
@@ -463,468 +656,41 @@
     gap: 10px;
 }
 
-/* Дополнительно */
-.btn-blue {
-    background: linear-gradient(90deg, #2563eb, #1e40af);
-    color: white;
-}
-.btn-red {
-    background: #f44336;
-    color: white;
-}
-.btn-outline-new {
-    background: none;
-    border: 1px solid #ddd;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-}
-.form-hint {
-    display: block;
-    font-size: 12px;
-    color: #666;
-    margin-top: 4px;
-}
+/* РАЗДЕЛИТЕЛИ И ВСПОМОГАТЕЛЬНЫЕ КЛАССЫ */
 .section-divider {
     margin: 20px 0;
     border: none;
     border-top: 1px solid #eee;
 }
-.subsection-title {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 16px;
-    color: #f44336;
-}
-.indent {
-    margin-left: 24px;
-    margin-top: 12px;
-    margin-bottom: 12px;
-}
 
-/* Фон редактора */
-.editor-container {
-    background: linear-gradient(135deg, #1e3b8ac8 0%, #312e81bc 60%, #7f1d1dd2 100%);
-    padding: 40px 20px;
-    min-height: calc(100vh - 140px);
-}
-
-/* Карточки настроек */
-.settings-section, .sub-block {
-    background: white;
-    border-radius: 24px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-    transition: transform 0.2s, box-shadow 0.2s;
-    border: 1px solid rgba(30, 64, 175, 0.1);
-}
-
-.settings-section:hover, .sub-block:hover {
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
-    transform: translateY(-2px);
-}
-
-/*Заголовки секций */
-.section-title {
-    color: #1e40af;
-    border-left: 4px solid #ef4444;
-    padding-left: 15px;
-    margin-bottom: 20px;
-    font-weight: 700;
-}
-
-.subsection-title {
-    color: #ef4444;
-    border-left: 3px solid #1e40af;
-    padding-left: 12px;
-}
-
-/* Поля ввода */
-.form-input, .form-textarea, select.form-input {
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    transition: all 0.2s;
-    background: #fefefe;
-}
-
-.form-input:focus, .form-textarea:focus {
-    border-color: #1e40af;
-    box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
-}
-
-/* Кнопки в редакторе */
-.btn-blue {
-    background: linear-gradient(90deg, #1e40af, #2563eb);
-    border: none;
-    border-radius: 40px;
-    padding: 12px 28px;
-    font-weight: 600;
-    transition: all 0.2s;
-    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
-}
-.btn-blue:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
-}
-
-.btn-red {
-    background: linear-gradient(90deg, #ef4444, #dc2626);
-    border-radius: 40px;
-    padding: 12px 28px;
-    font-weight: 600;
-    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);
-}
-.btn-red:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
-}
-
-.btn-outline-new {
-    border: 1px solid #cbd5e1;
-    border-radius: 40px;
-    padding: 10px 24px;
-    background: white;
-    transition: all 0.2s;
-}
-.btn-outline-new:hover {
-    border-color: #1e40af;
-    color: #1e40af;
-    transform: translateY(-2px);
-}
-
-/*Баннер тарифа */
-.tariff-banner {
-    background: linear-gradient(90deg, #eef2ff, #fff1f2);
-    border: 1px solid #dbeafe;
-    border-radius: 20px;
-    color: #1e293b;
-}
-.tariff-banner p {
-    margin: 0;
-    font-weight: 500;
-}
-.tariff-banner strong {
-    color: #1e40af;
-}
-
-/* Модальное окно */
-.modal-content {
-    border-radius: 32px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-}
-
-.modal-header {
-    background: linear-gradient(90deg, #f8fafc, #ffffff);
-    border-radius: 32px 32px 0 0;
-    padding: 20px 24px;
-}
-.modal-header h3 {
-    color: #1e40af;
-}
-
-.modal-footer {
-    padding: 20px 24px;
-    background: #f9fafb;
-    border-radius: 0 0 32px 32px;
-}
-
-/* Список вопросов*/
-.question-item {
-    border: 1px solid #e2e8f0;
-    border-radius: 20px;
-    transition: all 0.2s;
-}
-.question-item:hover {
-    border-color: #1e40af;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-}
-.question-item .question-text {
-    color: #1e293b;
-    font-weight: 600;
-}
-
-/* Раунды */
-.round-item {
-    background: white;
-    border: 1px solid #cbd5e1;
-    border-radius: 40px;
-    padding: 6px 16px;
-    transition: all 0.2s;
-}
-.round-item.active {
-    background: linear-gradient(90deg, #1e40af, #2563eb);
-    border: none;
-    color: white;
-    box-shadow: 0 2px 8px rgba(30, 64, 175, 0.3);
-}
-.round-item .round-questions-count {
-    background: #e2e8f0;
-    color: #1e293b;
-    border-radius: 30px;
-}
-.round-item.active .round-questions-count {
-    background: rgba(255,255,255,0.3);
-    color: white;
-}
-
-/* Адаптив */
+/* АДАПТИВ */
 @media (max-width: 768px) {
     .editor-container {
+        flex-direction: column;
         padding: 20px 15px;
+    }
+    .editor-sidebar {
+        width: 100%;
+        display: flex;
+        border-right: none;
+        border-bottom: 1px solid var(--gray-border);
+        padding: 0;
+    }
+    .sidebar-nav__btn {
+        text-align: center;
+        flex: 1;
+    }
+    .editor-main {
+        padding: 20px;
+    }
+    .form-row {
+        flex-direction: column;
+        gap: 0;
     }
     .settings-section, .sub-block {
         padding: 20px;
     }
-}
-
-/* Заголовок "Вопросы" */
-.questions-header h4 {
-    color: white !important;
-    font-size: 24px;
-    font-weight: 700;
-    margin: 0;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-/* Сообщение "Нет вопросов..." */
-#questionsList > div:first-child {
-    background: rgba(255,255,255,0.15);
-    backdrop-filter: blur(8px);
-    border-radius: 24px;
-    padding: 15px !important;
-    text-align: center;
-    color: white !important;
-    font-size: 15px;
-    border: 1px solid rgba(255,255,255,0.3);
-    margin-top: 20px;
-}
-
-/* Текст внутри сообщения (если есть дополнительные параграфы) */
-#questionsList > div:first-child p {
-    color: white !important;
-    margin-bottom: 20px;
-}
-
-/* Кнопка "+ Добавить вопрос" */
-#addQuestionBtn {
-    background: linear-gradient(90deg, #ef4444, #dc2626);
-    border: none;
-    border-radius: 40px;
-    padding: 12px 28px;
-    color: white;
-    font-weight: 600;
-    font-size: 16px;
-    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
-    transition: all 0.2s;
-}
-
-#addQuestionBtn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.5);
-}
-
-/* Кнопка */
-#backToSettingsBtn {
-    color: white;
-    border-color: white;
-    background: transparent;
-    padding: 10px 24px;
-    border-radius: 40px;
-    transition: all 0.2s;
-}
-#backToSettingsBtn:hover {
-    background: rgba(255,255,255,0.2);
-    transform: translateX(-4px);
-}
-
-/* Общий фон для области вопросов */
-#questionsTab {
-    background: rgba(0,0,0,0.1);
-    border-radius: 32px;
-    padding: 20px;
-    margin-top: 10px;
-}
-
-#questionsList strong,
-.question-item strong,
-.question-item__text,
-#questionsList .question-item div:first-child strong {
-    color: #1e40af !important;  
-}
-
-#questionsList > div:first-child,
-#questionsList .empty-questions {
-    color: white !important;
-}
-
-/* ========== КНОПКИ РЕДАКТИРОВАНИЯ И УДАЛЕНИЯ ВОПРОСОВ ========== */
-
-/* Все кнопки в списке вопросов */
-#questionsList button,
-.question-item button,
-.question-item__actions button {
-    background: #e2e8f0 !important;
-    border: none !important;
-    border-radius: 8px !important;
-    padding: 6px 12px !important;
-    margin-left: 8px !important;
-    cursor: pointer !important;
-    font-size: 14px !important;
-    transition: all 0.2s ease !important;
-    color: #1e293b !important;
-}
-
-/* Ховер для кнопки редактирования (карандаш) */
-#questionsList button:first-child:hover,
-.question-item button:first-child:hover {
-    background: #2563eb !important;
-    color: white !important;
-    transform: translateY(-2px);
-}
-
-/* Ховер для кнопки удаления (корзина) */
-#questionsList button:last-child:hover,
-.question-item button:last-child:hover {
-    background: #ef4444 !important;
-    color: white !important;
-    transform: translateY(-2px);
-}
-
-/* ========== ПОЛУПРОЗРАЧНЫЕ БЛОКИ НАСТРОЕК ========== */
-
-/* Блоки настроек (ЧТО, КОГДА, ДЛЯ КОГО, КАК) */
-.settings-section {
-    background: rgba(255, 255, 255, 0.15) !important;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 24px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-}
-
-/* Подблоки (Перезапуск игры, Система подсчёта баллов, Сложность и порядок) */
-.sub-block {
-    background: rgba(255, 255, 255, 0.1) !important;
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
-    padding: 20px;
-    margin-bottom: 24px;
-}
-
-/* Заголовки секций */
-.settings-section .section-title {
-    color: white !important;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-/* Описание секций */
-.section-desc {
-    color: rgba(255, 255, 255, 0.9) !important;
-}
-
-/* Подзаголовки */
-.subsection-title {
-    color: #fbbf24 !important;
-}
-
-/* Подзаголовки в подблоках */
-.sub-block__title {
-    color: white !important;
-    border-bottom-color: #fbbf24 !important;
-}
-
-/* Текст меток (label) */
-.form-group label,
-.checkbox-label,
-.radio-label {
-    color: white !important;
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
-}
-
-/* Поля ввода */
-.form-input, .form-textarea, select.form-input {
-    background: rgba(255, 255, 255, 0.9) !important;
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    border-radius: 16px !important;
-    color: #1e293b !important;
-}
-
-.form-input:focus, .form-textarea:focus {
-    border-color: #2563eb !important;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3) !important;
-}
-
-/* Подсказки (form-hint) */
-.form-hint {
-    color: rgba(255, 255, 255, 0.8) !important;
-}
-
-/* Счётчики символов */
-.char-counter {
-    color: rgba(255, 255, 255, 0.7) !important;
-}
-
-/* Чекбоксы и радио – сохраняем видимость */
-.checkbox-label input,
-.radio-label input {
-    accent-color: #2563eb;
-}
-
-/* Баннер тарифа */
-.tariff-banner {
-    background: rgba(0, 0, 0, 0.3) !important;
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
-    color: white !important;
-}
-
-.tariff-banner p {
-    color: white !important;
-}
-
-.tariff-banner strong {
-    color: #fbbf24 !important;
-}
-
-/* Полупрозрачный блок с вкладками */
-.editor-sidebar {
-    background: rgba(255, 255, 255, 0.5) !important;
-    backdrop-filter: blur(10px);
-    border-right: none !important;
-}
-
-/* ========== ЦВЕТА ЗАГОЛОВКОВ В МОДАЛЬНОМ ОКНЕ ========== */
-
-/* Заголовки полей (Текст вопроса, Тип вопроса, Баллы и т.д.) */
-#questionModal .modal-body label {
-    color: #1e293b !important;
-    font-weight: 600 !important;
-}
-
-/* Заголовок "Варианты ответов" */
-#choiceBlock label,
-#pollBlock label {
-    color: #1e293b !important;
-    font-weight: 600 !important;
-}
-
-/* Текст внутри модального окна */
-#questionModal .modal-body {
-    color: #1e293b;
-}
-
-/* Подсказки (form-hint) в модалке */
-#questionModal .form-hint {
-    color: #64748b !important;
-}
-
-#questionsList > div {
-    /* существующие свойства */
-    background: rgba(255, 255, 255, 0.8) !important;
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 24px;
+    .modal-content {
+        width: 90%;
+    }
 }

@@ -1,4 +1,6 @@
-/* ========== ФИЛЬТР РЕЖИМОВ ========== */
+/* play.css — страница выбора викторины (play.html)*/
+
+/* ФИЛЬТР РЕЖИМОВ */
 .mode-filter {
     display: flex;
     gap: 12px;
@@ -28,7 +30,7 @@
     color: white;
 }
 
-/* ========== ПОИСК ========== */
+/* СТРОКА ПОИСКА*/
 .search-bar {
     display: flex;
     gap: 12px;
@@ -63,7 +65,7 @@
     border-color: var(--sovcombank-blue);
 }
 
-/* ===================== СОВРЕМЕННЫЙ ДИЗАЙН СТРАНИЦЫ ВЫБОРА ВИКТОРИН ===================== */
+/* ЗАГОЛОВОК И ОСНОВНАЯ ОБЁРТКА */
 .play-page {
     background: #f8fafc;
     min-height: calc(100vh - 140px);
@@ -86,7 +88,7 @@
     color: #64748b;
 }
 
-/* Сетка */
+/* СЕТКА КАРТОЧЕК ВИКТОРИН */
 .quizzes-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
@@ -95,6 +97,7 @@
     margin: 0 auto;
 }
 
+/* Карточка викторины */
 .quiz-card {
     background: white;
     border-radius: 22px;
@@ -113,7 +116,7 @@
 
 /* Обложка */
 .quiz-card__cover {
-    height: 180px;                 /* фиксированная высота */
+    height: 180px;
     width: 100%;
     background: linear-gradient(155deg, #171ae0e5, #f11010d0);
     display: flex;
@@ -135,7 +138,7 @@
     opacity: 0.9;
 }
 
-/* Контент */
+/* Контент карточки */
 .quiz-card__content {
     padding: 22px 22px 22px 32px;
     flex: 1;
@@ -158,7 +161,7 @@
     flex: 1;
 }
 
-/* Красивые теги режимов */
+/* Теги режимов */
 .quiz-card__meta {
     display: flex;
     justify-content: center;
@@ -176,19 +179,17 @@
     min-width: 110px;
 }
 
-.quiz-card__mode.multi { 
-    background: #dbeafe; 
-    color: #1e40af; 
+.quiz-card__mode.multi {
+    background: #dbeafe;
+    color: #1e40af;
 }
-
-.quiz-card__mode.team { 
-    background: #f3e8ff; 
-    color: #6b21a8; 
+.quiz-card__mode.team {
+    background: #f3e8ff;
+    color: #6b21a8;
 }
-
-.quiz-card__mode.solo { 
-    background: #ecfdf5; 
-    color: #0f766e; 
+.quiz-card__mode.solo {
+    background: #ecfdf5;
+    color: #0f766e;
 }
 
 .quiz-card__code {
@@ -200,7 +201,7 @@
     text-align: center;
 }
 
-/* Кнопки */
+/* КНОПКИ НА КАРТОЧКАХ */
 .quiz-card__actions {
     display: flex;
     gap: 12px;

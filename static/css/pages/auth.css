@@ -1,5 +1,6 @@
-/* login.html, register.html */
-/* ========== СТРАНИЦЫ АВТОРИЗАЦИИ (ЛОГИН/РЕГИСТРАЦИЯ) ========== */
+/* auth.css — страницы входа и регистрации (login.html, register.html)*/
+
+/* ФОН И ОСНОВНАЯ ОБЁРТКА */
 body.auth-page {
     background: linear-gradient(135deg, var(--sovcombank-blue) 0%, var(--sovcombank-red) 100%);
     min-height: 100vh;
@@ -21,6 +22,7 @@ body.auth-page {
     margin: 0 auto;
 }
 
+/* КАРТОЧКА ФОРМЫ */
 .auth-card {
     background: white;
     border-radius: 24px;
@@ -36,6 +38,7 @@ body.auth-page {
     color: var(--sovcombank-blue);
 }
 
+/* ФОРМЫ И ПОЛЯ ВВОДА */
 .auth-form {
     margin-bottom: 24px;
 }
@@ -51,19 +54,20 @@ body.auth-page {
     color: var(--text-dark);
 }
 
-.auth-form .form-input {
+.form-input {
     width: 100%;
-    padding: 12px 16px;
-    border: 1px solid var(--gray-border);
+    padding: 14px 16px;
+    border: 2px solid #e2e8f0;
     border-radius: 12px;
     font-size: 16px;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
+    background: white;
 }
 
-.auth-form .form-input:focus {
+.form-input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
     outline: none;
-    border-color: var(--sovcombank-blue);
-    box-shadow: 0 0 0 3px rgba(1, 55, 145, 0.1);
 }
 
 .auth-form .form-hint {
@@ -73,64 +77,7 @@ body.auth-page {
     margin-top: 6px;
 }
 
-.auth-footer {
-    text-align: center;
-    margin-top: 24px;
-    font-size: 14px;
-    color: var(--text-gray);
-}
-
-.auth-footer a {
-    color: var(--sovcombank-blue);
-    text-decoration: none;
-    font-weight: 500;
-}
-
-.auth-footer a:hover {
-    text-decoration: underline;
-}
-
-.auth-back {
-    text-align: center;
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid var(--gray-border);
-}
-
-.btn-block {
-    width: 100%;
-    padding: 12px;
-    font-size: 16px;
-    font-weight: 600;
-    border-radius: 12px;
-}
-
-.error-message {
-    background-color: #FEE2E2;
-    color: var(--sovcombank-red);
-    padding: 12px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    text-align: center;
-    font-size: 14px;
-}
-
-/* Дополнительные стили для страницы входа (из login.html) */
-.form-input {
-    width: 100%;
-    padding: 14px 16px;
-    border: 2px solid #e2e8f0;
-    border-radius: 12px;
-    font-size: 16px;
-    transition: all 0.3s ease;
-}
-
-.form-input:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
-    outline: none;
-}
-
+/* БЛОК КНОПОК */
 .btn-block {
     width: 100%;
     padding: 14px;
@@ -152,6 +99,7 @@ body.auth-page {
     box-shadow: 0 10px 20px rgba(37, 99, 235, 0.35);
 }
 
+/* СООБЩЕНИЕ ОБ ОШИБКЕ */
 .error-message {
     background: #fee2e2;
     color: #ef4444;
@@ -166,14 +114,21 @@ body.auth-page {
     text-align: center;
     margin-top: 24px;
     color: #64748b;
+    font-size: 14px;
 }
 
 .auth-footer a {
     color: #2563eb;
+    text-decoration: none;
     font-weight: 600;
+}
+.auth-footer a:hover {
+    text-decoration: underline;
 }
 
 .auth-back {
     text-align: center;
     margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid var(--gray-border);
 }
