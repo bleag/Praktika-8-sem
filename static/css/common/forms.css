@@ -1,7 +1,6 @@
-/* стили для всех форм (input, button, select) */
-/* ========== ОБЩИЕ ЭЛЕМЕНТЫ ФОРМ ========== */
+/* forms.css — стили для форм, полей ввода, подсказок */
 
-/* Разделители */
+/*РАЗДЕЛИТЕЛИ И ЗАГОЛОВКИ СЕКЦИЙ */
 .section-divider {
     margin: 24px 0;
     border: none;
@@ -15,7 +14,7 @@
     margin-bottom: 16px;
 }
 
-/* Инструменты */
+/* ВСПОМОГАТЕЛЬНЫЕ ЭЛЕМЕНТЫ ФОРМ */
 .label-with-icon {
     display: flex;
     align-items: center;
@@ -42,7 +41,7 @@
     margin-bottom: 12px;
 }
 
-/* Информационный блок */
+/* ИНФОРМАЦИОННЫЕ БЛОКИ */
 .info-box {
     background: white;
     border-left: 4px solid var(--sovcombank-blue);
@@ -67,7 +66,7 @@
     color: var(--text-gray);
 }
 
-/* Всплывающая подсказка (tooltip) */
+/* 4. КАСТОМНАЯ ВСПЛЫВАЮЩАЯ ПОДСКАЗКА */
 .tooltip-icon {
     display: inline-flex;
     align-items: center;
@@ -84,6 +83,7 @@
     position: relative;
 }
 
+/* Текст подсказки (появляется при наведении) */
 .tooltip-icon:hover::after {
     content: attr(data-tooltip);
     position: absolute;
@@ -96,16 +96,16 @@
     font-weight: normal;
     padding: 10px 14px;
     border-radius: 8px;
-    white-space: nowrap;
-    z-index: 100;
-    margin-bottom: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     white-space: normal;
     width: 300px;
     text-align: left;
     line-height: 1.4;
+    z-index: 100;
+    margin-bottom: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
+/* Треугольник (хвостик) подсказки */
 .tooltip-icon:hover::before {
     content: '';
     position: absolute;

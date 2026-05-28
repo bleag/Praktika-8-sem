@@ -1,5 +1,6 @@
-/* шапка, подвал, контейнеры, навигация */
-/* Подвал */
+/* layout.css — шапка, подвал, навигация, контейнеры */
+
+/* ПОДВАЛ */
 .footer {
     background-color: #1F2937;
     color: white;
@@ -27,7 +28,7 @@
     font-size: 14px;
 }
 
-/* ========== ШАПКА ========== */
+/* ШАПКА */
 .header-new {
     background: white;
     border-bottom: 1px solid var(--gray-border);
@@ -37,6 +38,7 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
+/* Внутренний контейнер шапки */
 .header-new__inner {
     display: flex;
     align-items: center;
@@ -46,7 +48,7 @@
     flex-wrap: wrap;
 }
 
-/* Логотип */
+/* ЛОГОТИП */
 .logo__link {
     font-size: 26px;
     font-weight: 800;
@@ -67,7 +69,7 @@
     -webkit-text-fill-color: transparent;
 }
 
-/* Навигация */
+/* НАВИГАЦИЯ */
 .nav {
     display: flex;
     align-items: center;
@@ -88,6 +90,7 @@
     color: #1e40af;
 }
 
+/* Анимированное подчёркивание ссылок */
 .nav__link::after {
     content: '';
     position: absolute;
@@ -103,7 +106,6 @@
     width: 100%;
 }
 
-/* Правая часть */
 .header-actions {
     display: flex;
     align-items: center;
@@ -116,7 +118,7 @@
     margin-right: 10px;
 }
 
-/* Адаптив для шапки */
+/* АДАПТИВ ДЛЯ ШАПКИ (МОБИЛЬНЫЕ УСТРОЙСТВА) */
 @media (max-width: 768px) {
     .header-new__inner {
         flex-direction: column;
@@ -140,7 +142,7 @@
     }
 }
 
-/* Стили кнопок ТОЛЬКО для шапки (переопределяют общие) */
+/* КНОПКИ ТОЛЬКО ДЛЯ ШАПКИ */
 .header-new .btn-primary {
     background: linear-gradient(90deg, #2563eb, #1e40af);
     color: white;

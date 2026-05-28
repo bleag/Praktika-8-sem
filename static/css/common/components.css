@@ -1,4 +1,5 @@
-/* Кнопки */
+/* ОСНОВНЫЕ КНОПКИ (универсальные) */
+/* Базовая кнопка */
 .btn {
     display: inline-block;
     padding: 12px 24px;
@@ -11,7 +12,7 @@
     text-decoration: none;
 }
 
-/* Большая кнопка */
+/* Крупная кнопка (на всю ширину) */
 .btn-large {
     width: 100%;
     padding: 16px 24px;
@@ -24,15 +25,28 @@
     cursor: pointer;
 }
 
-.btn-blue { background: linear-gradient(90deg, #2563eb, #1e40af); }
-.btn-purple { background: linear-gradient(90deg, #8b5cf6, #7c3aed); }
-.btn-green { background: linear-gradient(90deg, #22c55e, #16a34a); }
-
-.btn-large:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+/* Цветные градиенты для кнопок */
+.btn-blue {
+    background: linear-gradient(90deg, #2563eb, #1e40af);
+}
+.btn-purple {
+    background: linear-gradient(90deg, #8b5cf6, #7c3aed);
+}
+.btn-green {
+    background: linear-gradient(90deg, #22c55e, #16a34a);
+}
+.btn-orange {
+    background: linear-gradient(90deg, #f59e0b, #ea580c);
+}
+.btn-red {
+    background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+.btn-yellow {
+    background: linear-gradient(90deg, #fbbf24, #d97706);
+    color: #1e293b;
 }
 
+/* Кнопки с обводкой */
 .btn-outline {
     background: transparent;
     border: 1px solid var(--gray-border);
@@ -42,12 +56,12 @@
     text-decoration: none;
     margin-left: 12px;
 }
-
 .btn-outline:hover {
     border-color: var(--sovcombank-blue);
     color: var(--sovcombank-blue);
 }
 
+/* Кнопка-ссылка (как текст) */
 .btn-link {
     background: none;
     border: none;
@@ -56,10 +70,27 @@
     font-size: 16px;
     text-decoration: underline;
 }
-
 .btn-link:hover {
     color: var(--sovcombank-red);
 }
+
+/* Эффект при наведении на крупные кнопки */
+.btn-large:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+}
+
+/* Отключённые кнопки (общее) */
+.btn:disabled,
+.btn-green:disabled,
+.btn-blue:disabled,
+.btn-orange:disabled,
+.btn-yellow:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* 2. СПЕЦИФИЧНЫЕ КНОПКИ ПО НАЗНАЧЕНИЮ */
 
 /* Кнопка "Создать квиз" */
 .btn-create {
@@ -73,14 +104,13 @@
     cursor: pointer;
     transition: all 0.3s ease;
 }
-
 .btn-create:hover {
     background: transparent;
     color: white;
     transform: scale(1.05);
 }
 
-/* Кнопка .btn-primary (используется в шапке и других местах) */
+/* Первичная кнопка (используется в шапке и формах) */
 .btn-primary {
     background-color: var(--sovcombank-blue);
     color: white;
@@ -91,16 +121,11 @@
     font-size: 14px;
     transition: background 0.3s;
 }
-
 .btn-primary:hover {
     background-color: var(--blue-light);
 }
 
-/* Специальная кнопка в шапке .btn-primary (можно переопределить, но оставим общий стиль) 
-   Если нужны уникальные стили именно для шапки, они уже есть в layout.css 
-   ( .header-new .btn-primary ) – это более специфичный селектор, он перекроет общий. */
-
-/* Кнопка .btn-outline-new (используется в шапке и других местах) */
+/* Кнопка с обводкой (новая версия) */
 .btn-outline-new {
     background: transparent;
     border: 1px solid var(--gray-border);
@@ -112,57 +137,68 @@
     font-size: 14px;
     transition: all 0.3s;
 }
-
 .btn-outline-new:hover {
     border-color: var(--sovcombank-blue);
     color: var(--sovcombank-blue);
 }
 
-/* Активная кнопка в шапке */
+/* Активное состояние кнопки в шапке */
 .btn-outline.active {
     border-color: var(--sovcombank-blue);
     color: var(--sovcombank-blue);
     background-color: rgba(1, 55, 145, 0.1);
 }
 
-/* Дополнительные цветовые варианты кнопок */
-.btn-green {
-    background: #4CAF50;
+/* Маленькая кнопка (универсальная) */
+.btn-small {
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(90deg, #2563eb, #1e40af);
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+.btn-small:hover {
+    transform: translateY(-1px);
+}
+
+/* Кнопка для копирования */
+.btn-copy {
+    background: var(--gray-light);
+    border: 1px solid var(--gray-border);
+}
+.btn-copy:hover {
+    background: var(--gray-border);
+}
+
+/* Кнопка (для ведущего) */
+.btn-master {
+    background: #9C27B0;
     color: white;
 }
-
-.btn-green:hover {
-    background: #45a049;
+.btn-master:hover {
+    background: #7B1FA2;
 }
 
-.btn-orange {
-    background: #FF9800;
+/* Кнопка для статистики */
+.btn-stats {
+    background: #9C27B0;
     color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 12px;
+    display: inline-block;
+}
+.btn-stats:hover {
+    background: #7B1FA2;
 }
 
-.btn-orange:hover {
-    background: #e68900;
-}
+/* 3. МОДАЛЬНЫЕ ОКНА */
 
-.btn-yellow {
-    background: #FFC107;
-    color: #333;
-}
-
-.btn-yellow:hover {
-    background: #e0a800;
-}
-
-/* Общее для disabled-кнопок */
-.btn-green:disabled, 
-.btn-blue:disabled, 
-.btn-orange:disabled, 
-.btn-yellow:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-/* ========== МОДАЛЬНОЕ ОКНО ========== */
 .modal {
     position: fixed;
     top: 0;
@@ -210,7 +246,8 @@
     justify-content: flex-end;
 }
 
-/* ========== ПУСТОЕ СОСТОЯНИЕ (ОБЩИЙ КОМПОНЕНТ) ========== */
+/* 4. ПУСТОЕ СОСТОЯНИЕ */
+
 .empty-state {
     text-align: center;
     padding: 80px 40px;
@@ -237,42 +274,16 @@
     margin-bottom: 25px;
 }
 
-/* Дополнительные кнопки и утилиты */
-.btn-small {
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 13px;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-block;
-    border: none;
-}
+/* 5. УТИЛИТЫ И ВСПОМОГАТЕЛЬНЫЕ КЛАССЫ */
 
-.btn-copy {
-    background: var(--gray-light);
-    border: 1px solid var(--gray-border);
-}
-
-.btn-copy:hover {
-    background: var(--gray-border);
-}
-
-.btn-master {
-    background: #9C27B0;
-    color: white;
-}
-.btn-master:hover {
-    background: #7B1FA2;
-}
-
-/* Анимация пульсации (общая) */
+/* Анимация */
 @keyframes pulse {
     0% { opacity: 1; }
     50% { opacity: 0.6; }
     100% { opacity: 1; }
 }
 
-/* Общий класс для ника (если используется в нескольких местах) */
+/* Поле ввода ника (общее) */
 .nickname-input {
     padding: 12px;
     width: 250px;
@@ -282,42 +293,20 @@
     text-align: center;
 }
 
+/* Сообщение ожидания */
 .waiting-message {
     padding: 30px;
     text-align: center;
 }
 
+/* Блок результата (очки) */
 .result-score {
     font-size: 48px;
     color: var(--sovcombank-red);
     margin: 20px 0;
 }
 
-/* Дополнительные кнопки статистики и мастер */
-.btn-stats {
-    background: #9C27B0;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 12px;
-    display: inline-block;
-}
-.btn-stats:hover {
-    background: #7B1FA2;
-}
-
-/* Переопределение .btn-small (если уже есть, дополнить) */
-.btn-small {
-    padding: 5px 12px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    background: linear-gradient(90deg, #2563eb, #1e40af);
-    color: white;
-}
-
-/* Уведомления (toast) */
+/* Уведомления */
 .toast-notification {
     position: fixed;
     top: 20px;
