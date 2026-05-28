@@ -756,3 +756,167 @@
 #questionsList .empty-questions {
     color: white !important;
 }
+
+/* ========== КНОПКИ РЕДАКТИРОВАНИЯ И УДАЛЕНИЯ ВОПРОСОВ ========== */
+
+/* Все кнопки в списке вопросов */
+#questionsList button,
+.question-item button,
+.question-item__actions button {
+    background: #e2e8f0 !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 6px 12px !important;
+    margin-left: 8px !important;
+    cursor: pointer !important;
+    font-size: 14px !important;
+    transition: all 0.2s ease !important;
+    color: #1e293b !important;
+}
+
+/* Ховер для кнопки редактирования (карандаш) */
+#questionsList button:first-child:hover,
+.question-item button:first-child:hover {
+    background: #2563eb !important;
+    color: white !important;
+    transform: translateY(-2px);
+}
+
+/* Ховер для кнопки удаления (корзина) */
+#questionsList button:last-child:hover,
+.question-item button:last-child:hover {
+    background: #ef4444 !important;
+    color: white !important;
+    transform: translateY(-2px);
+}
+
+/* ========== ПОЛУПРОЗРАЧНЫЕ БЛОКИ НАСТРОЕК ========== */
+
+/* Блоки настроек (ЧТО, КОГДА, ДЛЯ КОГО, КАК) */
+.settings-section {
+    background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 24px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Подблоки (Перезапуск игры, Система подсчёта баллов, Сложность и порядок) */
+.sub-block {
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+/* Заголовки секций */
+.settings-section .section-title {
+    color: white !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Описание секций */
+.section-desc {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Подзаголовки */
+.subsection-title {
+    color: #fbbf24 !important;
+}
+
+/* Подзаголовки в подблоках */
+.sub-block__title {
+    color: white !important;
+    border-bottom-color: #fbbf24 !important;
+}
+
+/* Текст меток (label) */
+.form-group label,
+.checkbox-label,
+.radio-label {
+    color: white !important;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+/* Поля ввода */
+.form-input, .form-textarea, select.form-input {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 16px !important;
+    color: #1e293b !important;
+}
+
+.form-input:focus, .form-textarea:focus {
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3) !important;
+}
+
+/* Подсказки (form-hint) */
+.form-hint {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Счётчики символов */
+.char-counter {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Чекбоксы и радио – сохраняем видимость */
+.checkbox-label input,
+.radio-label input {
+    accent-color: #2563eb;
+}
+
+/* Баннер тарифа */
+.tariff-banner {
+    background: rgba(0, 0, 0, 0.3) !important;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    color: white !important;
+}
+
+.tariff-banner p {
+    color: white !important;
+}
+
+.tariff-banner strong {
+    color: #fbbf24 !important;
+}
+
+/* Полупрозрачный блок с вкладками */
+.editor-sidebar {
+    background: rgba(255, 255, 255, 0.5) !important;
+    backdrop-filter: blur(10px);
+    border-right: none !important;
+}
+
+/* ========== ЦВЕТА ЗАГОЛОВКОВ В МОДАЛЬНОМ ОКНЕ ========== */
+
+/* Заголовки полей (Текст вопроса, Тип вопроса, Баллы и т.д.) */
+#questionModal .modal-body label {
+    color: #1e293b !important;
+    font-weight: 600 !important;
+}
+
+/* Заголовок "Варианты ответов" */
+#choiceBlock label,
+#pollBlock label {
+    color: #1e293b !important;
+    font-weight: 600 !important;
+}
+
+/* Текст внутри модального окна */
+#questionModal .modal-body {
+    color: #1e293b;
+}
+
+/* Подсказки (form-hint) в модалке */
+#questionModal .form-hint {
+    color: #64748b !important;
+}

@@ -283,3 +283,401 @@
 .team-play-container .control-card {
     margin-bottom: 20px;
 }
+
+/* ========== ГРАДИЕНТНЫЙ ФОН ДЛЯ ПАНЕЛИ ВЕДУЩЕГО ========== */
+
+/* Основной фон страницы */
+.quizmaster-container,
+body:has(.quizmaster-container) .main {
+    background: linear-gradient(135deg, #1e3a8a 0%, #312e81 60%, #7f1d1d 100%);
+    min-height: 100vh;
+}
+
+/* Заголовок "Панель ведущего" */
+.quizmaster-header h1 {
+    color: white !important;
+    font-size: 36px;
+    font-weight: 700;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    margin-bottom: 10px;
+}
+
+/* Название викторины */
+.quizmaster-header h2 {
+    color: #fbbf24 !important;  /* золотистый цвет */
+    font-size: 28px;
+    font-weight: 600;
+    background: rgba(0, 0, 0, 0.3);
+    display: inline-block;
+    padding: 8px 24px;
+    border-radius: 50px;
+    backdrop-filter: blur(4px);
+    margin-top: 10px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Код викторины */
+.quiz-code-box {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(4px);
+    border: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.quiz-code-box strong {
+    color: #1e40af;
+    font-size: 32px;
+}
+
+.quiz-code-box span {
+    color: #1e293b;
+    font-weight: 500;
+}
+
+/* Карточки управления и игроков – белые с прозрачностью */
+.control-card, .players-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(2px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 24px;
+}
+
+/* Заголовки карточек */
+.control-card h3, .players-card h3 {
+    color: #1e40af;
+    border-bottom-color: #ef4444;
+}
+
+/* Статус игры */
+.game-status {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.status-label {
+    color: #1e293b;
+}
+
+/* Кнопки управления – яркие */
+.control-buttons .btn-green,
+.control-buttons .btn-red,
+.control-buttons .btn-yellow,
+.control-buttons .btn-purple {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.control-buttons .btn-green:hover,
+.control-buttons .btn-red:hover,
+.control-buttons .btn-yellow:hover,
+.control-buttons .btn-purple:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Список игроков */
+.player-item {
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 12px;
+    margin-bottom: 6px;
+    padding: 10px 12px;
+}
+
+.player-name {
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.player-score {
+    color: #1e40af;
+    font-weight: 700;
+}
+
+/* Адаптив */
+@media (max-width: 768px) {
+    .quizmaster-header h1 {
+        font-size: 28px;
+    }
+    .quizmaster-header h2 {
+        font-size: 22px;
+        padding: 6px 18px;
+    }
+    .quiz-code-box strong {
+        font-size: 24px;
+    }
+}
+
+/* ========== УЛУЧШЕНИЯ ДЛЯ ПАНЕЛИ ВЕДУЩЕГО ========== */
+
+/* Размещаем заголовок и код на разных строках */
+.quizmaster-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+/* Название викторины – на отдельной строке */
+.quizmaster-header h2 {
+    color: #fbbf24 !important;
+    font-size: 28px;
+    font-weight: 600;
+    background: rgba(0, 0, 0, 0.3);
+    display: inline-block;
+    padding: 8px 24px;
+    border-radius: 50px;
+    backdrop-filter: blur(4px);
+    margin: 15px auto 10px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    width: fit-content;
+}
+
+/* Код игры – на отдельной строке, под названием */
+.quiz-code-box {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(4px);
+    border: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    display: inline-flex;
+    margin: 10px auto;
+}
+
+/* Кнопка "← Назад к викторинам" – светлая и читаемая */
+.back-link {
+    display: inline-block;
+    margin-top: 30px;
+    padding: 10px 24px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white !important;
+    text-decoration: none;
+    border-radius: 40px;
+    font-weight: 500;
+    transition: all 0.2s;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.back-link:hover {
+    background: rgba(255, 255, 255, 0.35);
+    color: white !important;
+    transform: translateX(-4px);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.quizmaster-actions .btn-outline-new,
+.quizmaster-actions a.btn-outline-new {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    padding: 10px 24px !important;
+    border-radius: 40px !important;
+}
+
+.quizmaster-actions .btn-outline-new:hover,
+.quizmaster-actions a.btn-outline-new:hover {
+    background: rgba(255, 255, 255, 0.35) !important;
+    color: white !important;
+    transform: translateX(-4px);
+    border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* ========== КНОПКИ УПРАВЛЕНИЯ (СТАРТ, ПАУЗА, ВОЗОБНОВИТЬ, ЗАВЕРШИТЬ, ПЕРЕЗАПУСТИТЬ) ========== */
+
+.control-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.control-buttons .btn,
+.control-buttons button {
+    padding: 10px 20px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    border-radius: 40px !important;
+    border: none !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    min-width: 110px !important;
+    text-align: center !important;
+}
+
+/* Кнопка СТАРТ (зелёная) */
+.control-buttons .btn-green,
+#startGameBtn {
+    background: linear-gradient(90deg, #22c55e, #16a34a) !important;
+    color: white !important;
+}
+
+/* Кнопка ПАУЗА (жёлтая) */
+.control-buttons .btn-yellow,
+#pauseGameBtn {
+    background: linear-gradient(90deg, #f59e0b, #d97706) !important;
+    color: white !important;
+}
+
+/* Кнопка ВОЗОБНОВИТЬ (тоже зелёная) */
+#resumeGameBtn {
+    background: linear-gradient(90deg, #22c55e, #16a34a) !important;
+    color: white !important;
+}
+
+/* Кнопка ЗАВЕРШИТЬ (красная) */
+.control-buttons .btn-red,
+#stopGameBtn {
+    background: linear-gradient(90deg, #ef4444, #dc2626) !important;
+    color: white !important;
+}
+
+/* Кнопка ПЕРЕЗАПУСТИТЬ (фиолетовая) */
+.control-buttons .btn-purple,
+#replayGameBtn {
+    background: linear-gradient(90deg, #8b5cf6, #7c3aed) !important;
+    color: white !important;
+}
+
+/* Ховер эффект для всех кнопок */
+.control-buttons .btn:hover,
+.control-buttons button:hover {
+    transform: translateY(-2px) !important;
+    filter: brightness(1.05);
+}
+
+/* Отключённые кнопки */
+.control-buttons .btn:disabled,
+.control-buttons button:disabled {
+    opacity: 0.5 !important;
+    transform: none !important;
+    cursor: not-allowed !important;
+}
+
+.control-buttons .btn,
+.control-buttons button {
+    flex: 0 0 auto;
+    width: auto !important;
+    max-width: 140px !important;
+}
+
+/* ========== КНОПКИ УПРАВЛЕНИЯ (ДЛЯ ВСЕХ РЕЖИМОВ) ========== */
+
+.control-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.control-buttons .btn,
+.control-buttons button,
+#startGameBtn,
+#pauseGameBtn,
+#resumeGameBtn,
+#stopGameBtn,
+#replayGameBtn {
+    width: 130px !important;
+    min-width: 130px !important;
+    height: 40px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    border-radius: 40px !important;
+    padding: 0 8px !important;
+    border: none !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Цвета кнопок */
+#startGameBtn, .btn-green, #resumeGameBtn {
+    background: linear-gradient(90deg, #22c55e, #16a34a) !important;
+    color: white !important;
+}
+
+#pauseGameBtn, .btn-yellow {
+    background: linear-gradient(90deg, #f59e0b, #d97706) !important;
+    color: white !important;
+}
+
+#stopGameBtn, .btn-red {
+    background: linear-gradient(90deg, #ef4444, #dc2626) !important;
+    color: white !important;
+}
+
+#replayGameBtn, .btn-purple {
+    background: linear-gradient(90deg, #8b5cf6, #7c3aed) !important;
+    color: white !important;
+}
+
+/* Ховер */
+#startGameBtn:hover, .btn-green:hover,
+#pauseGameBtn:hover, .btn-yellow:hover,
+#stopGameBtn:hover, .btn-red:hover,
+#replayGameBtn:hover, .btn-purple:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.05);
+}
+
+/* Отключённые кнопки */
+#startGameBtn:disabled, .btn-green:disabled,
+#pauseGameBtn:disabled, .btn-yellow:disabled,
+#stopGameBtn:disabled, .btn-red:disabled,
+#replayGameBtn:disabled, .btn-purple:disabled {
+    opacity: 0.5;
+    transform: none;
+    cursor: not-allowed;
+}
+
+/* Специально для "Перезапустить" – чуть меньше шрифт */
+#replayGameBtn, .btn-purple {
+    font-size: 12px !important;
+    letter-spacing: -0.3px;
+}
+
+/* ========== ФИКС ДЛЯ КОМАНДНОГО РЕЖИМА (team_leader.html) ========== */
+
+/* Выравниваем все кнопки в командном режиме */
+.quizmaster-container .control-buttons button,
+.control-buttons .btn,
+.control-buttons button {
+    width: 130px !important;
+    min-width: 130px !important;
+    max-width: 130px !important;
+    height: 40px !important;
+    font-size: 14px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    vertical-align: middle !important;
+    line-height: 40px !important;
+}
+
+/* Фиолетовая кнопка (Перезапустить) – шрифт 12px */
+.quizmaster-container .control-buttons .btn-purple,
+.quizmaster-container #replayGameBtn {
+    font-size: 12px !important;
+    letter-spacing: -0.3px;
+}
+
+/* Убираем возможные отступы у контейнера */
+.quizmaster-container .control-buttons {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;  /* ← ИСПРАВЛЕНО: было 10px, теперь 12px */
+    align-items: center !important;
+    justify-content: flex-start !important;
+}
+
+/* Конкретно для кнопки "Старт игры" */
+.quizmaster-container #startGameBtn,
+.quizmaster-container .btn-green {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    transform: none !important;
+}
+
+/* ========== ЕДИНОЕ ПРАВИЛО ДЛЯ ВСЕХ РЕЖИМОВ ========== */
+.control-buttons {
+    gap: 12px !important;
+    justify-content: flex-start !important;
+}
