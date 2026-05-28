@@ -10,53 +10,542 @@
 <div class="game-container">
     <h1>{{ quiz.title }}</h1>
 
+    <!-- JOIN SCREEN -->
     <div id="joinScreen" class="game-panel">
         <h3>Введите ваш никнейм</h3>
-        <div id="passwordField" style="display: none;">
-            <input type="password" id="passwordInput" placeholder="Пароль">
+                       
+        <input type="text" id="nicknameInput" class="form-input" placeholder="Ваш никнейм" maxlength="30" style="width: 100%; margin-bottom: 15px;">
+        <div id="passwordField" style="display: none; margin: 15px 0;">
+            <h3>Введите пароль доступа</h3>
+            <input type="password" id="passwordInput" class="form-input" placeholder="Пароль" maxlength="30" style="width: 100%; margin-bottom: 15px;">
         </div>
-        <input type="text" id="nicknameInput" placeholder="Никнейм">
-        <button id="joinGameBtn">Присоединиться</button>
+        <button id="joinGameBtn" class="btn btn-blue" style="width: 100%;">Присоединиться</button>
     </div>
 
+    <!-- WAITING -->
     <div id="waitingScreen" class="game-panel" style="display: none;">
-        <h2>Ожидание начала...</h2>
-        <p>Вы <strong id="playerNickname"></strong></p>
-        <p>Старт: <span id="startDateTimeText"></span></p>
+        <h2>Ожидание начала игры...</h2>
+        <p>Ник: <strong id="playerNickname"></strong></p>
+        <p id="startDateTimeText"></p>
     </div>
 
+    <!-- GAME SCREEN -->
     <div id="gameScreen" class="game-panel" style="display: none;">
         <div class="game-header">
             <div>
                 <span>Вопрос <span id="currentQ">1</span>/<span id="totalQ">0</span></span>
-                <span id="roundBadge" class="round-badge" style="display: none; margin-left: 15px;"><span id="roundName"></span></span>
+                <span id="roundBadge" class="round-badge" style="display: none;"><span id="roundName"></span></span>
             </div>
             <span><span id="score">0</span> баллов</span>
         </div>
-        <h3 id="questionText"></h3>
-        <div id="optionsDiv"></div>
+
+        <h2 id="questionText" class="question-text" style="margin: 10px 10px 10px 0px;"></h2>
+        <div id="optionsDiv" class="options-list"></div>
         <div id="timerDiv" class="timer"></div>
-        <div id="resultBlock" style="display: none; margin-top: 20px; padding: 15px; border-radius: 12px;"></div>
+        <div id="resultBlock" style="display: none; margin-top: 20px; padding: 15px; border-radius: 12px; text-align: center;"></div>
     </div>
 
+    <!-- RESULT SCREEN -->
     <div id="resultScreen" class="game-panel" style="display: none;">
-        <h2>Ваш результат</h2>
-        <div id="playerResult">
-            <div id="resultPlayerName"></div>
-            <div id="resultScore"></div>
-            <div id="resultPlace"></div>
+        <h2>Игра окончена!</h2>
+        <div class="player-result">
+            <div class="player-name-large" id="resultName"></div>
+            <div class="player-stats">
+                <span id="resultScore" class="result-score-value">0</span>
+                <span>баллов</span>
+            </div>
         </div>
-        <div id="leaderboardSection">
+        <div id="leaderboardSection" style="margin-bottom: 30px;">
             <h3>Таблица лидеров</h3>
-            <div id="leaderboardList"></div>
+            <div id="leaderboardList" class="leaderboard-list"></div>
         </div>
-        <a href="/">На главную</a>
+        <a href="/" class="btn-outline-new">На главную</a>
     </div>
-    <!-- Toast уведомления -->
-    <div id="toast" class="toast-notification">
-        <div id="toast-message"></div>
-    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast-notification"><div id="toast-message"></div></div>
 </div>
+
+<script>
+const quizCode = '{{ quiz.quiz_code }}';
+let nickname = null;
+let intervalId = null;
+let currentQuestionIndex = -1;
+let totalScore = 0;
+let hasAnswered = false;
+let pointsPerQuestion = 100;
+let awaitingResult = false;
+let selectedAnswer = null;
+let countdownInterval = null;
+let timeShowAnswer = 10;
+let randomOptions = false;     
+let currentQuestion = null;     
+
+// === Вспомогательные функции ===
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showToast(message, type = 'error') {
+    const toast = document.getElementById('toast');
+    const msgDiv = document.getElementById('toast-message');
+    msgDiv.textContent = message;
+    toast.className = `toast-notification ${type}`;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 4000);
+}
+
+// === Проверка пароля ===
+async function checkNeedPassword() {
+    try {
+        const res = await fetch(`/api/quizmaster/${quizCode}/status`);
+        const data = await res.json();
+        if (data.need_password) {
+            document.getElementById('passwordField').style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Ошибка проверки пароля:', error);
+    }
+}
+checkNeedPassword();
+
+// === Присоединение ===
+document.getElementById('joinGameBtn').onclick = async () => {
+    nickname = document.getElementById('nicknameInput').value.trim();
+    const password = document.getElementById('passwordInput')?.value || '';
+    if (!nickname) {
+        showToast('Введите никнейм', 'error');
+        return;
+    }
+    const res = await fetch(`/api/quizmaster/${quizCode}/join`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ nickname, password })
+    });
+    const data = await res.json();
+    if (data.success) {
+        document.getElementById('joinScreen').style.display = 'none';
+        document.getElementById('waitingScreen').style.display = 'block';
+        document.getElementById('playerNickname').innerText = nickname;
+        startPolling();
+    } else {
+        showToast(data.error || 'Ошибка присоединения', 'error');
+    }
+};
+
+// === POLLING (основной цикл) ===
+function startPolling() {
+    intervalId = setInterval(async () => {
+        const res = await fetch(`/api/quizmaster/${quizCode}/status?nickname=${encodeURIComponent(nickname)}`);
+        const data = await res.json();
+        if (!data.success) return;
+
+        pointsPerQuestion = data.points_per_question || 100;
+        timeShowAnswer = data.time_show_answer || 10;
+        randomOptions = data.random_options || false;
+
+        if (data.start_datetime && data.status !== 'active') {
+            document.getElementById('startDateTimeText').innerText = data.start_datetime;
+        }
+
+        if (data.status === 'active') {
+            document.getElementById('waitingScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+
+            // Отображение раунда
+            if (data.current_question && data.current_question.round_name) {
+                document.getElementById('roundBadge').style.display = 'inline-block';
+                document.getElementById('roundName').innerText = data.current_question.round_name;
+            } else {
+                document.getElementById('roundBadge').style.display = 'none';
+            }
+
+            // Новый вопрос
+            if (currentQuestionIndex !== data.question_index) {
+                currentQuestionIndex = data.question_index;
+                hasAnswered = false;
+                awaitingResult = false;
+                selectedAnswer = null;
+                document.getElementById('resultBlock').style.display = 'none';
+                currentQuestion = data.current_question;
+                renderQuestion(data);
+            }
+
+            // Таймер
+            if (data.time_left !== null && !awaitingResult) {
+                const timerDiv = document.getElementById('timerDiv');
+                timerDiv.innerHTML = `⏱ ${data.time_left} сек`;
+                timerDiv.style.display = 'block';
+                timerDiv.style.color = data.time_left <= 5 ? '#f44336' : '#2196F3';
+            }
+
+            // Показать результат вопроса (после окончания времени)
+            if (data.show_answer && !awaitingResult) {
+                awaitingResult = true;
+                document.getElementById('timerDiv').style.display = 'none';
+                showAnswerResult(data);
+            }
+        } else if (data.status === 'finished') {
+            clearInterval(intervalId);
+            document.getElementById('gameScreen').style.display = 'none';
+            showResults(data);
+        }
+    }, 500);
+}
+
+// === ОТПРАВКА ОТВЕТА (универсальная) ===
+async function sendAnswer(answer, answerType = 'text') {
+    if (hasAnswered) return;
+    hasAnswered = true;
+    selectedAnswer = answer;
+
+    // Для творческих заданий можно отправить упрощённый текст
+    let payloadAnswer = answer;
+    if (answerType === 'draw') payloadAnswer = 'Рисунок отправлен';
+    if (answerType === 'dance') payloadAnswer = 'Танец выполнен';
+    if (answerType === 'slide') payloadAnswer = 'Слайд просмотрен';
+    if (answerType === 'wordcloud') payloadAnswer = 'Облако слов';
+
+    await fetch(`/api/quizmaster/${quizCode}/answer`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ nickname, answer: payloadAnswer })
+    });
+
+    // Заблокировать интерфейс
+    disableInputs();
+}
+
+function disableInputs() {
+    document.querySelectorAll('.option-btn, .open-input, .wordcloud-input, .draw-btn, .dance-btn, .slide-btn, #openSubmitBtn, #wordcloudSubmitBtn, #submitDrawBtn, #submitDanceBtn, #slideContinueBtn')
+        .forEach(el => {
+            if (el) el.disabled = true;
+        });
+}
+
+// === РЕНДЕРЫ РАЗНЫХ ТИПОВ ВОПРОСОВ ===
+function renderChoiceQuestion(q) {
+    let opts = [...(q.options || [])];
+    if (randomOptions) opts.sort(() => Math.random() - 0.5);
+    const container = document.getElementById('optionsDiv');
+    container.innerHTML = '';
+    opts.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.textContent = opt;
+        btn.className = 'option-btn';
+        btn.onclick = () => sendAnswer(opt, 'choice');
+        container.appendChild(btn);
+    });
+}
+
+function renderOpenQuestion(q) {
+    const container = document.getElementById('optionsDiv');
+    container.innerHTML = `
+        <input type="text" id="openInput" class="form-input open-input" placeholder="Ваш ответ...">
+        <button id="openSubmitBtn" class="btn btn-blue" style="width:100%; margin-top:15px;">Ответить</button>
+    `;
+    document.getElementById('openSubmitBtn').onclick = () => {
+        const answer = document.getElementById('openInput').value.trim();
+        if (!answer) {
+            showToast('Введите ответ', 'error');
+            return;
+        }
+        sendAnswer(answer, 'open');
+    };
+}
+
+function renderPollQuestion(q) {
+    const container = document.getElementById('optionsDiv');
+    container.innerHTML = '';
+    (q.options || []).forEach(opt => {
+        const btn = document.createElement('button');
+        btn.textContent = opt;
+        btn.className = 'option-btn';
+        btn.onclick = () => sendAnswer(opt, 'poll');
+        container.appendChild(btn);
+    });
+}
+
+function renderWordcloudQuestion(q) {
+    const container = document.getElementById('optionsDiv');
+    container.innerHTML = `
+        <p style="color:#555; margin-bottom:10px;">Напишите слова/ассоциации (через запятую)</p>
+        <input type="text" id="wordcloudInput" class="form-input wordcloud-input" placeholder="например: космос, звезда, ракета" style=" margin-top: 5px; &quot;&quot;; margin-bottom: 10px; width: 100%; padding: 10px 10px 10px 10px;">
+        <button id="wordcloudSubmitBtn" class="btn btn-blue" style="width:100%; margin-top:12px;">Отправить</button>
+        <div id="wordcloudPreview" style="margin-top:25px; min-height:100px; text-align:center; padding:15px; background:#f8fafc; border-radius:12px;"></div>
+    `;
+    document.getElementById('wordcloudSubmitBtn').onclick = () => {
+        const input = document.getElementById('wordcloudInput').value.trim();
+        if (!input) return;
+        const words = input.split(',').map(w => w.trim()).filter(w => w.length > 0);
+        if (words.length < 1) {
+            showToast('Введите хотя бы одно слово', 'error');
+            return;
+        }
+        let html = '<div style="display:flex; flex-wrap:wrap; gap:14px; justify-content:center;">';
+        words.forEach(word => {
+            const size = 24 + Math.random() * 20;
+            const color = `hsl(${Math.random()*50 + 210}, 75%, 45%)`;
+            html += `<span style="font-size:${size}px; font-weight:700; color:${color};">${escapeHtml(word)}</span>`;
+        });
+        html += '</div>';
+        document.getElementById('wordcloudPreview').innerHTML = html;
+        sendAnswer(input, 'wordcloud');
+    };
+}
+
+let canvas = null, ctx = null;
+function isCanvasBlank(canvas) {
+    const context = canvas.getContext('2d');
+    const pixelBuffer = new Uint32Array(
+        context.getImageData(0, 0, canvas.width, canvas.height).data.buffer
+    );
+    return !pixelBuffer.some(color => color !== 0);
+}
+
+function renderDrawQuestion(q) {
+    const task = q.additional_data?.task || q.text || 'Нарисуйте что-то';
+    const container = document.getElementById('optionsDiv');
+    container.innerHTML = `
+        <p style="margin-bottom:12px; font-weight:500;">${escapeHtml(task)}</p>
+        <canvas id="drawCanvas" width="720" height="460" 
+                style="width:100%; border:3px solid #e5e7eb; border-radius:16px; background:#fafafa; touch-action:none;"></canvas>
+        <div style="margin-top:18px; text-align:center;">
+            <button id="clearCanvasBtn" class="btn-outline-new">Очистить</button>
+            <button id="submitDrawBtn" class="btn btn-blue" style="margin-left:12px;">Я нарисовал</button>
+            <button id="skipDrawBtn" class="btn-outline-new" style="margin-left:12px;">Пропустить</button>
+        </div>
+    `;
+    initCanvas();
+    
+    // Исправленный обработчик для кнопки "Я нарисовал"
+    document.getElementById('submitDrawBtn').onclick = () => {
+        if (isCanvasBlank(canvas)) {
+            showToast('Нарисуйте что-нибудь перед отправкой', 'error');
+            return;
+        }
+        sendAnswer('drawing_submitted', 'draw');
+    };
+    
+    document.getElementById('clearCanvasBtn').onclick = () => ctx.clearRect(0, 0, canvas.width, canvas.height);
+    document.getElementById('skipDrawBtn').onclick = () => {
+    if (hasAnswered) return;
+    hasAnswered = true;
+    selectedAnswer = null;
+    disableInputs();
+    showToast('Вы пропустили задание', 'info');
+};
+}
+
+function initCanvas() {
+    canvas = document.getElementById('drawCanvas');
+    if (!canvas) return;
+    ctx = canvas.getContext('2d');
+    ctx.lineWidth = 6;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#1e40af';
+    let drawing = false;
+    function startDraw(e) { drawing = true; draw(e); }
+    function endDraw() { drawing = false; ctx.beginPath(); }
+    function draw(e) {
+        if (!drawing) return;
+        e.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX || (e.touches?.[0]?.clientX)) - rect.left;
+        const y = (e.clientY || (e.touches?.[0]?.clientY)) - rect.top;
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+    }
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mouseup', endDraw);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('touchstart', startDraw);
+    canvas.addEventListener('touchend', endDraw);
+    canvas.addEventListener('touchmove', draw);
+}
+
+function renderDanceQuestion(q) {
+    const task = q.additional_data?.task || 'Выполните танцевальное задание';
+    const container = document.getElementById('optionsDiv');
+    container.innerHTML = `
+        <p style="font-size:18px; font-weight:500;">${escapeHtml(task)}</p>
+        <div style="background:#f8fafc; padding:40px; border-radius:16px; text-align:center; margin:20px 0; border:2px dashed #cbd5e1;">
+        </div>
+        <button id="submitDanceBtn" class="btn btn-blue" style="width:100%;">Я выполнил(а)</button>
+        <button id="skipDanceBtn" class="btn-outline-new" style="width:100%; margin-top:10px;">Пропустить</button>
+    `;
+    document.getElementById('submitDanceBtn').onclick = () => sendAnswer('dance_completed', 'dance');
+    document.getElementById('skipDanceBtn').onclick = () => {
+        if (hasAnswered) return;
+        hasAnswered = true;
+        selectedAnswer = null;
+        disableInputs();
+        showToast('Вы пропустили задание', 'info');
+    };
+}
+
+function renderSlideQuestion(q) {
+    let content = q.additional_data?.content || q.text || 'Слайд без содержания';
+    let originalContent = content;
+    let html = '';
+    if (content.match(/^https?:\/\//i)) {
+        html = `<img src="${content}" style="max-width:100%; border-radius:12px;">`;
+    } else {
+        html = `<div id="slideContent" contenteditable="true" style="background:white; padding:40px; border-radius:16px; border:2px solid #e2e8f0; min-height:200px; outline:none;">${content}</div>`;
+    }
+    const container = document.getElementById('optionsDiv');
+    container.innerHTML = `
+        ${html}
+        <button id="slideContinueBtn" class="btn btn-blue" style="width:100%; margin-top:25px;">Продолжить</button>
+    `;
+    const continueBtn = document.getElementById('slideContinueBtn');
+    if (continueBtn) {
+        continueBtn.onclick = () => {
+            const editedContent = document.getElementById('slideContent')?.innerHTML || content;
+            if (editedContent === originalContent) {
+                showToast('Измените содержимое слайда', 'error');
+                return;
+            }
+            sendAnswer(editedContent, 'slide');
+        };
+    } else {
+        console.error('Кнопка slideContinueBtn не найдена');
+    }
+}
+
+// === ГЛАВНЫЙ РЕНДЕР (вызывается из polling) ===
+function renderQuestion(data) {
+    const q = data.current_question;
+    if (!q) return;
+    document.getElementById('totalQ').innerText = data.total_questions;
+    document.getElementById('currentQ').innerText = data.question_index + 1;
+    document.getElementById('score').innerText = totalScore;
+    document.getElementById('questionText').innerHTML = escapeHtml(q.text);
+
+    // Раунд
+    const roundBadge = document.getElementById('roundBadge');
+    if (q.round_name) {
+        roundBadge.style.display = 'inline-block';
+        document.getElementById('roundName').innerText = q.round_name;
+    } else {
+        roundBadge.style.display = 'none';
+    }
+
+    // Сброс
+    hasAnswered = false;
+    awaitingResult = false;
+    document.getElementById('resultBlock').style.display = 'none';
+    document.getElementById('timerDiv').style.display = 'block';
+
+    // Очистка предыдущего canvas
+    if (canvas) {
+        canvas.removeEventListener('mousedown', initCanvas);
+        canvas.removeEventListener('mouseup', initCanvas);
+        canvas.removeEventListener('mousemove', initCanvas);
+        canvas = null;
+        ctx = null;
+    }
+
+    // Рендер по типу
+    switch (q.type) {
+        case 'choice': renderChoiceQuestion(q); break;
+        case 'open': renderOpenQuestion(q); break;
+        case 'poll': renderPollQuestion(q); break;
+        case 'wordcloud': renderWordcloudQuestion(q); break;
+        case 'draw': renderDrawQuestion(q); break;
+        case 'dance': renderDanceQuestion(q); break;
+        case 'slide': renderSlideQuestion(q); break;
+        default: renderChoiceQuestion(q);
+    }
+}
+
+// === ПОКАЗ РЕЗУЛЬТАТА ВОПРОСА (после окончания таймера) ===
+function showAnswerResult(data) {
+    const q = data.current_question;
+    if (!q) return;
+
+    let correctAnswer = q.correct_answer;
+    if (Array.isArray(correctAnswer)) correctAnswer = correctAnswer[0];
+    const userAnswer = selectedAnswer;
+
+    let isUserCorrect = false;
+    if (q.type === 'choice') {
+        isUserCorrect = (userAnswer === correctAnswer);
+    } else if (q.type === 'open') {
+        // Упрощённое сравнение: точное совпадение строки (можно улучшить)
+        isUserCorrect = (userAnswer && correctAnswer && userAnswer.toLowerCase().includes(correctAnswer.toLowerCase()));
+    } else {
+        // Для poll, wordcloud, draw, dance, slide – считаем, что ответ правильный (если не пропущен)
+        isUserCorrect = (userAnswer && userAnswer !== 'skipped');
+    }
+
+    // Подсветка кнопок (если есть)
+    const buttons = document.querySelectorAll('.option-btn');
+    buttons.forEach(btn => {
+        const opt = btn.innerText.trim();
+        if (opt === correctAnswer) btn.style.background = '#4caf50';
+        if (opt === userAnswer && opt !== correctAnswer) btn.style.background = '#f44336';
+    });
+
+    const resultBlock = document.getElementById('resultBlock');
+    resultBlock.style.display = 'block';
+    let message = '';
+    if (userAnswer === null) {
+        message = `Время вышло! Правильный ответ: ${correctAnswer || '—'}`;
+    } else if (isUserCorrect) {
+        message = `Правильно! +${pointsPerQuestion} баллов`;
+        totalScore += pointsPerQuestion;
+        document.getElementById('score').innerText = totalScore;
+    } else {
+        message = `Неправильно! Правильный ответ: ${correctAnswer || '—'}`;
+    }
+
+    const isLast = (data.question_index + 1 >= data.total_questions);
+    const countdownSec = data.time_show_answer || timeShowAnswer;
+    resultBlock.innerHTML = `${message}<br><span id="resultCountdown">${isLast ? 'Результаты игры через' : 'Следующий вопрос через'} ${countdownSec} сек...</span>`;
+    startCountdown(countdownSec, (rem) => {
+        const span = document.getElementById('resultCountdown');
+        if (span) span.innerText = `${isLast ? 'Результаты игры через' : 'Следующий вопрос через'} ${rem} сек...`;
+    }, () => {});
+}
+
+function startCountdown(seconds, onTick, onComplete) {
+    let remaining = seconds;
+    if (countdownInterval) clearInterval(countdownInterval);
+    countdownInterval = setInterval(() => {
+        if (remaining <= 0) {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+            if (onComplete) onComplete();
+        } else {
+            remaining--;
+            if (onTick) onTick(remaining);
+        }
+    }, 1000);
+}
+
+// === ФИНАЛЬНЫЕ РЕЗУЛЬТАТЫ ===
+function showResults(data) {
+    document.getElementById('resultScreen').style.display = 'block';
+    const players = data.sorted_players || [];
+    const player = players.find(p => p.nickname === nickname);
+    if (player) {
+        document.getElementById('resultName').innerText = player.nickname;
+        document.getElementById('resultScore').innerText = player.score;
+    }
+    if (data.show_leaderboard_to_players) {
+        const winners = (data.winners || []).map(w => w.nickname);
+        const html = players.map((p, i) => `<div class="${winners.includes(p.nickname) ? 'winner' : ''}">${i+1}. ${escapeHtml(p.nickname)} — ${p.score}</div>`).join('');
+        document.getElementById('leaderboardList').innerHTML = html;
+    }
+}
+</script>
 
 <style>
     /* Красивые уведомления */
@@ -95,267 +584,5 @@
 }
 </style>
 
-<script>
-const quizCode = '{{ quiz.quiz_code }}';
-let nickname = null;
-let intervalId = null;
-let currentQuestionIndex = -1;
-let totalScore = 0;
-let hasAnswered = false;
-let pointsPerQuestion = 100;
-let awaitingResult = false;
-let selectedAnswer = null;
-let countdownInterval = null;
-let timeShowAnswer = 10;
 
-async function checkNeedPassword() {
-    try {
-        const res = await fetch(`/api/quizmaster/${quizCode}/status`);
-        const data = await res.json();
-        if (data.need_password) {
-            document.getElementById('passwordField').style.display = 'block';
-        }
-    } catch (error) {
-        console.error('Ошибка проверки пароля:', error);
-    }
-}
-checkNeedPassword();
-
-document.getElementById('joinGameBtn').onclick = async () => {
-    nickname = document.getElementById('nicknameInput').value.trim();
-    const password = document.getElementById('passwordInput')?.value || '';
-    
-    if (!nickname) {
-        showToast('Введите никнейм', 'error');
-        return;
-    }
-
-    const res = await fetch(`/api/quizmaster/${quizCode}/join`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ nickname, password })
-    });
-    
-    const data = await res.json();
-    
-    if (data.success) {
-        document.getElementById('joinScreen').style.display = 'none';
-        document.getElementById('waitingScreen').style.display = 'block';
-        document.getElementById('playerNickname').innerText = nickname;
-        startPolling();
-    } else {
-        showToast(data.error || 'Ошибка присоединения', 'error');
-    }
-};
-
-function startPolling() {
-    intervalId = setInterval(async () => {
-        const res = await fetch(`/api/quizmaster/${quizCode}/status?nickname=${encodeURIComponent(nickname)}`);
-        const data = await res.json();
-        if (!data.success) return;
-
-        pointsPerQuestion = data.points_per_question || 100;
-        timeShowAnswer = data.time_show_answer || 10;
-        
-        if (data.start_datetime && data.status !== 'active') {
-            document.getElementById('startDateTimeText').innerText = data.start_datetime;
-        }
-
-        if (data.status === 'active') {
-            document.getElementById('waitingScreen').style.display = 'none';
-            document.getElementById('gameScreen').style.display = 'block';
-
-            // Отображение раунда
-            if (data.current_question && data.current_question.round_name) {
-                document.getElementById('roundBadge').style.display = 'inline-block';
-                document.getElementById('roundName').innerText = data.current_question.round_name;
-            } else {
-                document.getElementById('roundBadge').style.display = 'none';
-            }
-
-            if (currentQuestionIndex !== data.question_index) {
-                currentQuestionIndex = data.question_index;
-                hasAnswered = false;
-                awaitingResult = false;
-                selectedAnswer = null;
-                document.getElementById('resultBlock').style.display = 'none';
-                renderQuestion(data);
-            }
-
-            if (data.time_left !== null && !awaitingResult) {
-                const timerDiv = document.getElementById('timerDiv');
-                timerDiv.innerHTML = `⏱ ${data.time_left} сек`;
-                timerDiv.style.display = 'block';
-                timerDiv.style.color = data.time_left <= 5 ? '#f44336' : '#2196F3';
-            }
-
-            if (data.show_answer && !awaitingResult) {
-                awaitingResult = true;
-                document.getElementById('timerDiv').style.display = 'none';
-                showAnswerResult(data);
-            }
-        } else if (data.status === 'finished') {
-            clearInterval(intervalId);
-            document.getElementById('gameScreen').style.display = 'none';
-            showResults(data);
-        }
-    }, 500);
-}
-
-function renderQuestion(data) {
-    const q = data.current_question;
-    if (!q) return;
-    document.getElementById('totalQ').innerText = data.total_questions;
-    document.getElementById('currentQ').innerText = data.question_index + 1;
-    document.getElementById('score').innerText = totalScore;
-    document.getElementById('questionText').innerHTML = q.text;
-
-    const optionsDiv = document.getElementById('optionsDiv');
-    optionsDiv.innerHTML = '';
-    if (q.options && !data.show_answer) {
-        q.options.forEach(opt => {
-            const btn = document.createElement('button');
-            btn.innerText = opt;
-            btn.classList.add('option-btn');
-            if (hasAnswered) btn.disabled = true;
-            btn.onclick = () => submitAnswer(opt, btn);
-            optionsDiv.appendChild(btn);
-        });
-    } else {
-        optionsDiv.innerHTML = '<p>Ожидание...</p>';
-    }
-}
-
-async function submitAnswer(answer, btnElement) {
-    if (hasAnswered) return;
-    hasAnswered = true;
-    selectedAnswer = answer.trim();  // ← добавьте .trim()
-    
-    document.querySelectorAll('.option-btn').forEach(btn => {
-        btn.disabled = true;
-        if (btn.innerText.trim() === answer.trim()) {
-            btn.style.background = '#e0e0e0';
-            btn.style.border = '2px solid #ff9800';
-        }
-    });
-    
-    await fetch(`/api/quizmaster/${quizCode}/answer`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ nickname, answer: answer.trim() })
-    });
-}
-
-function startCountdown(seconds, onTick, onComplete) {
-    let remaining = seconds;
-    if (countdownInterval) clearInterval(countdownInterval);
-    countdownInterval = setInterval(() => {
-        if (remaining <= 0) {
-            clearInterval(countdownInterval);
-            countdownInterval = null;
-            if (onComplete) onComplete();
-        } else {
-            remaining--;
-            if (onTick) onTick(remaining);
-        }
-    }, 1000);
-}
-
-function showAnswerResult(data) {
-    const q = data.current_question;
-    if (!q) return;
-    
-    // Получаем правильный ответ (убираем возможные лишние символы)
-    let correctAnswer = q.correct_answer;
-    if (Array.isArray(correctAnswer)) {
-        correctAnswer = correctAnswer[0];
-    }
-    if (typeof correctAnswer === 'string') {
-        correctAnswer = correctAnswer.trim();
-    }
-    
-    // Получаем ответ игрока
-    let userAnswer = selectedAnswer;
-    if (typeof userAnswer === 'string') {
-        userAnswer = userAnswer.trim();
-    }
-    
-    const isUserCorrect = (userAnswer === correctAnswer);
-
-    const optionsDiv = document.getElementById('optionsDiv');
-    const buttons = optionsDiv.querySelectorAll('.option-btn');
-    buttons.forEach(btn => {
-        const opt = btn.innerText.trim();
-        if (opt === correctAnswer) {
-            btn.style.background = '#4caf50';
-            btn.style.color = 'white';
-        }
-        if (opt === userAnswer && opt !== correctAnswer) {
-            btn.style.background = '#f44336';
-            btn.style.color = 'white';
-        }
-    });
-
-    const resultBlock = document.getElementById('resultBlock');
-    resultBlock.style.display = 'block';
-    let message = '';
-    if (selectedAnswer === null) {
-        message = `Время вышло! Правильный ответ: ${correctAnswer}`;
-    } else if (isUserCorrect) {
-        message = `Правильно! Вы получаете ${pointsPerQuestion} баллов`;
-        totalScore += pointsPerQuestion;
-        document.getElementById('score').innerText = totalScore;
-    } else {
-        message = `Неправильно! Правильный ответ: ${correctAnswer}`;
-    }
-    
-    const isLastQuestion = (data.question_index + 1 >= data.total_questions);
-    
-    if (isLastQuestion) {
-        resultBlock.innerHTML = `<strong>${message}</strong><br><span id="resultCountdown">Результаты игры через ${data.time_show_answer} сек...</span>`;
-        startCountdown(data.time_show_answer, (remaining) => {
-            const span = document.getElementById('resultCountdown');
-            if (span) span.innerText = `Результаты игры через ${remaining} сек...`;
-        }, () => {});
-    } else {
-        resultBlock.innerHTML = `<strong>${message}</strong><br><span id="resultCountdown">Следующий вопрос через ${data.time_show_answer} сек...</span>`;
-        startCountdown(data.time_show_answer, (remaining) => {
-            const span = document.getElementById('resultCountdown');
-            if (span) span.innerText = `Следующий вопрос через ${remaining} сек...`;
-        }, () => {});
-    }
-}
-
-function showResults(data) {
-    document.getElementById('resultScreen').style.display = 'block';
-    const players = data.sorted_players || [];
-    const player = players.find(p => p.nickname === nickname);
-    const idx = players.findIndex(p => p.nickname === nickname);
-    if (player) {
-        document.getElementById('resultPlayerName').innerText = player.nickname;
-        document.getElementById('resultScore').innerText = player.score;
-        let place = idx === 0 ? '1 место!' : idx === 1 ? '2 место' : idx === 2 ? '3 место' : `${idx+1} место`;
-        document.getElementById('resultPlace').innerText = place;
-    }
-    if (data.show_leaderboard_to_players) {
-        const winners = (data.winners || []).map(w => w.nickname);
-        const html = players.map((p, i) => `<div class="${winners.includes(p.nickname) ? 'winner' : ''}">${i+1}. ${p.nickname} — ${p.score}</div>`).join('');
-        document.getElementById('leaderboardList').innerHTML = html;
-    }
-}
-
-// Красивая функция уведомлений
-function showToast(message, type = 'error') {
-    const toast = document.getElementById('toast');
-    const toastMessage = document.getElementById('toast-message');
-    
-    toastMessage.innerHTML = message;
-    toast.className = `toast-notification ${type}`;
-    toast.classList.add('show');
-    
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, 3500);
-}
-</script>
 {% endblock %}

@@ -383,6 +383,11 @@ def quizmaster_panel(code):
     if 'user_id' not in session:
         return redirect(url_for('login_page'))
     
+    user = User.query.get(session['user_id']) 
+    quiz = Quiz.query.filter_by(quiz_code=code).first_or_404()
+    if quiz.owner_id != session['user_id']:
+        return "У вас нет доступа", 403
+    
     quiz = Quiz.query.filter_by(quiz_code=code).first()
     if not quiz:
         return "Викторина не найдена", 404
@@ -418,7 +423,7 @@ def quizmaster_panel(code):
             'all_questions': all_questions
         }
     
-    return render_template('quizmaster.html', quiz=quiz, code=code)
+    return render_template('quizmaster.html', quiz=quiz, code=code, user=user)
 
 @app.route('/api/quizmaster/<code>/join', methods=['POST'])
 def api_quizmaster_join(code):
@@ -644,14 +649,29 @@ def api_quizmaster_status(code):
             for player in session_data['players']:
                 p_nickname = player['nickname']
                 if p_nickname in session_data['players_answers']:
+                    answer = session_data['players_answers'][p_nickname]
                     player_question_ids = player.get('shuffled_questions', [])
                     if session_data['current_index'] < len(player_question_ids):
                         q_id = player_question_ids[session_data['current_index']]
                         current_q = next((q for q in all_questions if q.id == q_id), None)
                         if current_q:
                             answer = session_data['players_answers'][p_nickname]
+                            # Начисление баллов в зависимости от типа вопроса
                             if current_q.type == 'choice' and current_q.correct_answer:
                                 if answer in current_q.correct_answer:
+                                    player['score'] += points_per_question
+                            elif current_q.type == 'open':
+                                correct_any = False
+                                for corr in current_q.correct_answer or []:
+                                    if answer and (answer.lower() in corr.lower() or corr.lower() in answer.lower()):
+                                        correct_any = True
+                                        break
+                                if correct_any:
+                                    player['score'] += points_per_question
+                            elif current_q.type in ('poll', 'wordcloud', 'draw', 'dance', 'slide'):
+                                # Нормализуем ответ
+                                norm_answer = answer.strip().lower() if answer else ''
+                                if norm_answer and norm_answer != 'skipped':
                                     player['score'] += points_per_question
             session_data['show_answer'] = True
             session_data['answer_end_time'] = now + time_show_answer
@@ -714,7 +734,8 @@ def api_quizmaster_status(code):
                         'type': q.type,
                         'options': opts,
                         'correct_answer': q.correct_answer[0] if q.correct_answer else None,
-                        'round_name': q.round.title if q.round else None
+                        'round_name': q.round.title if q.round else None,
+                        'additional_data': q.additional_data or {}
                     }
 
     # Вопрос для ведущего (без nickname)
@@ -802,12 +823,14 @@ def api_quizmaster_answer(code):
         return jsonify({'success': False, 'error': 'Время ответа истекло'}), 400
 
     if nickname not in session.get('players_answers', {}):
+        # Нормализуем ответ
+        if answer is not None:
+            answer = answer.strip()
+            if answer.lower() == 'skipped':
+                answer = 'skipped'
         session.setdefault('players_answers', {})[nickname] = answer
 
-    return jsonify({
-        'success': True,
-        'message': 'Ответ сохранён'
-    })
+    return jsonify({'success': True, 'message': 'Ответ сохранен'})
 
 @app.route('/api/quizmaster/<code>/replay', methods=['POST'])
 def api_quizmaster_replay(code):

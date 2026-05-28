@@ -137,7 +137,7 @@
 
 /* Контент */
 .quiz-card__content {
-    padding: 22px 22px 22px 52px;
+    padding: 22px 22px 22px 32px;
     flex: 1;
     display: flex;
     flex-direction: column;
