@@ -1600,24 +1600,18 @@ def team_status():
     if all_finished and len(game['teams']) > 0:
         game['status'] = 'finished'
         for team_name_key, team_data in game['teams'].items():
-            existing = GameResult.query.filter_by(
-                quiz_id=game['quiz_id'],
-                quiz_code=game_code,
-                player_name=team_name_key,
-                mode='team'
-            ).first()
-            if not existing:
-                result = GameResult(
-                    quiz_id=game['quiz_id'],
-                    quiz_code=game_code,
-                    player_name=team_name_key,
-                    score=team_data['score'],
-                    correct_answers=0,
-                    total_questions=len(team_data['shuffled_questions']),
-                    mode='team',
-                    finished_at=datetime.now(timezone.utc)
-                )
-                db.session.add(result)
+        # Всегда создаём новую запись
+            result = GameResult(
+            quiz_id=game['quiz_id'],
+            quiz_code=game_code,
+            player_name=team_name_key,
+            score=team_data['score'],
+            correct_answers=0,
+            total_questions=len(team_data['shuffled_questions']),
+            mode='team',
+            finished_at=datetime.now(timezone.utc)
+        )
+            db.session.add(result)
         db.session.commit()
     
     return jsonify({
@@ -1734,24 +1728,17 @@ def team_stop():
     total_questions = len(game['all_questions'])
     
     for team_name, team_data in game['teams'].items():
-        existing = GameResult.query.filter_by(
-            quiz_id=game['quiz_id'],
-            quiz_code=game_code,
-            player_name=team_name,
-            mode='team'
-        ).first()
-        if not existing:
-            result = GameResult(
-                quiz_id=game['quiz_id'],
-                quiz_code=game_code,
-                player_name=team_name,
-                score=team_data['score'],
-                correct_answers=0,
-                total_questions=total_questions,
-                mode='team',
-                finished_at=datetime.now(timezone.utc)
-            )
-            db.session.add(result)
+        result = GameResult(
+        quiz_id=game['quiz_id'],
+        quiz_code=game_code,
+        player_name=team_name,
+        score=team_data['score'],
+        correct_answers=0,
+        total_questions=total_questions,
+        mode='team',
+        finished_at=datetime.now(timezone.utc)
+    )
+    db.session.add(result)
     
     db.session.commit()
     game['status'] = 'finished'

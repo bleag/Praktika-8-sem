@@ -71,22 +71,21 @@ const quizMode = '{{ quiz.settings.gameMode if quiz.settings else "multiplayer" 
 let allResults = [];
 
 async function loadData() {
-    // Загружаем результаты
     const res = await fetch(`/api/quiz/${quizId}/all-results?mode=${quizMode}`);
     const data = await res.json();
     
     if (data.success) {
         if (quizMode === 'team') {
-            // Для командного режима — суммируем результаты по командам
+            // Группируем по команде: считаем количество игр и берём последний счёт
             const teamMap = new Map();
             
             data.results.forEach(r => {
                 if (teamMap.has(r.player_name)) {
                     const existing = teamMap.get(r.player_name);
-                    existing.score += r.score;
                     existing.games_count += 1;
-                    // Берём последнюю дату
+                    // Берём последнюю игру по дате
                     if (r.finished_at > existing.finished_at) {
+                        existing.score = r.score;
                         existing.finished_at = r.finished_at;
                     }
                 } else {
@@ -99,14 +98,11 @@ async function loadData() {
                 }
             });
             
-            // Преобразуем в массив и сортируем по убыванию очков
             allResults = Array.from(teamMap.values());
             allResults.sort((a, b) => b.score - a.score);
         } else {
-            // Для мультиплеера и соло — оставляем как есть
             allResults = data.results;
         }
-        
         renderPlayersTab();
     }
 }
@@ -135,7 +131,7 @@ function renderPlayersTab() {
                 <tr><th style="padding: 12px; text-align: left;">Место</th>
                     <th style="padding: 12px; text-align: left;">${nameLabel}</th>
                     <th style="padding: 12px; text-align: center;">Счёт</th>
-                    ${isTeamMode ? '<th style="padding: 12px; text-align: center;">Игр</th>' : ''}
+                    ${isTeamMode ? '<th style="padding: 12px; text-align: center;">Люди</th>' : ''}
                     <th style="padding: 12px; text-align: center;">Последняя игра</th>
                 </tr>
             </thead>
@@ -159,7 +155,7 @@ function renderPlayersTab() {
             <thead>
                 <tr><th style="padding: 10px; text-align: left;">${nameLabel}</th>
                     <th style="padding: 10px; text-align: center;">Счёт</th>
-                    ${isTeamMode ? '<th style="padding: 10px; text-align: center;">Игр</th>' : ''}
+                    ${isTeamMode ? '<th style="padding: 10px; text-align: center;">Люди</th>' : ''}
                     <th style="padding: 10px; text-align: center;">Последняя игра</th>
                 </tr>
             </thead>
