@@ -1,5 +1,4 @@
 /* auth.css — страницы входа и регистрации (login.html, register.html)*/
-
 /* ФОН И ОСНОВНАЯ ОБЁРТКА */
 body.auth-page {
     background: linear-gradient(135deg, var(--sovcombank-blue) 0%, var(--sovcombank-red) 100%);

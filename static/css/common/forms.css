@@ -66,7 +66,7 @@
     color: var(--text-gray);
 }
 
-/* 4. КАСТОМНАЯ ВСПЛЫВАЮЩАЯ ПОДСКАЗКА */
+/* КАСТОМНАЯ ВСПЛЫВАЮЩАЯ ПОДСКАЗКА */
 .tooltip-icon {
     display: inline-flex;
     align-items: center;
@@ -105,7 +105,7 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
-/* Треугольник (хвостик) подсказки */
+/* Треугольник подсказки */
 .tooltip-icon:hover::before {
     content: '';
     position: absolute;

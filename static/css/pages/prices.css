@@ -1,5 +1,4 @@
 /* prices.css — страница тарифов (prices.html)*/
-
 /* ОСНОВНАЯ ОБЁРТКА И ЗАГОЛОВКИ */
 .pricing {
     padding: 40px 20px 80px 20px;
@@ -211,7 +210,7 @@
     border-top: 1px solid #e2e8f0;
 }
 
-/* Красивое уведомление */
+/* Уведомление */
 .custom-notification {
     position: fixed;
     top: 20px;

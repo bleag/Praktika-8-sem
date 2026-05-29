@@ -1,5 +1,4 @@
 /* quizmaster.css — панель ведущего (quizmaster.html, quizmaster_solo.html, team_leader.html)*/
-
 /* ОСНОВНОЙ КОНТЕЙНЕР И ФОН */
 .quizmaster-container {
     padding: 40px 0;
@@ -196,7 +195,7 @@ body:has(.quizmaster-container) .main {
     cursor: not-allowed;
 }
 
-/* Специально для командного режима (дополнительное выравнивание) */
+/* Специально для командного режима */
 .quizmaster-container .control-buttons button,
 .control-buttons .btn,
 .control-buttons button {

@@ -1,5 +1,4 @@
 /* game.css — стили для игровых страниц (solo, team, multiplayer, draw_question)*/
-
 /* КАРТОЧКИ ВИКТОРИН (общий компонент) */
 .quiz-card {
     display: flex;
@@ -580,8 +579,7 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-/* ==================== ФОН СТРАНИЦЫ ==================== */
-
+/* ФОН СТРАНИЦЫ */
 /* Основной градиентный фон для всех игровых страниц */
 body:has(.game-container),
 body:has(.team-play-container) {
@@ -590,7 +588,6 @@ body:has(.team-play-container) {
     min-height: 100vh;
 }
 
-/* Убираем повторяющийся фон у основных контейнеров */
 .game-container,
 .team-play-container {
     background: transparent !important;
@@ -598,7 +595,7 @@ body:has(.team-play-container) {
     padding: 40px 20px;
 }
 
-/* Основные панели — делаем их красивыми и полупрозрачными */
+/* Основные панели */
 .game-panel,
 .team-play-card,
 .team-play-screen,
@@ -609,7 +606,7 @@ body:has(.team-play-container) {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
 
-/* Для тёмного режима (если нужно) — можно усилить прозрачность */
+/* Для тёмного режима  */
 .team-play-form,
 .team-play-card {
     background: rgba(255, 255, 255, 0.85) !important;

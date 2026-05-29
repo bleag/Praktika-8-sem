@@ -61,7 +61,7 @@
     color: var(--sovcombank-blue);
 }
 
-/* Кнопка-ссылка (как текст) */
+/* Кнопка-ссылка*/
 .btn-link {
     background: none;
     border: none;
@@ -90,7 +90,7 @@
     cursor: not-allowed;
 }
 
-/* 2. СПЕЦИФИЧНЫЕ КНОПКИ ПО НАЗНАЧЕНИЮ */
+/* СПЕЦИФИЧНЫЕ КНОПКИ ПО НАЗНАЧЕНИЮ */
 
 /* Кнопка "Создать квиз" */
 .btn-create {
@@ -110,7 +110,7 @@
     transform: scale(1.05);
 }
 
-/* Первичная кнопка (используется в шапке и формах) */
+/* Первичная кнопка */
 .btn-primary {
     background-color: var(--sovcombank-blue);
     color: white;
@@ -125,7 +125,7 @@
     background-color: var(--blue-light);
 }
 
-/* Кнопка с обводкой (новая версия) */
+/* Кнопка с обводкой */
 .btn-outline-new {
     background: transparent;
     border: 1px solid var(--gray-border);
@@ -149,7 +149,7 @@
     background-color: rgba(1, 55, 145, 0.1);
 }
 
-/* Маленькая кнопка (универсальная) */
+/* Маленькая кнопка */
 .btn-small {
     padding: 5px 12px;
     border-radius: 6px;
@@ -197,7 +197,7 @@
     background: #7B1FA2;
 }
 
-/* 3. МОДАЛЬНЫЕ ОКНА */
+/* МОДАЛЬНЫЕ ОКНА */
 
 .modal {
     position: fixed;
@@ -246,7 +246,7 @@
     justify-content: flex-end;
 }
 
-/* 4. ПУСТОЕ СОСТОЯНИЕ */
+/* ПУСТОЕ СОСТОЯНИЕ */
 
 .empty-state {
     text-align: center;
@@ -274,7 +274,7 @@
     margin-bottom: 25px;
 }
 
-/* 5. УТИЛИТЫ И ВСПОМОГАТЕЛЬНЫЕ КЛАССЫ */
+/* УТИЛИТЫ И ВСПОМОГАТЕЛЬНЫЕ КЛАССЫ */
 
 /* Анимация */
 @keyframes pulse {
