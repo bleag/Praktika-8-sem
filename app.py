@@ -272,7 +272,7 @@ def get_public_questions(quiz_id):
             'media_url': q.media_url,
             'order': q.order,
             'round_id': q.round_id,
-            'round_name': q.round.title if q.round else None,  # ← ДОБАВИТЬ ЭТУ СТРОКУ
+            'round_name': q.round.title if q.round else None,  
             'additional_data': q.additional_data
         } for q in questions]
     })
@@ -879,7 +879,10 @@ def play_game(code):
     quiz = Quiz.query.filter_by(quiz_code=code).first()
     if not quiz:
         return "Викторина не найдена", 404
-    return render_template('game.html', quiz=quiz, code=code)
+    user = None
+    if 'user_id' in session:
+        user = User.query.get(session['user_id'])
+    return render_template('game.html', quiz=quiz, code=code, user=user)
 
 @app.route('/prices')
 def prices():
@@ -1056,7 +1059,10 @@ def quizmaster_solo_panel(quiz_id):
     if not quiz or quiz.owner_id != session['user_id']:
         return "Нет доступа", 403
     
-    return render_template('quizmaster_solo.html', quiz=quiz)
+    user = None
+    if 'user_id' in session:
+        user = User.query.get(session['user_id'])
+    return render_template('quizmaster_solo.html', quiz=quiz, user=user)
 
 # Управление доступом (открыть/закрыть)
 @app.route('/api/solo/<int:quiz_id>/close', methods=['POST'])
@@ -1208,15 +1214,21 @@ def get_quiz_by_code(code):
 
 @app.route('/solo/code/<code>')
 def solo_game_by_code(code):
+    user = None
+    if 'user_id' in session:
+        user = User.query.get(session['user_id'])
     """Одиночная игра по коду викторины"""
     quiz = Quiz.query.filter_by(quiz_code=code).first()
     if not quiz:
         return "Викторина не найдена", 404
-    return render_template('solo_game.html', quiz=quiz)
+    return render_template('solo_game.html', quiz=quiz, user=user)
 
 @app.route('/solo/<int:quiz_id>')
 def solo_game(quiz_id):
-    """Одиночная игра по ID викторины"""
+    user = None
+    if 'user_id' in session:
+        user = User.query.get(session['user_id'])
+        """Одиночная игра по ID викторины"""
     quiz = Quiz.query.get_or_404(quiz_id)
     
     # Проверяем, что это действительно одиночная викторина
@@ -1225,7 +1237,7 @@ def solo_game(quiz_id):
         flash('Это не одиночная викторина', 'warning')
         return redirect(url_for('play_game', code=quiz.quiz_code))
     
-    return render_template('solo_game.html', quiz=quiz)
+    return render_template('solo_game.html', quiz=quiz, user=user)
 # ========== КОМАНДНЫЙ РЕЖИМ (КАЖДАЯ КОМАНДА НЕЗАВИСИМО) ==========
 
 def sync_team_game_settings(game_code):
@@ -1251,8 +1263,10 @@ def sync_team_game_settings(game_code):
 
 @app.route('/team/leader/<int:quiz_id>')
 def team_leader(quiz_id):
-    if 'user_id' not in session:
-        return redirect(url_for('login_page'))
+    
+    user = None
+    if 'user_id' in session:
+        user = User.query.get(session['user_id'])
     
     quiz = db.session.get(Quiz, quiz_id)
     if not quiz or quiz.owner_id != session['user_id']:
@@ -1282,14 +1296,18 @@ def team_leader(quiz_id):
             'random_options': settings.get('randomOptions', False)
         }
     
-    return render_template('team_leader.html', quiz=quiz)
+    return render_template('team_leader.html', quiz=quiz, user=user)
 
 @app.route('/team/play/<code>')
 def team_play(code):
-    quiz = Quiz.query.filter_by(quiz_code=code).first()
+    user = None
+    if 'user_id' in session:
+        user = User.query.get(session['user_id'])
+        
+        quiz = Quiz.query.filter_by(quiz_code=code).first()
     if not quiz:
         return "Викторина не найдена", 404
-    return render_template('team_play.html', quiz=quiz, code=code)
+    return render_template('team_play.html', quiz=quiz, code=code, user=user)
 
 @app.route('/api/team/join', methods=['POST'])
 def team_join():
@@ -1800,14 +1818,17 @@ def quiz_stats(quiz_id):
     # Топ игроков
     top_players = results[:10]
     
+    user = None
+    if 'user_id' in session:
+        user = User.query.get(session['user_id'])
     return render_template('quiz_stats.html', 
                           quiz=quiz, 
                           results=results,
                           total_players=total_players,
                           avg_score=round(avg_score, 1),
                           max_score=max_score,
-                          top_players=top_players)
-
+                          top_players=top_players, 
+                          user=user)
 
 @app.route('/api/quiz/<int:quiz_id>/question-stats', methods=['GET'])
 def get_question_stats_old(quiz_id):

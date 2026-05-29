@@ -739,9 +739,7 @@ async function showResults() {
         
         const leaderboard = document.getElementById('leaderboardList');
         leaderboard.innerHTML = teams.map((team, i) => `
-            <div style="background: ${team.name === currentTeam ? '#e8f5e9' : '#f9f9f9'}; 
-                        margin: 10px 0; padding: 15px; border-radius: 10px; 
-                        display: flex; justify-content: space-between; gap: 3px; ">
+            <div style="margin: 10px 0;  border-radius: 10px; display: flex; justify-content: space-between; gap: 3px;">
                 <span><strong>${i+1}. ${escapeHtml(team.name)}</strong> (${team.members_count} игроков)</span>
                 <span style="color: #2196F3; font-weight: bold;">${team.score} очков</span>
             </div>

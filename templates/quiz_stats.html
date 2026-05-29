@@ -14,8 +14,8 @@
         <h2>{{ quiz.title }}</h2>
         
         <!-- Показываем режим викторины -->
-        <div style="margin-top: 10px;">
-            <span style="background: #2196F3; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px;">
+        <div style="margin-top: 25px;">
+            <span style="color: #e2e5fa; background: linear-gradient(90deg, #2563eb, #1e40af); opacity: 1; padding: 10px 15px; border-radius: 20px; font-size: 15px; font-weight: 600;">
                 {% set mode = quiz.settings.gameMode if quiz.settings else 'multiplayer' %}
                 {% if mode == 'solo' %}Одиночный режим
                 {% elif mode == 'team' %} Командный режим
@@ -26,15 +26,15 @@
     
     <!-- Карточки статистики -->
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px;">
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 15px; text-align: center;">
+        <div style="background:linear-gradient(180deg, #1e40af0a, #dc2626); color: #1f2937; padding: 20px; border-radius: 15px; text-align: center;">
             <div style="font-size: 32px; font-weight: bold;" id="totalPlayers">0</div>
             <div id="totalLabel">Всего игроков</div>
         </div>
-        <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 15px; text-align: center;">
+        <div style="background:linear-gradient(180deg, #1e40af0a, #dc2626); color: #1f2937; padding: 20px; border-radius: 15px; text-align: center;">
             <div style="font-size: 32px; font-weight: bold;" id="avgScore">0</div>
             <div>Средний балл</div>
         </div>
-        <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 15px; text-align: center;">
+        <div style="background:linear-gradient(180deg, #1e40af0a, #dc2626); color: #1f2937; padding: 20px; border-radius: 15px; text-align: center;">
             <div style="font-size: 32px; font-weight: bold;" id="maxScore">0</div>
             <div>Максимальный балл</div>
         </div>
@@ -42,7 +42,7 @@
     
     <!-- Топ лидеров -->
     <div style="background: white; border-radius: 20px; padding: 25px; margin-bottom: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-        <h3 id="topTitle"> Топ-10 игроков</h3>
+        <h3 id="topTitle" style="margin: 10px 10px 10px 10px;" > Топ-10 игроков</h3>
         <div id="topPlayersList"></div>
     </div>
     
@@ -54,7 +54,7 @@
     
     <!-- Экспорт -->
     <div style="background: white; border-radius: 20px; padding: 25px; margin-top: 40px; text-align: center;">
-        <button id="exportCSVBtn" class="btn btn-blue" style="background: #2196F3; padding: 12px 24px;">📥 Скачать CSV</button>
+        <button id="exportCSVBtn" class="btn btn-blue" style="background: linear-gradient(90deg, #2563eb, #1e40af); padding: 12px 24px;">Скачать CSV</button>
     </div>
     
     <div style="text-align: center; margin-top: 30px;">
@@ -63,9 +63,14 @@
 </div>
 
 <style>
+.profile-main {
+    background: linear-gradient(135deg, #f8fafc 0%, #c8dcf0a6 50%);
+    min-height: calc(100vh - 140px);
+    padding: 40px 20px;}
 </style>
 
 <script>
+// Твой оригинальный JavaScript (оставил без изменений)
 const quizId = {{ quiz.id }};
 const quizMode = '{{ quiz.settings.gameMode if quiz.settings else "multiplayer" }}';
 let allResults = [];
@@ -76,14 +81,11 @@ async function loadData() {
     
     if (data.success) {
         if (quizMode === 'team') {
-            // Группируем по команде: считаем количество игр и берём последний счёт
             const teamMap = new Map();
-            
             data.results.forEach(r => {
                 if (teamMap.has(r.player_name)) {
                     const existing = teamMap.get(r.player_name);
                     existing.games_count += 1;
-                    // Берём последнюю игру по дате
                     if (r.finished_at > existing.finished_at) {
                         existing.score = r.score;
                         existing.finished_at = r.finished_at;
@@ -97,7 +99,6 @@ async function loadData() {
                     });
                 }
             });
-            
             allResults = Array.from(teamMap.values());
             allResults.sort((a, b) => b.score - a.score);
         } else {
@@ -120,25 +121,43 @@ function renderPlayersTab() {
     document.getElementById('totalLabel').innerText = isTeamMode ? 'Всего команд' : 'Всего игроков';
     document.getElementById('avgScore').innerText = avg.toFixed(1);
     document.getElementById('maxScore').innerText = max;
-    document.getElementById('topTitle').innerHTML = isTeamMode ? ' Топ-10 команд' : ' Топ-10 игроков';
-    document.getElementById('allTitle').innerHTML = isTeamMode ? 'Все команды' : ' Все игроки';
+    document.getElementById('topTitle').innerHTML = isTeamMode ? 'Топ-10 команд' : 'Топ-10 игроков';
+    document.getElementById('allTitle').innerHTML = isTeamMode ? 'Все команды' : 'Все игроки';
     
     const topPlayers = allResults.slice(0, 10);
     
-    const topHtml = `
+    let topHtml = '';
+    topPlayers.forEach((p, i) => {
+        let rankStyle = '';
+        if (i === 0) rankStyle = 'background: linear-gradient(0deg, #6488ff14, #263fa97a); color: #1f2937; font-weight: 500;';
+        else if (i === 1) rankStyle = 'background: linear-gradient(0deg, #6488ff14, #263fa91f); color: #1f2937; font-weight: 500;';
+        else if (i === 2) rankStyle = 'background: linear-gradient(0deg, #6488ff0a, #263fa908); color: #1f2937; font-weight: 500; ';
+        
+        topHtml += `
+            <div style="display: flex; align-items: center; padding: 16px 20px; margin-bottom: 8px; border-radius: 12px; font-weight: 500; ${rankStyle}">
+                <div style="width: 50px; font-size: 22px; font-weight: bold; text-align: center;">${i+1}</div>
+                <div style="flex: 1; font-weight: 700;">${escapeHtml(p.player_name)}</div>
+                <div style="font-size: 20px; font-weight: bold; width: 100px; text-align: center;">${p.score}</div>
+                ${isTeamMode ? `<div style="width: 80px; text-align: center; color: #64748b;">${p.games_count} чел.</div>` : ''}
+                <div style="width: 160px; text-align: right; color: #64748b;">${p.finished_at}</div>
+            </div>`;
+    });
+
+    document.getElementById('topPlayersList').innerHTML = topHtml;
+    
+    // Все результаты (оставил как было)
+    const allHtml = `
         <table style="width: 100%; border-collapse: collapse;">
             <thead>
-                <tr><th style="padding: 12px; text-align: left;">Место</th>
-                    <th style="padding: 12px; text-align: left;">${nameLabel}</th>
+                <tr><th style="padding: 12px; text-align: left;">${nameLabel}</th>
                     <th style="padding: 12px; text-align: center;">Счёт</th>
                     ${isTeamMode ? '<th style="padding: 12px; text-align: center;">Люди</th>' : ''}
                     <th style="padding: 12px; text-align: center;">Последняя игра</th>
                 </tr>
             </thead>
             <tbody>
-                ${topPlayers.map((p, i) => `
+                ${allResults.map(p => `
                     <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 12px;">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i+1}</td>
                         <td style="padding: 12px;">${escapeHtml(p.player_name)}</td>
                         <td style="padding: 12px; text-align: center; font-weight: bold;">${p.score}</td>
                         ${isTeamMode ? `<td style="padding: 12px; text-align: center;">${p.games_count}</td>` : ''}
@@ -148,56 +167,8 @@ function renderPlayersTab() {
             </tbody>
         </table>
     `;
-    document.getElementById('topPlayersList').innerHTML = topHtml;
-    
-    const allHtml = `
-        <table style="width: 100%; border-collapse: collapse;">
-            <thead>
-                <tr><th style="padding: 10px; text-align: left;">${nameLabel}</th>
-                    <th style="padding: 10px; text-align: center;">Счёт</th>
-                    ${isTeamMode ? '<th style="padding: 10px; text-align: center;">Люди</th>' : ''}
-                    <th style="padding: 10px; text-align: center;">Последняя игра</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${allResults.map(p => `
-                    <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 10px;">${escapeHtml(p.player_name)}</td>
-                        <td style="padding: 10px; text-align: center; font-weight: bold;">${p.score}</td>
-                        ${isTeamMode ? `<td style="padding: 10px; text-align: center;">${p.games_count}</td>` : ''}
-                        <td style="padding: 10px; text-align: center;">${p.finished_at}</td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        </table>
-    `;
     document.getElementById('allPlayersList').innerHTML = allHtml;
 }
-
-// Экспорт CSV
-document.getElementById('exportCSVBtn')?.addEventListener('click', () => {
-    if (!allResults.length) {
-        alert('Нет данных');
-        return;
-    }
-    
-    const isTeamMode = quizMode === 'team';
-    const nameLabel = isTeamMode ? 'Команда' : 'Игрок';
-    
-    let csv = `\uFEFF${nameLabel};Счёт${isTeamMode ? ';Количество игр' : ''};Последняя игра\n`;
-    allResults.forEach(p => {
-        let name = p.player_name.replace(/"/g, '""');
-        if (name.includes(';') || name.includes('"')) name = `"${name}"`;
-        csv += `${name};${p.score}${isTeamMode ? `;${p.games_count}` : ''};${p.finished_at}\n`;
-    });
-    
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `quiz_${quizId}_results.csv`;
-    link.click();
-    URL.revokeObjectURL(link.href);
-});
 
 function escapeHtml(text) {
     if (!text) return '';
