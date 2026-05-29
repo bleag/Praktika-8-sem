@@ -53,13 +53,16 @@
         <h2>Команда: <span id="waitingTeamName"></span></h2>
         <div id="membersList"></div>
         <p>Ожидание начала игры...</p>
+        <p id="waitingStartText" style="color: #ff9800;"></p>
     </div>
 
     <!-- Игровой экран -->
     <div id="gameScreen" class="team-play-screen hidden">
         <div class="team-play-game-header">
             <div>Вопрос <span id="currentQ">1</span>/<span id="totalQ">0</span></div>
-            <div><span id="gameTeamScore">0</span> очков</div>
+            <div>
+                <span id="roundBadge" class="round-badge" style="display: none; margin-left: 15px;"><span id="roundName"></span></span>
+                <span id="gameTeamScore">0</span> очков</div>
         </div>
         <h3 id="questionText"></h3>
         <div id="optionsDiv"></div>
@@ -102,12 +105,41 @@ let hasAnswered = false;
 let pointsPerQuestion = 100;
 let awaitingResult = false;
 let selectedAnswer = null;
+let countdownInterval = null;
 let timeShowAnswer = 10;
 let totalQuestions = 0;
 let needPassword = false;
+let randomOptions = false;
 
+// === Вспомогательные функции ===
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
 
+function showToast(message, type = 'error') {
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toast-message');
+    toastMessage.textContent = message;
+    toast.className = `toast-notification ${type}`;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 4000);
+}
 
+function showScreen(screenId) {
+    document.querySelectorAll('.team-play-card, .team-play-form, .team-play-screen').forEach(el => {
+        el.classList.add('hidden');
+    });
+    const screen = document.getElementById(screenId);
+    if (screen) {
+        screen.classList.remove('hidden');
+        screen.style.display = '';
+    }
+}
+
+// === Загрузка настроек (пароль) ===
 async function loadQuizSettings() {
     try {
         const res = await fetch(`/api/team/status?game_code=${gameCode}`);
@@ -123,35 +155,17 @@ async function loadQuizSettings() {
         console.error('Ошибка загрузки настроек:', error);
     }
 }
-// Красивый Toast
-function showToast(message, type = 'error') {
-    const toast = document.getElementById('toast');
-    const toastMessage = document.getElementById('toast-message');
-    
-    toastMessage.textContent = message;
-    toast.className = `toast-notification ${type}`;
-    toast.classList.add('show');
-    
-    setTimeout(() => toast.classList.remove('show'), 4000);
-}
 
-function showScreen(screenId) {
-    document.querySelectorAll('.team-play-card, .team-play-form, .team-play-screen').forEach(el => {
-        el.classList.add('hidden');
-    });
-    document.getElementById(screenId).classList.remove('hidden');
-}
-
-// Кнопки
+// === Кнопки навигации ===
 document.getElementById('createTeamBtn').onclick = () => showScreen('createScreen');
 document.getElementById('joinTeamBtn').onclick = () => {
     showScreen('joinScreen');
     loadTeams();
 };
-
 document.getElementById('backCreateBtn').onclick = () => showScreen('actionScreen');
 document.getElementById('backJoinBtn').onclick = () => showScreen('actionScreen');
 
+// === Создание команды ===
 document.getElementById('confirmCreateBtn').onclick = async () => {
     const teamName = document.getElementById('newTeamName').value.trim();
     const playerName = document.getElementById('newPlayerName').value.trim();
@@ -183,6 +197,7 @@ document.getElementById('confirmCreateBtn').onclick = async () => {
     }
 };
 
+// === Загрузка списка команд ===
 async function loadTeams() {
     const res = await fetch(`/api/team/leaderboard?game_code=${gameCode}`);
     const data = await res.json();
@@ -192,7 +207,7 @@ async function loadTeams() {
         container.innerHTML = data.teams.map(team => `
             <button class="teamSelectBtn" data-team="${team.name}" 
                     style="display: block; width: 100%; margin: 8px 0; padding: 14px; background: white; border: 2px solid #ddd; border-radius: 12px; cursor: pointer; text-align: left; font-size: 16px;">
-                ${team.name} (${team.members_count} игроков)
+                ${escapeHtml(team.name)} (${team.members_count} игроков)
             </button>
         `).join('');
         
@@ -204,6 +219,7 @@ async function loadTeams() {
     }
 }
 
+// === Присоединение к команде ===
 async function joinTeam(teamName) {
     const playerName = document.getElementById('joinPlayerName').value.trim();
     const password = document.getElementById('joinPassword')?.value || '';
@@ -234,6 +250,7 @@ async function joinTeam(teamName) {
     }
 }
 
+// === Ожидание начала ===
 function startWaiting() {
     showScreen('waitingScreen');
     document.getElementById('waitingTeamName').innerText = currentTeam;
@@ -256,71 +273,339 @@ async function updateMembers() {
     }
 }
 
+// === POLLING ===
 function startPolling() {
     intervalId = setInterval(async () => {
         const res = await fetch(`/api/team/status?game_code=${gameCode}&team_name=${encodeURIComponent(currentTeam)}`);
         const data = await res.json();
         if (!data.success) return;
 
+        // Обновляем глобальные настройки
         pointsPerQuestion = data.points_per_question || 100;
         timeShowAnswer = data.time_show_answer || 10;
         totalQuestions = data.total_questions || 0;
+        randomOptions = data.random_options || false;
 
         if (data.status === 'active') {
-            document.getElementById('waitingScreen').style.display = 'none';
-            document.getElementById('gameScreen').style.display = 'block';
-            document.getElementById('totalQ').innerText = totalQuestions;
-            document.getElementById('gameTeamScore').innerText = data.team_score;
-            totalScore = data.team_score;
+            showScreen('gameScreen');
 
-            if (data.current_question && data.current_question.round_name) {
+            // === ИСПРАВЛЕНИЕ 1: Всегда обновляем счёт и количество вопросов ===
+            document.getElementById('totalQ').innerText = totalQuestions;
+            if (data.team_score !== undefined) {
+                totalScore = data.team_score;
+                document.getElementById('gameTeamScore').innerText = totalScore;
+            }
+
+            // Раунд
+            if (data.current_question?.round_name) {
                 document.getElementById('roundBadge').style.display = 'inline-block';
                 document.getElementById('roundName').innerText = data.current_question.round_name;
             } else {
                 document.getElementById('roundBadge').style.display = 'none';
             }
 
+            // Новый вопрос
             if (currentQuestionIndex !== data.question_index && !awaitingResult) {
                 currentQuestionIndex = data.question_index;
                 hasAnswered = false;
+                awaitingResult = false;
                 selectedAnswer = null;
                 document.getElementById('resultBlock').style.display = 'none';
-                document.getElementById('waitingNextDiv').style.display = 'none';
                 renderQuestion(data);
             }
 
-            // Таймер обновляется всегда, даже после ответа (но не во время показа ответа)
+            // Таймер
             if (data.time_left !== null && !awaitingResult) {
                 const timerDiv = document.getElementById('timerDiv');
-                timerDiv.innerHTML = ` ${data.time_left} сек`;
+                timerDiv.innerHTML = `⏱ ${data.time_left} сек`;
                 timerDiv.style.display = 'block';
                 timerDiv.style.color = data.time_left <= 5 ? '#f44336' : '#2196F3';
             }
 
+            // Результат вопроса
             if (data.show_answer && !awaitingResult) {
                 awaitingResult = true;
                 document.getElementById('timerDiv').style.display = 'none';
                 showAnswerResult(data);
             }
-        } else if (data.status === 'finished') {
+        } 
+        else if (data.status === 'finished') {
             clearInterval(intervalId);
-            document.getElementById('gameScreen').style.display = 'none';
+            showScreen('resultScreen');
             showResults();
-        } else if (data.status === 'waiting' && data.start_datetime) {
-            document.getElementById('waitingStartInfo').style.display = 'block';
+        } 
+        else if (data.status === 'waiting' && data.start_datetime) {
             document.getElementById('waitingStartText').innerText = `Игра начнётся автоматически: ${data.start_datetime}`;
         }
     }, 500);
 }
 
+// === ОТПРАВКА ОТВЕТА ===
+async function sendAnswer(answer, answerType = 'text') {
+    if (hasAnswered) return;
+    hasAnswered = true;
+    selectedAnswer = answer;
+
+    let payloadAnswer = answer;
+    if (answerType === 'draw') payloadAnswer = '🎨 Рисунок отправлен';
+    if (answerType === 'dance') payloadAnswer = '💃 Танец выполнен';
+    if (answerType === 'slide') payloadAnswer = '📄 Слайд просмотрен';
+    if (answerType === 'wordcloud') payloadAnswer = '☁️ Облако слов';
+
+    await fetch(`/api/team/answer`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ 
+            game_code: gameCode, 
+            team_name: currentTeam, 
+            player_name: nickname,
+            answer: payloadAnswer
+        })
+    });
+
+    disableInputs();
+    // Баллы теперь обновляются ТОЛЬКО через polling, когда сервер покажет результат
+}
+
+function disableInputs() {
+    document.querySelectorAll('.option-btn, .open-input, .wordcloud-input, .draw-btn, .dance-btn, .slide-btn, #openSubmitBtn, #wordcloudSubmitBtn, #submitDrawBtn, #submitDanceBtn, #slideContinueBtn')
+        .forEach(el => {
+            if (el) el.disabled = true;
+        });
+}
+
+// === РЕНДЕРЫ РАЗНЫХ ТИПОВ ВОПРОСОВ ===
+
+function renderChoiceQuestion(q) {
+    let opts = [...(q.options || [])];
+    if (randomOptions) opts.sort(() => Math.random() - 0.5);
+    const container = document.getElementById('optionsDiv');
+    container.innerHTML = '';
+    opts.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.textContent = opt;
+        btn.className = 'option-btn';
+        btn.style.cssText = 'display: block; width: 100%; margin: 10px 0; padding: 14px; background: white; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; font-size: 16px; text-align: left;';
+        btn.onclick = () => sendAnswer(opt, 'choice');
+        container.appendChild(btn);
+    });
+}
+
+function renderOpenQuestion(q) {
+    const container = document.getElementById('optionsDiv');
+    container.innerHTML = `
+        <input type="text" id="openInput" class="form-input open-input" placeholder="Ваш ответ..." style="width:100%; padding:12px; font-size:16px;">
+        <button id="openSubmitBtn" class="btn btn-blue" style="width:100%; margin-top:15px; padding:12px;">Ответить</button>
+    `;
+    document.getElementById('openSubmitBtn').onclick = () => {
+        const answer = document.getElementById('openInput').value.trim();
+        if (!answer) {
+            showToast('Введите ответ', 'error');
+            return;
+        }
+        sendAnswer(answer, 'open');
+    };
+}
+
+function renderPollQuestion(q) {
+    const container = document.getElementById('optionsDiv');
+    container.innerHTML = '';
+    (q.options || []).forEach(opt => {
+        const btn = document.createElement('button');
+        btn.textContent = opt;
+        btn.className = 'option-btn';
+        btn.style.cssText = 'display: block; width: 100%; margin: 10px 0; padding: 14px; background: white; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; font-size: 16px; text-align: left;';
+        btn.onclick = () => sendAnswer(opt, 'poll');
+        container.appendChild(btn);
+    });
+}
+
+function renderWordcloudQuestion(q) {
+    const container = document.getElementById('optionsDiv');
+    container.innerHTML = `
+        <p style="color:#555; margin-bottom:10px;">Напишите слова/ассоциации (через запятую)</p>
+        <input type="text" id="wordcloudInput" class="form-input wordcloud-input" placeholder="например: космос, звезда, ракета" style="width:100%; padding:12px; font-size:16px;">
+        <button id="wordcloudSubmitBtn" class="btn btn-blue" style="width:100%; margin-top:12px; padding:12px;">Отправить</button>
+        <div id="wordcloudPreview" style="margin-top:25px; min-height:100px; text-align:center; padding:15px; background:#f8fafc; border-radius:12px;"></div>
+    `;
+    document.getElementById('wordcloudSubmitBtn').onclick = () => {
+        const input = document.getElementById('wordcloudInput').value.trim();
+        if (!input) {
+            showToast('Введите слова', 'error');
+            return;
+        }
+        const words = input.split(',').map(w => w.trim()).filter(w => w.length > 0);
+        if (words.length === 0) {
+            showToast('Введите хотя бы одно слово', 'error');
+            return;
+        }
+        let html = '<div style="display:flex; flex-wrap:wrap; gap:14px; justify-content:center;">';
+        words.forEach(word => {
+            const size = 24 + Math.random() * 20;
+            const color = `hsl(${Math.random()*50 + 210}, 75%, 45%)`;
+            html += `<span style="font-size:${size}px; font-weight:700; color:${color};">${escapeHtml(word)}</span>`;
+        });
+        html += '</div>';
+        document.getElementById('wordcloudPreview').innerHTML = html;
+        sendAnswer(input, 'wordcloud');
+    };
+}
+
+let canvas = null, ctx = null;
+function isCanvasBlank(canvas) {
+    const context = canvas.getContext('2d');
+    const pixelBuffer = new Uint32Array(
+        context.getImageData(0, 0, canvas.width, canvas.height).data.buffer
+    );
+    return !pixelBuffer.some(color => color !== 0);
+}
+
+function renderDrawQuestion(q) {
+    const task = q.additional_data?.task || q.text || 'Нарисуйте что-то';
+    const container = document.getElementById('optionsDiv');
+    container.innerHTML = `
+        <p style="margin-bottom:12px; font-weight:500;">${escapeHtml(task)}</p>
+        <canvas id="drawCanvas" width="720" height="460" 
+                style="width:100%; border:3px solid #e5e7eb; border-radius:16px; background:#fafafa; touch-action:none;"></canvas>
+        <div style="margin-top:18px; text-align:center;">
+            <button id="clearCanvasBtn" class="btn-outline-new">Очистить</button>
+            <button id="submitDrawBtn" class="btn btn-blue" style="margin-left:12px;">Я нарисовал</button>
+            <button id="skipDrawBtn" class="btn-outline-new" style="margin-left:12px;">Пропустить</button>
+        </div>
+    `;
+    initCanvas();
+    document.getElementById('submitDrawBtn').onclick = () => {
+        if (isCanvasBlank(canvas)) {
+            showToast('Нарисуйте что-нибудь перед отправкой', 'error');
+            return;
+        }
+        sendAnswer('drawing_submitted', 'draw');
+    };
+    document.getElementById('clearCanvasBtn').onclick = () => ctx.clearRect(0, 0, canvas.width, canvas.height);
+    document.getElementById('skipDrawBtn').onclick = () => {
+        if (hasAnswered) return;
+        hasAnswered = true;
+        selectedAnswer = null;
+        disableInputs();
+        showToast('Вы пропустили задание', 'info');
+    };
+}
+
+function initCanvas() {
+    canvas = document.getElementById('drawCanvas');
+    if (!canvas) return;
+    ctx = canvas.getContext('2d');
+    
+    ctx.lineWidth = 6;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#1e40af';
+
+    let drawing = false;
+
+    function getCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        
+        const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+        const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+        
+        return {
+            x: (clientX - rect.left) * scaleX,
+            y: (clientY - rect.top) * scaleY
+        };
+    }
+
+    function startDraw(e) {
+        drawing = true;
+        const {x, y} = getCoords(e);
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+    }
+
+    function draw(e) {
+        if (!drawing) return;
+        e.preventDefault();
+        const {x, y} = getCoords(e);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+    }
+
+    function endDraw() {
+        drawing = false;
+        ctx.beginPath();
+    }
+
+    // Mouse
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', endDraw);
+    canvas.addEventListener('mouseout', endDraw);
+
+    // Touch
+    canvas.addEventListener('touchstart', startDraw);
+    canvas.addEventListener('touchmove', draw);
+    canvas.addEventListener('touchend', endDraw);
+}
+
+function renderDanceQuestion(q) {
+    const task = q.additional_data?.task || 'Выполните танцевальное задание';
+    const container = document.getElementById('optionsDiv');
+    container.innerHTML = `
+        <p style="font-size:18px; font-weight:500;">${escapeHtml(task)}</p>
+        <div style="background:#f8fafc; padding:40px; border-radius:16px; text-align:center; margin:20px 0; border:2px dashed #cbd5e1;">
+            🕺💃
+        </div>
+        <button id="submitDanceBtn" class="btn btn-blue" style="width:100%;">Я выполнил(а)</button>
+        <button id="skipDanceBtn" class="btn-outline-new" style="width:100%; margin-top:10px;">Пропустить</button>
+    `;
+    document.getElementById('submitDanceBtn').onclick = () => sendAnswer('dance_completed', 'dance');
+    document.getElementById('skipDanceBtn').onclick = () => {
+        if (hasAnswered) return;
+        hasAnswered = true;
+        selectedAnswer = null;
+        disableInputs();
+        showToast('Вы пропустили задание', 'info');
+    };
+}
+
+function renderSlideQuestion(q) {
+    let content = q.additional_data?.content || q.text || 'Слайд без содержания';
+    let originalContent = content;
+    let html = '';
+    if (content.match(/^https?:\/\//i)) {
+        html = `<img src="${content}" style="max-width:100%; border-radius:12px;">`;
+    } else {
+        html = `<div id="slideContent" contenteditable="true" style="background:white; padding:40px; border-radius:16px; border:2px solid #e2e8f0; min-height:200px; outline:none;">${escapeHtml(content)}</div>`;
+    }
+    const container = document.getElementById('optionsDiv');
+    container.innerHTML = `
+        ${html}
+        <button id="slideContinueBtn" class="btn btn-blue" style="width:100%; margin-top:25px; padding:12px;">Продолжить</button>
+    `;
+    const continueBtn = document.getElementById('slideContinueBtn');
+    if (continueBtn) {
+        continueBtn.onclick = () => {
+            const editedContent = document.getElementById('slideContent')?.innerHTML || content;
+            if (editedContent === originalContent) {
+                showToast('Измените содержимое слайда', 'error');
+                return;
+            }
+            sendAnswer(editedContent, 'slide');
+        };
+    }
+}
+
+// === ГЛАВНЫЙ РЕНДЕР ===
 function renderQuestion(data) {
     const q = data.current_question;
     if (!q) return;
     
     document.getElementById('currentQ').innerText = data.question_index + 1;
-    document.getElementById('questionText').innerHTML = q.text;
+    document.getElementById('totalQ').innerText = totalQuestions;   // ← добавили
+    document.getElementById('questionText').innerHTML = escapeHtml(q.text);
     
-    // Добавьте ЭТОТ БЛОК для отображения раунда
     if (q.round_name && q.round_name !== 'None') {
         document.getElementById('roundBadge').style.display = 'inline-block';
         document.getElementById('roundName').innerText = q.round_name;
@@ -330,80 +615,55 @@ function renderQuestion(data) {
 
     const optionsDiv = document.getElementById('optionsDiv');
     optionsDiv.innerHTML = '';
-    if (q.options && !data.show_answer) {
-        q.options.forEach(opt => {
-            const btn = document.createElement('button');
-            btn.innerText = opt;
-            btn.classList.add('option-btn');
-            btn.style.cssText = 'display: block; width: 100%; margin: 10px 0; padding: 12px; background: white; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; font-size: 16px; text-align: left;';
-            if (hasAnswered) btn.disabled = true;
-            btn.onclick = () => submitAnswer(opt, btn);
-            optionsDiv.appendChild(btn);
-        });
+    
+    // В зависимости от типа вопроса вызываем разные рендеры
+    switch (q.type) {
+        case 'choice':
+            renderChoiceQuestion(q);
+            break;
+        case 'open':
+            renderOpenQuestion(q);
+            break;
+        case 'poll':
+            renderPollQuestion(q);
+            break;
+        case 'wordcloud':
+            renderWordcloudQuestion(q);
+            break;
+        case 'draw':
+            renderDrawQuestion(q);
+            break;
+        case 'dance':
+            renderDanceQuestion(q);
+            break;
+        case 'slide':
+            renderSlideQuestion(q);
+            break;
+        default:
+            renderChoiceQuestion(q);
     }
 }
 
-async function submitAnswer(answer, btnElement) {
-    if (hasAnswered) return;
-    hasAnswered = true;
-    selectedAnswer = answer.trim();
-    
-    document.querySelectorAll('.option-btn').forEach(btn => {
-        btn.disabled = true;
-        if (btn.innerText.trim() === answer.trim()) {
-            btn.style.background = '#e0e0e0';
-            btn.style.border = '2px solid #ff9800';
-        }
-    });
-    
-    await fetch(`/api/team/answer`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ 
-            game_code: gameCode, 
-            team_name: currentTeam, 
-            player_name: nickname,
-            answer: answer.trim() 
-        })
-    });
-}
-
-function startCountdown(seconds, onTick, onComplete) {
-    let remaining = seconds;
-    if (countdownInterval) clearInterval(countdownInterval);
-    countdownInterval = setInterval(() => {
-        if (remaining <= 0) {
-            clearInterval(countdownInterval);
-            countdownInterval = null;
-            if (onComplete) onComplete();
-        } else {
-            remaining--;
-            if (onTick) onTick(remaining);
-        }
-    }, 1000);
-}
-
+// === ПОКАЗ РЕЗУЛЬТАТА ВОПРОСА ===
 function showAnswerResult(data) {
     const q = data.current_question;
     if (!q) return;
-    
-    let correctAnswer = q.correct_answer;
-    if (Array.isArray(correctAnswer)) {
-        correctAnswer = correctAnswer[0];
-    }
-    if (typeof correctAnswer === 'string') {
-        correctAnswer = correctAnswer.trim();
-    }
-    
-    let userAnswer = selectedAnswer;
-    if (typeof userAnswer === 'string') {
-        userAnswer = userAnswer.trim();
-    }
-    
-    const isUserCorrect = (userAnswer === correctAnswer);
 
-    const optionsDiv = document.getElementById('optionsDiv');
-    const buttons = optionsDiv.querySelectorAll('.option-btn');
+    let correctAnswer = q.correct_answer;
+    if (Array.isArray(correctAnswer)) correctAnswer = correctAnswer[0];
+    const userAnswer = selectedAnswer;
+
+    let isUserCorrect = false;
+    if (q.type === 'choice') {
+        isUserCorrect = (userAnswer === correctAnswer);
+    } else if (q.type === 'open') {
+        isUserCorrect = (userAnswer && correctAnswer && userAnswer.toLowerCase().includes(correctAnswer.toLowerCase()));
+    } else {
+        isUserCorrect = (userAnswer && userAnswer !== 'skipped' && userAnswer !== null);
+    }
+
+    // Подсветка кнопок
+    const buttons = document.querySelectorAll('.option-btn');
     buttons.forEach(btn => {
         const opt = btn.innerText.trim();
         if (opt === correctAnswer) {
@@ -419,12 +679,14 @@ function showAnswerResult(data) {
     const resultBlock = document.getElementById('resultBlock');
     resultBlock.style.display = 'block';
     let message = '';
-    if (selectedAnswer === null) {
-        message = `Время вышло! Правильный ответ: ${correctAnswer}`;
+    if (userAnswer === null) {
+        message = `⏰ Время вышло! Правильный ответ: ${correctAnswer || '—'}`;
     } else if (isUserCorrect) {
-        message = `Правильно! Команда получает ${pointsPerQuestion} баллов`;
+        message = `✅ Правильно! Команда получает ${pointsPerQuestion} баллов`;
+        // Баллы на сервере уже начислены, но для UI можно обновить счёт
+        // totalScore += pointsPerQuestion; // не нужно, баллы придут в следующем статусе
     } else {
-        message = `Неправильно! Правильный ответ: ${correctAnswer}`;
+        message = `❌ Неправильно! Правильный ответ: ${correctAnswer || '—'}`;
     }
     
     const isLastQuestion = (data.question_index + 1 >= data.total_questions);
@@ -446,8 +708,24 @@ function showAnswerResult(data) {
     }
 }
 
+function startCountdown(seconds, onTick, onComplete) {
+    let remaining = seconds;
+    if (countdownInterval) clearInterval(countdownInterval);
+    countdownInterval = setInterval(() => {
+        if (remaining <= 0) {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+            if (onComplete) onComplete();
+        } else {
+            remaining--;
+            if (onTick) onTick(remaining);
+        }
+    }, 1000);
+}
+
+// === ФИНАЛЬНЫЕ РЕЗУЛЬТАТЫ ===
 async function showResults() {
-    document.getElementById('resultScreen').style.display = 'block';
+    showScreen('resultScreen');
     
     const res = await fetch(`/api/team/leaderboard?game_code=${gameCode}`);
     const data = await res.json();
@@ -461,26 +739,57 @@ async function showResults() {
         
         const leaderboard = document.getElementById('leaderboardList');
         leaderboard.innerHTML = teams.map((team, i) => `
-            <div style="background: ${team.name === currentTeam ? '#e8f5e9' : '#f9f9f9'}; margin: 10px 0; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between;">
-                <span><strong>${i+1}. ${team.name}</strong> (${team.members_count} игроков)</span>
+            <div style="background: ${team.name === currentTeam ? '#e8f5e9' : '#f9f9f9'}; 
+                        margin: 10px 0; padding: 15px; border-radius: 10px; 
+                        display: flex; justify-content: space-between; gap: 3px; ">
+                <span><strong>${i+1}. ${escapeHtml(team.name)}</strong> (${team.members_count} игроков)</span>
                 <span style="color: #2196F3; font-weight: bold;">${team.score} очков</span>
             </div>
         `).join('');
     }
 }
 
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
+// === ЗАПУСК ===
 loadQuizSettings();
-
 document.addEventListener('DOMContentLoaded', () => {
-    // При загрузке показываем только главный экран
     showScreen('actionScreen');
 });
 </script>
+
+<style>
+    /* Красивые уведомления */
+.toast-notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1f2937;
+    color: white;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+    min-width: 280px;
+    text-align: center;
+    font-size: 16px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    border-left: 5px solid #3b82f6;
+}
+
+.toast-notification.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(10px);
+}
+
+.toast-notification.error {
+    border-left-color: #ef4444;
+}
+
+.toast-notification.success {
+    border-left-color: #22c55e;
+}
+</style>
 {% endblock %}

@@ -1228,7 +1228,26 @@ def solo_game(quiz_id):
     return render_template('solo_game.html', quiz=quiz)
 # ========== КОМАНДНЫЙ РЕЖИМ (КАЖДАЯ КОМАНДА НЕЗАВИСИМО) ==========
 
-team_games = {}  # game_code -> {teams: {team_name: {members, score, current_index, players_answers, show_answer, answer_end_time}}}
+def sync_team_game_settings(game_code):
+    """Обновляет настройки игры из БД, если игра ещё не началась/не завершена."""
+    if game_code not in team_games:
+        return
+    game = team_games[game_code]
+    # Обновляем настройки только для ожидающих или активных игр
+    if game['status'] in ('waiting', 'active'):
+        quiz = Quiz.query.get(game['quiz_id'])
+        if quiz:
+            settings = quiz.settings or {}
+            game['time_per_question'] = int(settings.get('timePerQuestion', 25))
+            game['time_show_answer'] = int(settings.get('timeShowAnswer', 10))
+            game['points_per_question'] = int(settings.get('pointsPerQuestion', 100))
+            game['random_questions'] = settings.get('randomQuestions', False)
+            game['random_options'] = settings.get('randomOptions', False)
+            game['auto_start'] = settings.get('autoStart', False)
+            game['start_date'] = settings.get('startDate', '')
+            game['start_time'] = settings.get('startTime', '')
+            game['need_password'] = settings.get('accessType') == 'password'
+            game['access_password'] = settings.get('accessPassword', '')
 
 @app.route('/team/leader/<int:quiz_id>')
 def team_leader(quiz_id):
@@ -1241,6 +1260,7 @@ def team_leader(quiz_id):
     
     game_code = quiz.quiz_code
     if game_code not in team_games:
+        sync_team_game_settings(game_code)
         settings = quiz.settings or {}
         all_questions = Question.query.filter_by(quiz_id=quiz.id).order_by(Question.order).all()
         team_games[game_code] = {
@@ -1282,7 +1302,12 @@ def team_join():
     if not game_code or not team_name or not player_name:
         return jsonify({'success': False, 'error': 'Заполните все поля'}), 400
     
-    if game_code not in team_games:
+    # Если игра уже существует в памяти — синхронизируем её настройки с БД
+    if game_code in team_games:
+        sync_team_game_settings(game_code)
+        game = team_games[game_code]
+    else:
+        # Создаём новую игру, загружая все данные из викторины
         quiz = Quiz.query.filter_by(quiz_code=game_code).first()
         if not quiz:
             return jsonify({'success': False, 'error': 'Викторина не найдена'}), 404
@@ -1306,9 +1331,9 @@ def team_join():
             'random_questions': settings.get('randomQuestions', False),
             'random_options': settings.get('randomOptions', False)
         }
+        game = team_games[game_code]
     
-    game = team_games[game_code]
-    
+    # Проверка пароля, если требуется
     if game.get('need_password') and game.get('access_password'):
         if password != game['access_password']:
             return jsonify({'success': False, 'error': 'Неверный пароль'}), 400
@@ -1334,6 +1359,7 @@ def team_join():
             'options_shuffled': {}
         }
     
+    # Проверяем, не присоединился ли уже этот игрок
     for member in game['teams'][team_name]['members']:
         if member['name'] == player_name:
             return jsonify({'success': True, 'team_name': team_name})
@@ -1363,6 +1389,8 @@ def team_status():
     
     if game_code not in team_games:
         return jsonify({'success': False, 'error': 'Игра не найдена'}), 404
+    
+    sync_team_game_settings(game_code)
     
     game = team_games[game_code]
     quiz = Quiz.query.get(game['quiz_id'])
@@ -1505,8 +1533,15 @@ def team_status():
                 team_correct_count = 0
                 for member in team['members']:
                     member_answer = team['players_answers'].get(member['name'])
-                    if member_answer and current_q.correct_answer and member_answer in current_q.correct_answer:
-                        team_correct_count += 1
+                    if member_answer:
+                        # Для choice/open – проверяем правильность
+                        if current_q.type in ('choice', 'open') and current_q.correct_answer:
+                            if member_answer in current_q.correct_answer:
+                                team_correct_count += 1
+                        else:
+                            # Для остальных типов – любой непустой, не "skipped" ответ засчитывается
+                            if str(member_answer).strip().lower() != 'skipped':
+                                team_correct_count += 1
                 team['score'] += team_correct_count * game['points_per_question']
             team['show_answer'] = True
             team['answer_end_time'] = now + game['time_show_answer']
@@ -1525,7 +1560,7 @@ def team_status():
         if not team.get('show_answer') and team.get('answer_end_time') is None and not team.get('finished'):
             team['answer_end_time'] = now + game['time_per_question']
     
-    # Формируем текущий вопрос для команды
+# Формируем текущий вопрос для команды
     current_question = None
     if game['status'] == 'active' and team['current_index'] < len(questions) and not team.get('finished'):
         q = questions[team['current_index']]
@@ -1539,7 +1574,6 @@ def team_status():
                 team.setdefault('options_shuffled', {})[cache_key] = opts
             options = team['options_shuffled'][cache_key]
         
-        # Безопасное получение названия раунда
         round_name = None
         if q.round_id:
             round_obj = db.session.get(Round, q.round_id)
@@ -1548,8 +1582,11 @@ def team_status():
         
         current_question = {
             'text': q.text,
+            'type': q.type,                      # <--- ДОБАВЛЕНО
             'options': options,
-            'round_name': round_name
+            'correct_answer': q.correct_answer[0] if q.correct_answer else None,
+            'round_name': round_name,
+            'additional_data': q.additional_data or {}   # <--- ДОБАВЛЕНО
         }
         if team.get('show_answer'):
             current_question['correct_answer'] = q.correct_answer[0] if q.correct_answer else None
@@ -1621,9 +1658,15 @@ def team_answer():
     if team.get('show_answer'):
         return jsonify({'success': False, 'error': 'Время ответа истекло'}), 400
     
-    # Сохраняем ответ игрока
+    
+    # Сохраняем ответ
     if player_name not in team['players_answers']:
         team['players_answers'][player_name] = answer
+    
+    # === НАЧИСЛЯЕМ БАЛЛЫ ЗА ЛЮБОЙ ОТВЕТ (кроме пропуска) ===
+    # if answer and str(answer).strip().lower() != 'skipped':
+    #     # Начисляем баллы команде сразу
+    #     team['score'] += game.get('points_per_question', 100)
     
     return jsonify({'success': True})
 
@@ -1634,6 +1677,8 @@ def team_start():
     
     if game_code not in team_games:
         return jsonify({'success': False, 'error': 'Игра не найдена'}), 404
+    
+    sync_team_game_settings(game_code)
     
     game = team_games[game_code]
     

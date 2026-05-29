@@ -1,11 +1,9 @@
+
 {% extends "base.html" %}
-
 {% block title %}Редактор викторины - Quiz Platform{% endblock %}
-
 {% block extra_css %}
     <link rel="stylesheet" href="/static/css/pages/quiz_editor.css">
 {% endblock %}
-
 {% block content %}
 <div class="editor-container">
     <div class="editor-sidebar">
@@ -14,7 +12,6 @@
             <button class="sidebar-nav__btn" data-tab="questions">ВОПРОСЫ</button>
         </div>
     </div>
-
     <div class="editor-main">
         <!-- Вкладка НАСТРОЙКИ -->
         <div id="settingsTab" class="editor-tab active">
@@ -49,7 +46,6 @@
                         <small class="form-hint">Рекомендуемый размер: 1280x720px (16:9)</small>
                     </div>
                 </div>
-
                 <!-- КОГДА -->
                 <div class="settings-section">
                     <h3 class="section-title">КОГДА</h3>
@@ -71,7 +67,6 @@
                             <input type="checkbox" id="autoStart"> Автоматический запуск
                         </label>
                     </div>
-
                     <hr class="section-divider">
                     <h4 class="subsection-title">Настройка времени показа вопросов</h4>
                     
@@ -87,7 +82,6 @@
                         <small class="form-hint">После ответа будет показан правильный ответ в течение этого времени</small>
                     </div>
                 </div>
-
                 <!-- ДЛЯ КОГО -->
                 <div class="settings-section">
                     <h3 class="section-title">ДЛЯ КОГО</h3>
@@ -108,7 +102,6 @@
                         <small class="form-hint">Игроки должны будут ввести этот пароль при подключении</small>
                     </div>
                 </div>
-
                 <!-- КАК -->
                 <div class="settings-section">
                     <h3 class="section-title">КАК</h3>
@@ -122,7 +115,6 @@
                             <option value="solo">Одиночный</option>
                         </select>
                     </div>
-
                     <div class="sub-block">
                         <h4 class="sub-block__title">Перезапуск игры</h4>
                         <div class="form-group">
@@ -139,7 +131,6 @@
                             <small class="form-hint">Позволяет игрокам проходить викторину заново (только для одиночного режима)</small>
                         </div>
                     </div>
-
                     <div class="sub-block">
                         <h4 class="sub-block__title">Система подсчёта баллов</h4>
                         <div class="form-group">
@@ -158,7 +149,6 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="sub-block">
                         <h4 class="sub-block__title">Сложность и порядок</h4>
                         <div class="form-group">
@@ -173,21 +163,19 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="tariff-banner">
                     <p>🔵<strong>Бесплатный тариф</strong> — до 35 одновременных игроков</p>
                 </div>
-
                 <div class="editor-actions">
                     <button type="button" id="saveSettingsBtn" class="btn btn-blue">Сохранить настройки</button>
                     <button type="button" id="nextToQuestionsBtn" class="btn btn-red">Далее → Вопросы</button>
                 </div>
             </form>
         </div>
-
         <!-- Вкладка ВОПРОСЫ -->
+                <!-- Вкладка ВОПРОСЫ -->
         <div id="questionsTab" class="editor-tab">
-            <!-- Панель раундов (изначально скрыта) -->
+            <!-- Панель раундов -->
             <div id="roundsPanel" class="rounds-section" style="display: none;">
                 <div class="rounds-header">
                     <h4>Раунды</h4>
@@ -203,17 +191,17 @@
             
             <div id="questionsList">
                 <div style="text-align: center; padding: 40px;">
-                    <p>Нет вопросов. Нажмите « + Добавить вопрос»</p>
+                    <p>Нет вопросов. Нажмите «+ Добавить вопрос»</p>
                 </div>
             </div>
             
-            <div style="margin-top: 20px;">
+            <div class="editor-actions" style="margin-top: 30px; justify-content: space-between;">
                 <button type="button" id="backToSettingsBtn" class="btn-outline-new">← Назад к настройкам</button>
+                <button type="button" id="saveQuestionsBtn" class="btn btn-blue">Сохранить настройки</button>
             </div>
         </div>
     </div>
 </div>
-
 <!-- Модальное окно для вопроса -->
 <div id="questionModal" class="modal" style="display: none;">
     <div class="modal-content">
@@ -242,7 +230,6 @@
                 <label>Текст вопроса *</label>
                 <textarea id="questionText" class="form-textarea" rows="3"></textarea>
             </div>
-
             <div class="form-group">
                 <label>Баллы за правильный ответ</label>
                 <input type="number" id="questionPoints" class="form-input" value="100" min="10" max="1000">
@@ -264,7 +251,6 @@
                 </div>
                 <button type="button" id="addOptionBtn" class="btn-small">+ Добавить вариант</button>
             </div>
-
             <div id="openBlock" class="question-type-block" style="display: none;">
                 <div class="form-group">
                     <label>Правильный ответ (ключевые слова через запятую)</label>
@@ -272,7 +258,6 @@
                     <small class="form-hint">Ответ игрока будет сравниваться с этими ключевыми словами</small>
                 </div>
             </div>
-
             <div id="pollBlock" class="question-type-block" style="display: none;">
                 <label>Варианты для голосования</label>
                 <div id="pollOptionsList">
@@ -288,35 +273,30 @@
                 <button type="button" id="addPollOptionBtn" class="btn-small">+ Добавить вариант</button>
                 <small class="form-hint">Голосование не имеет правильных ответов</small>
             </div>
-
             <div id="wordcloudBlock" class="question-type-block" style="display: none;">
                 <div class="form-group">
                     <label>Инструкция для игроков</label>
                     <textarea id="wordcloudInstruction" class="form-textarea" rows="2" placeholder="Напишите слова, которые приходят вам на ум..."></textarea>
                 </div>
             </div>
-
             <div id="drawBlock" class="question-type-block" style="display: none;">
                 <div class="form-group">
                     <label>Задание на рисование</label>
                     <textarea id="drawTask" class="form-textarea" rows="2" placeholder="Что нужно нарисовать?..."></textarea>
                 </div>
             </div>
-
             <div id="danceBlock" class="question-type-block" style="display: none;">
                 <div class="form-group">
                     <label>Название танца/задания</label>
                     <input type="text" id="danceTask" class="form-input" placeholder="Например: Повтори движение">
                 </div>
             </div>
-
             <div id="slideBlock" class="question-type-block" style="display: none;">
                 <div class="form-group">
                     <label>Содержание слайда</label>
                     <textarea id="slideContent" class="form-textarea" rows="4" placeholder="Текст слайда или ссылка на изображение..."></textarea>
                 </div>
             </div>
-
             <div id="roundBlock" class="question-type-block" style="display: none;">
                 <div class="form-group">
                     <label>Название раунда *</label>
@@ -332,23 +312,19 @@
         </div>
     </div>
 </div>
-
 <script>
 let currentQuizId = null;
 {% if quiz %}
 currentQuizId = {{ quiz.id }};
 {% endif %}
-
 let currentRoundId = null;
 let rounds = [];
-
 function escapeHtml(text) {
     if (!text) return '';
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
 }
-
 // Загрузка раундов
 async function loadRounds() {
     if (!currentQuizId) return;
@@ -363,7 +339,6 @@ async function loadRounds() {
         console.error('Ошибка загрузки раундов:', error);
     }
 }
-
 // Отображение раундов
 async function renderRounds() {
     const container = document.getElementById('roundsList');
@@ -387,11 +362,11 @@ async function renderRounds() {
     
     for (const r of rounds) {
         html += `<div class="round-item ${currentRoundId === r.id ? 'active' : ''}" data-round-id="${r.id}">
-            <span class="round-name">📁 ${escapeHtml(r.title)}</span>
+            <span class="round-name">📁${escapeHtml(r.title)}</span>
             <span class="round-questions-count">${r.questions_count || 0}</span>
             <div class="round-actions">
-                <button class="edit-round" data-id="${r.id}">✏️</button>
-                <button class="delete-round" data-id="${r.id}">🗑️</button>
+                <button class="edit-round" data-id="${r.id}">✎</button>
+                <button class="delete-round" data-id="${r.id}">☒</button>
             </div>
         </div>`;
     }
@@ -441,7 +416,6 @@ async function renderRounds() {
         });
     });
 }
-
 // Подсчёт количества вопросов в раунде
 async function getQuestionsCount(roundId) {
     if (!currentQuizId) return 0;
@@ -460,7 +434,6 @@ async function getQuestionsCount(roundId) {
     }
     return 0;
 }
-
 // Кнопка добавления раунда
 document.getElementById('addRoundBtn').onclick = async () => {
     const title = prompt('Введите название раунда:');
@@ -473,7 +446,6 @@ document.getElementById('addRoundBtn').onclick = async () => {
         await loadRounds();
     }
 };
-
 // Кнопка сброса раунда
 const resetRoundBtn = document.getElementById('resetRoundBtn');
 if (resetRoundBtn) {
@@ -484,7 +456,6 @@ if (resetRoundBtn) {
         loadQuestions();
     });
 }
-
 // Загрузка вопросов (с фильтрацией по выбранному раунду)
 async function loadQuestions() {
     if (!currentQuizId) return;
@@ -518,7 +489,6 @@ async function loadQuestions() {
         console.error('Ошибка загрузки вопросов:', error);
     }
 }
-
 document.addEventListener('DOMContentLoaded', function() {
     // Переключение вкладок
     const settingsTab = document.getElementById('settingsTab');
@@ -602,7 +572,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const accessPublic = document.querySelector('input[name="access"][value="public"]');
     const accessPassword = document.querySelector('input[name="access"][value="password"]');
     const passwordGroup = document.getElementById('quizPasswordGroup');
-
     function updatePasswordVisibility() {
         if (accessPassword && accessPassword.checked) {
             passwordGroup.style.display = 'block';
@@ -612,7 +581,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (pwdInput) pwdInput.value = '';
         }
     }
-
     if (accessPublic && accessPassword) {
         accessPublic.addEventListener('change', updatePasswordVisibility);
         accessPassword.addEventListener('change', updatePasswordVisibility);
@@ -642,7 +610,6 @@ document.addEventListener('DOMContentLoaded', function() {
         saveBtn.onclick = async () => {
             const pointsValue = document.getElementById('pointsPerQuestion')?.value || 100;
             const allowReplaySoloCheckbox = document.getElementById('allowReplaySolo');
-
             const data = {
                 quiz_id: currentQuizId,
                 title: document.getElementById('quizTitle')?.value || '',
@@ -677,18 +644,16 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             const result = await response.json();
             if (result.success) {
-                if (!currentQuizId && result.quiz_id) currentQuizId = result.quiz_id;
-                alert('Викторина сохранена!');
+            showNotification('Настройки викторины успешно сохранены!', 'success');
+            if (!currentQuizId && result.quiz_id) currentQuizId = result.quiz_id;
             } else {
-                alert('Ошибка: ' + result.error);
+                showNotification('✕' + (result.error || 'Ошибка сохранения'), 'error');
             }
         };
     }
-
     // Показываем/скрываем настройку "Пройти викторину заново" только для одиночного режима
     const gameModeSelect = document.getElementById('gameMode');
     const allowReplaySoloBlock = document.getElementById('allowReplaySoloBlock');
-
     function toggleReplaySoloOption() {
         if (gameModeSelect && allowReplaySoloBlock) {
             const mode = gameModeSelect.value;
@@ -701,7 +666,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }
-
     if (gameModeSelect) {
         gameModeSelect.addEventListener('change', toggleReplaySoloOption);
         toggleReplaySoloOption();
@@ -1039,5 +1003,86 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 });
+
+// Универсальная центрированная функция уведомления
+function showNotification(message, type = 'success') {
+    const old = document.querySelector('.notification');
+    if (old) old.remove();
+
+    const notif = document.createElement('div');
+    notif.className = `notification ${type}`;
+    notif.innerHTML = `
+        <span class="icon">${type === 'success' ? '✓' : '✕'}</span>
+        <span>${message}</span>
+    `;
+    document.body.appendChild(notif);
+
+    // Показываем с небольшой задержкой
+    setTimeout(() => notif.classList.add('show'), 10);
+
+    // Автоскрытие
+    setTimeout(() => {
+        notif.classList.remove('show');
+        setTimeout(() => notif.remove(), 400);
+    }, 2800);
+}
+
+// Сохранение на вкладке ВОПРОСЫ
+const saveQuestionsBtn = document.getElementById('saveQuestionsBtn');
+if (saveQuestionsBtn) {
+    saveQuestionsBtn.addEventListener('click', async () => {
+        if (!currentQuizId) {
+            showNotification('Сначала сохраните основные настройки викторины', 'error');
+            return;
+        }
+        
+        await loadQuestions();
+        await loadRounds();
+        
+        showNotification('Настройки вопросов обновлены!', 'success');
+    });
+}
 </script>
+
+<style>
+/* Красивое центрированное уведомление */
+.notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 380px;
+    padding: 16px 24px;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 10000;
+    font-weight: 500;
+    color: white;
+    opacity: 0;
+    transform: translate(-50%, -20px);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.notification.show {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+.notification.success {
+    background: #1f2937;
+    border-left: 6px solid #22c55e;
+}
+
+.notification.error {
+    background: #1f2937;
+    border-left: 6px solid #ef4444;
+}
+
+.notification .icon {
+    font-size: 22px;
+}
+</style>
 {% endblock %}
