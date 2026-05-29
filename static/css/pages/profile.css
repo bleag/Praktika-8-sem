@@ -2,7 +2,7 @@
 
 /* ОСНОВНАЯ ОБЁРТКА */
 .profile-main {
-    background: linear-gradient(135deg, #f8fafc 0%, #c8dcf0a6 50%);
+    background: linear-gradient(143deg, #f8fafc 0%, #c8dcf024 50%);
     min-height: calc(100vh - 140px);
     padding: 40px 20px;
 }
@@ -139,6 +139,7 @@
     cursor: pointer;
     font-size: 16px;
     transition: all 0.2s;
+    font-weight: 600;
 }
 
 .search-btn:hover {
@@ -292,8 +293,8 @@
 }
 
 .tariff-card {
-    background: linear-gradient(135deg, #ffffff, #fef2f2);
-    border: 1px solid #fecaca;
+    background: linear-gradient(0deg, #ffffff, #ffe9e969);
+    border: 1px solid #fecaca52;
     border-radius: 16px;
     padding: 24px;
     text-align: center;
@@ -308,10 +309,10 @@
     transform: translateX(-50%);
     background: linear-gradient(90deg, #1e40af, #2563eb);
     color: white;
-    padding: 4px 16px;
+    padding: 8px 23px;
     border-radius: 20px;
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .tariff-card__content {

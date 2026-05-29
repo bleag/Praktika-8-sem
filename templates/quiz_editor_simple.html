@@ -1,10 +1,29 @@
-
 {% extends "base.html" %}
 {% block title %}Редактор викторины - Quiz Platform{% endblock %}
 {% block extra_css %}
     <link rel="stylesheet" href="/static/css/pages/quiz_editor.css">
+    
+    <style>
+        /* Полноэкранный градиент только для этой страницы */
+        body {
+            background: linear-gradient(135deg, #1e3b8ac8 0%, #312e81bc 60%, #7f1d1dd2 100%) !important;
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        /* Чтобы основной контент не сливался */
+        .editor-container {
+            background: transparent !important;
+            min-height: 100vh;
+        }
+
+        main {
+            background: transparent !important;
+        }
+    </style>
 {% endblock %}
 {% block content %}
+
 <div class="editor-container">
     <div class="editor-sidebar">
         <div class="sidebar-nav">

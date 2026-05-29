@@ -1,0 +1,5 @@
+.profile-main {
+    background: linear-gradient(135deg, #f8fafc 0%, #c8dcf0a6 50%);
+    min-height: calc(100vh - 140px);
+    padding: 40px 20px;
+}

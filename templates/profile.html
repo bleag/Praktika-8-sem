@@ -47,7 +47,7 @@
                     <div class="quiz-card__content">
                         <h3 class="quiz-card__title">{{ quiz.title }}</h3>
                         <p class="quiz-card__desc">{{ quiz.description[:120] }}{% if quiz.description and quiz.description|length > 120 %}...{% endif %}</p>
-                        
+
                         <div class="quiz-card__meta">
                             <span class="quiz-card__code">Код: {{ quiz.quiz_code }}</span>
                             <span class="quiz-card__mode {{ mode if mode else 'multiplayer' }}">

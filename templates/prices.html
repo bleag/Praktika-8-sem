@@ -4,13 +4,23 @@
 
 {% block extra_css %}
     <link rel="stylesheet" href="/static/css/pages/prices.css">
+    
+    <style>
+        /* Лёгкий градиентный фон для страницы тарифов */
+        .pricing {
+            background: linear-gradient(181deg, #f8fafc 0%, #75aaff0f 50%) !important;
+            background-attachment: fixed;
+            min-height: 100vh;
+            padding-top: 60px;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
 <section class="pricing">
     <div class="container">
         <h1 class="hero__title">Выберите тариф</h1>
-        <p class="pricing-subtitle">Подходите к любому масштабу — от небольших игр до крупных мероприятий</p>
+        <p class="pricing-subtitle">Подходите к любому масштабу - от небольших игр до крупных мероприятий</p>
 
         <div class="pricing-grid">
             
@@ -65,7 +75,7 @@
                     <li><span class="check">✔</span> Индивидуальные решения</li>
                 </ul>
                 
-                <button onclick="alert('Свяжитесь с нами для подключения')" class="pricing-btn" style="color: white; background-color: #FF4963; cursor: pointer;" >Связаться</button>
+                <button onclick="alert('Свяжитесь с нами для подключения')" class="pricing-btn" style="color: white; background-color: #ef4444; cursor: pointer;" >Связаться</button>
             </div>
         </div>
     </div>
@@ -90,5 +100,43 @@
 
     // Запуск анимации после загрузки
     window.addEventListener('load', animateOnScroll);
+
+// Красивое уведомление
+function showNotification(message, type = 'info') {
+    const old = document.querySelector('.custom-notification');
+    if (old) old.remove();
+
+    const notif = document.createElement('div');
+    notif.className = `custom-notification ${type}`;
+    notif.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 14px;">
+            <span style="font-size: 26px;">${type === 'info' ? '' : '✓'}</span>
+            <div>
+                <div style="font-weight: 600; font-size: 16px;">${message}</div>
+                <div style="font-size: 14px; opacity: 0.85;">Скоро будет доступно</div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(notif);
+
+    setTimeout(() => notif.classList.add('show'), 10);
+
+    setTimeout(() => {
+        notif.classList.remove('show');
+        setTimeout(() => notif.remove(), 400);
+    }, 3200);
+}
+
+// Обработчики кнопок
+document.querySelectorAll('button[onclick^="alert"]').forEach(btn => {
+    const oldOnClick = btn.getAttribute('onclick');
+    btn.removeAttribute('onclick');
+    
+    btn.addEventListener('click', () => {
+        showNotification('Функция в разработке', 'info');
+    });
+});
 </script>
+
 {% endblock %}

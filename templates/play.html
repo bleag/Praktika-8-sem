@@ -5,9 +5,17 @@
 {% block body_class %}play-page{% endblock %}
 
 {% block content %}
-
 {% block extra_css %}
     <link rel="stylesheet" href="/static/css/pages/play.css">
+    
+    <style>
+        /* Лёгкий градиентный фон для страницы выбора викторин */
+        body.play-page {
+            background: linear-gradient(181deg, #f8fafc 0%, #75aaff0f 50%) !important;
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+    </style>
 {% endblock %}
 
 <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 40px 20px;">
@@ -83,9 +91,66 @@
 </div>
 
 <script>
+function showCopyNotification(code) {
+    // Удаляем старое уведомление, если есть
+    const old = document.querySelector('.copy-notification');
+    if (old) old.remove();
+
+    const notif = document.createElement('div');
+    notif.className = 'copy-notification';
+    notif.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 24px;">✓</span>
+            <div>
+                <div style="font-weight: 600;">Код скопирован!</div>
+                <div style="font-size: 15px; opacity: 0.9;">${code}</div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(notif);
+
+    // Показываем
+    setTimeout(() => notif.classList.add('show'), 10);
+
+    // Автоскрытие
+    setTimeout(() => {
+        notif.classList.remove('show');
+        setTimeout(() => notif.remove(), 400);
+    }, 2500);
+}
+
 function copyCode(code) {
-    navigator.clipboard.writeText(code);
-    alert('Код скопирован: ' + code);
+    navigator.clipboard.writeText(code).then(() => {
+        showCopyNotification(code);
+    }).catch(() => {
+        alert('Не удалось скопировать код');
+    });
 }
 </script>
+
+<style>
+/* Красивое уведомление копирования */
+.copy-notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1f2937;
+    color: white;
+    padding: 16px 24px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+    min-width: 320px;
+    opacity: 0;
+    transition: all 0.4s ease;
+    border-left: 5px solid #22c55e;
+}
+
+.copy-notification.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(10px);
+}
+</style>
 {% endblock %}

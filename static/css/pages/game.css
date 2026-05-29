@@ -580,23 +580,46 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-/* ОБЩИЕ ГРАДИЕНТНЫЕ ФОНЫ ДЛЯ ИГРОВЫХ СТРАНИЦ */
-/* Основной фон для страницы игры (solo / multiplayer) */
+/* ==================== ФОН СТРАНИЦЫ ==================== */
+
+/* Основной градиентный фон для всех игровых страниц */
+body:has(.game-container),
+body:has(.team-play-container) {
+    background: linear-gradient(135deg, #1e3a8a 0%, #312e81 60%, #7f1d1d 100%) !important;
+    background-attachment: fixed;
+    min-height: 100vh;
+}
+
+/* Убираем повторяющийся фон у основных контейнеров */
 .game-container,
-body:has(.game-container) .main {
-    background: linear-gradient(135deg, #1e3a8a 0%, #312e81 60%, #7f1d1d 100%);
+.team-play-container {
+    background: transparent !important;
     min-height: 100vh;
+    padding: 40px 20px;
 }
-/* Фон для командной игры */
-.team-play-container,
-body:has(.team-play-container) .main {
-    background: linear-gradient(135deg, #1e3a8a 0%, #312e81 60%, #7f1d1d 100%);
-    min-height: 100vh;
+
+/* Основные панели — делаем их красивыми и полупрозрачными */
+.game-panel,
+.team-play-card,
+.team-play-screen,
+.team-play-form {
+    background: rgba(255, 255, 255, 0.92) !important;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
-/* Для командной игры заголовок белый */
-.team-play-header h1 {
-    color: white !important;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+
+/* Для тёмного режима (если нужно) — можно усилить прозрачность */
+.team-play-form,
+.team-play-card {
+    background: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Заголовки на тёмном фоне */
+.team-play-header h1,
+.game-container h1 {
+    color: #f5eff5 !important;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 .team-play-header h2 {
     color: #fbbf24 !important;

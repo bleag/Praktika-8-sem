@@ -2,7 +2,7 @@
 
 /* ОСНОВНАЯ ОБЁРТКА И ЗАГОЛОВКИ */
 .pricing {
-    padding: 60px 20px 80px 20px;
+    padding: 40px 20px 80px 20px;
     background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
 }
 
@@ -18,10 +18,9 @@
     margin-right: auto !important;
     font-size: 36px;
     font-weight: 700;
-    background: linear-gradient(90deg, #1e40af, #ef4444);
     -webkit-background-clip: text;
     background-clip: text;
-    color: transparent;
+    color: #1F2937;
     margin-bottom: 20px;
 }
 
@@ -210,4 +209,27 @@
     margin-top: 12px;
     padding-top: 12px;
     border-top: 1px solid #e2e8f0;
+}
+
+/* Красивое уведомление */
+.custom-notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1f2937;
+    color: white;
+    padding: 18px 26px;
+    border-radius: 16px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+    min-width: 340px;
+    opacity: 0;
+    transition: all 0.4s ease;
+    border-left: 6px solid #60a5fa;
+}
+
+.custom-notification.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(10px);
 }
