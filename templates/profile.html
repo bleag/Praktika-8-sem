@@ -171,22 +171,49 @@
     
     // Удаление викторины
     document.querySelectorAll('.btn-delete').forEach(btn => {
-        btn.addEventListener('click', async () => {
+        btn.addEventListener('click', () => {
             const quizId = btn.getAttribute('data-id');
-            if (confirm('Удалить викторину? Это действие нельзя отменить.')) {
-                try {
-                    const response = await fetch(`/api/quiz/${quizId}`, { method: 'DELETE' });
-                    const data = await response.json();
-                    if (data.success) {
-                        location.reload();
-                    } else {
-                        alert('Ошибка удаления: ' + (data.error || 'Неизвестная ошибка'));
+            
+            showConfirm('Удалить викторину? Это действие нельзя отменить.', async (confirmed) => {
+                if (confirmed) {
+                    try {
+                        const response = await fetch(`/api/quiz/${quizId}`, { method: 'DELETE' });
+                        const data = await response.json();
+                        if (data.success) {
+                            location.reload();
+                        } else {
+                            alert('Ошибка удаления: ' + (data.error || 'Неизвестная ошибка'));
+                        }
+                    } catch (error) {
+                        alert('Ошибка сервера');
                     }
-                } catch (error) {
-                    alert('Ошибка сервера');
                 }
-            }
+            });
         });
     });
+
+    // Красивое подтверждение удаления
+function showConfirm(message, callback) {
+    const modal = document.createElement('div');
+    modal.className = 'custom-confirm';
+    modal.innerHTML = `
+        <div class="custom-confirm-content">
+            <div class="custom-confirm-title">Подтвердите действие</div>
+            <div class="custom-confirm-text">${message}</div>
+            <div class="custom-confirm-buttons">
+                <button class="custom-confirm-btn cancel">Отмена</button>
+                <button class="custom-confirm-btn delete">Удалить</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    modal.style.display = 'flex';
+
+    modal.querySelector('.cancel').onclick = () => modal.remove();
+    modal.querySelector('.delete').onclick = () => {
+        modal.remove();
+        callback(true);
+    };
+}
 </script>
 {% endblock %}

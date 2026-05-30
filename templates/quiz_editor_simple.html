@@ -2,11 +2,11 @@
 {% block title %}Редактор викторины - Quiz Platform{% endblock %}
 {% block extra_css %}
     <link rel="stylesheet" href="/static/css/pages/quiz_editor.css">
-    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
         /* Полноэкранный градиент только для этой страницы */
         body {
-            background: linear-gradient(135deg, #1e3b8ac8 0%, #312e81bc 60%, #7f1d1dd2 100%) !important;
+            background: linear-gradient(135deg, #1e3a8a 0%, #312e81 60%, #7f1d1d 100%) !important;
             background-attachment: fixed;
             min-height: 100vh;
         }
@@ -20,6 +20,8 @@
         main {
             background: transparent !important;
         }
+
+        
     </style>
 {% endblock %}
 {% block content %}
@@ -115,8 +117,8 @@
                         </label>
                     </div>
                     
-                    <div id="quizPasswordGroup" style="display: none;">
-                        <label>Пароль для входа</label>
+                    <div id="quizPasswordGroup" style="display: none; color: #ffffffcc;">
+                        <label">Пароль для входа</label>
                         <input type="password" id="quizPassword" class="form-input" placeholder="Введите пароль">
                         <small class="form-hint">Игроки должны будут ввести этот пароль при подключении</small>
                     </div>
@@ -251,7 +253,7 @@
             </div>
             <div class="form-group">
                 <label>Баллы за правильный ответ</label>
-                <input type="number" id="questionPoints" class="form-input" value="100" min="10" max="1000">
+                <input type="number" id="questionPoints" class="form-input" value="100" min="10" max="1000" style="color: #17191b !important;">
             </div>
                         
             <div id="choiceBlock">
@@ -403,35 +405,40 @@ async function renderRounds() {
         });
     });
     
-    // Кнопки редактирования
+// Кнопки редактирования названия раунда
     document.querySelectorAll('.edit-round').forEach(btn => {
         btn.addEventListener('click', async (e) => {
             e.stopPropagation();
             const id = parseInt(btn.getAttribute('data-id'));
             const round = rounds.find(r => r.id === id);
-            const newTitle = prompt('Введите новое название раунда:', round.title);
-            if (newTitle && newTitle.trim()) {
-                await fetch(`/api/round/${id}`, {
-                    method: 'PUT',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ title: newTitle.trim() })
-                });
-                await loadRounds();
-            }
+            
+            showPrompt('Введите новое название раунда:', round.title, async (newTitle) => {
+                if (newTitle && newTitle.trim()) {
+                    await fetch(`/api/round/${id}`, {
+                        method: 'PUT',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ title: newTitle.trim() })
+                    });
+                    await loadRounds();
+                }
+            });
         });
     });
     
-    // Кнопки удаления
+   // Кнопки удаления раунда
     document.querySelectorAll('.delete-round').forEach(btn => {
         btn.addEventListener('click', async (e) => {
             e.stopPropagation();
             const id = parseInt(btn.getAttribute('data-id'));
-            if (confirm('Удалить раунд? Вопросы переместятся в "Общие вопросы".')) {
-                await fetch(`/api/round/${id}`, { method: 'DELETE' });
-                if (currentRoundId === id) currentRoundId = null;
-                await loadRounds();
-                await loadQuestions();
-            }
+            
+            showConfirm('Удалить раунд? Вопросы переместятся в "Общие вопросы".', async (confirmed) => {
+                if (confirmed) {
+                    await fetch(`/api/round/${id}`, { method: 'DELETE' });
+                    if (currentRoundId === id) currentRoundId = null;
+                    await loadRounds();
+                    await loadQuestions();
+                }
+            });
         });
     });
 }
@@ -492,15 +499,15 @@ async function loadQuestions() {
         }
         
         if (filteredQuestions.length) {
-            container.innerHTML = filteredQuestions.map(q => `
-                <div style="background: #f5f5f5; border-radius: 12px; padding: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
-                    <div><strong>${escapeHtml(q.text)}</strong></div>
-                    <div>
-                        <button onclick="editQuestion(${q.id})" style="margin-right: 5px; cursor: pointer;">Изменить</button>
-                        <button onclick="deleteQuestion(${q.id})" style="cursor: pointer;">Удалить</button>
+                container.innerHTML = filteredQuestions.map(q => `
+                    <div class="question-item">
+                        <div><strong>${escapeHtml(q.text)}</strong></div>
+                        <div>
+                            <button onclick="editQuestion(${q.id})">Изменить</button>
+                            <button onclick="deleteQuestion(${q.id})">Удалить</button>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `).join('');
         } else {
             container.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;"><p>Нет вопросов. Нажмите «+ Добавить вопрос»</p></div>';
         }
@@ -1025,25 +1032,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Универсальная центрированная функция уведомления
 function showNotification(message, type = 'success') {
-    const old = document.querySelector('.notification');
+    // Удаляем старое, если есть
+    const old = document.querySelector('.custom-notification');
     if (old) old.remove();
 
     const notif = document.createElement('div');
-    notif.className = `notification ${type}`;
+    notif.className = `custom-notification ${type}`;
+
+    const icon = type === 'success' ? '✅' : 
+                 type === 'error' ? '❌' : '⚠️';
+
     notif.innerHTML = `
-        <span class="icon">${type === 'success' ? '✓' : '✕'}</span>
+        <span class="icon">${icon}</span>
         <span>${message}</span>
     `;
+
     document.body.appendChild(notif);
 
-    // Показываем с небольшой задержкой
+    // Показываем
     setTimeout(() => notif.classList.add('show'), 10);
 
     // Автоскрытие
     setTimeout(() => {
         notif.classList.remove('show');
         setTimeout(() => notif.remove(), 400);
-    }, 2800);
+    }, 3200);
 }
 
 // Сохранение на вкладке ВОПРОСЫ
@@ -1062,6 +1075,87 @@ if (saveQuestionsBtn) {
     });
 }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Инициализация date picker для поля даты
+        flatpickr("#startDate", {
+            dateFormat: "Y-m-d",
+            locale: "ru",
+            allowInput: true,
+            theme: "dark",  // базовый тёмный стиль
+            onChange: function(selectedDates, dateStr, instance) {
+                // при желании можно синхронизировать с временем
+            }
+        });
+        
+        // Для времени можно использовать time picker, но он тоже поддерживает время
+        flatpickr("#startTime", {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i",
+            time_24hr: true,
+            locale: "ru",
+            allowInput: true
+        });
+    });
+
+    // Красивое подтверждение (confirm)
+function showConfirm(message, callback) {
+    const modal = document.createElement('div');
+    modal.className = 'custom-modal';
+    modal.innerHTML = `
+        <div class="custom-modal-content">
+            <div class="custom-modal-title">Подтвердите действие</div>
+            <div class="custom-modal-text">${message}</div>
+            <div class="custom-modal-buttons">
+                <button class="custom-modal-btn cancel">Отмена</button>
+                <button class="custom-modal-btn confirm">Удалить</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    modal.style.display = 'flex';
+
+    modal.querySelector('.cancel').onclick = () => modal.remove();
+    modal.querySelector('.confirm').onclick = () => {
+        modal.remove();
+        callback(true);
+    };
+}
+
+// Красивое prompt (ввод текста)
+function showPrompt(message, defaultValue = '', callback) {
+    const modal = document.createElement('div');
+    modal.className = 'custom-modal';
+    modal.innerHTML = `
+        <div class="custom-modal-content">
+            <div class="custom-modal-title">Введите данные</div>
+            <div class="custom-modal-text">${message}</div>
+            <input type="text" class="form-input" id="promptInput" value="${defaultValue}" 
+                   style="width: 100%; margin-bottom: 20px; background: #374151; color: white; border: 1px solid #4b5563;">
+            <div class="custom-modal-buttons">
+                <button class="custom-modal-btn cancel">Отмена</button>
+                <button class="custom-modal-btn ok">OK</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    modal.style.display = 'flex';
+
+    const input = modal.querySelector('#promptInput');
+    input.focus();
+
+    modal.querySelector('.cancel').onclick = () => modal.remove();
+    modal.querySelector('.ok').onclick = () => {
+        const value = input.value.trim();
+        modal.remove();
+        callback(value);
+    };
+}
+</script>
+
 
 <style>
 /* Красивое центрированное уведомление */

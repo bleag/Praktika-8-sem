@@ -82,7 +82,7 @@
 .section-title {
     font-size: 20px;
     font-weight: 700;
-    color: #1F2937 !important;
+    color: #ffffffcc !important;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     border-left: 4px solid #ef4444;
     padding-left: 15px;
@@ -92,7 +92,7 @@
 .subsection-title {
     font-size: 16px;
     font-weight: 600;
-    color: #fbbf24 !important;
+    color: #ffffffcc !important;
     border-left: 3px solid #1e40af;
     padding-left: 12px;
     margin-bottom: 16px;
@@ -101,8 +101,8 @@
 .sub-block__title {
     font-size: 16px;
     font-weight: 600;
-    color: #1F2937 !important;
-    border-bottom: 1px solid #1F2937 !important;
+    color: #ffffffcc !important;
+    border-bottom: 1px solid #ffffffcc !important;
     display: inline-block;
     padding-bottom: 8px;
     margin-bottom: 16px;
@@ -110,10 +110,10 @@
 
 .section-desc {
     font-size: 15px;
-    color: #1F2937 !important;
+    color: #ffffffcc !important;
     margin-bottom: 20px;
     padding: 0px 10px 10px 8px;
-    border-bottom: 1px solid #1F2937;
+    border-bottom: 1px solid #ffffffcc;
     font-weight: 500;
 
 }
@@ -136,7 +136,7 @@
     display: block;
     margin-bottom: 8px;
     font-weight: 500;
-    color: #1F2937 !important;
+    color: #ffffffcc !important;
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
 }
 
@@ -144,10 +144,10 @@
     width: 100%;
     padding: 8px 12px;
     background: rgb(255 255 255 / 14%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border: 1px solid rgba(0, 2, 92, 0.35) !important;
     border-radius: 16px !important;
     font-size: 16px;
-    color: #1e293b !important;
+    color: #ffffffcc !important;
     transition: all 0.2s;
 }
 
@@ -173,7 +173,7 @@
 .form-hint {
     display: block;
     font-size: 12px;
-    color: #1F2937  !important;
+    color: #ffffffcc !important;
     margin-top: 4px;
 }
 
@@ -192,7 +192,7 @@
     width: auto;
     margin: 0;
     accent-color: #2563eb;
-    color: #1F2937
+    color: #ffffffcc 
 }
 
 .indent {
@@ -208,7 +208,7 @@
     border-radius: 40px;
     padding: 12px 28px;
     font-weight: 600;
-    color: white;
+    color: #ffffffcc;
     transition: all 0.2s;
     box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
 }
@@ -223,7 +223,7 @@
     border-radius: 40px;
     padding: 12px 28px;
     font-weight: 600;
-    color: white;
+    color: #ffffffcc;
     transition: all 0.2s;
     box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);
 }
@@ -247,13 +247,14 @@
 }
 
 .btn-small {
-    padding: 5px 12px;
-    border-radius: 6px;
+    padding: 8px 20px;
+    border-radius: 10px;
     border: none;
     cursor: pointer;
     background: #1e40af;
     color: white;
-    font-size: 12px;
+    font-size: 14px;
+    margin: 5px 0px 10px 0px
 }
 
 .editor-actions {
@@ -261,7 +262,7 @@
     gap: 15px;
     margin-top: 20px;
     justify-content: flex-end;
-    border-top: 1px solid #1F2937;
+    border-top: 1px solid #ffffffcc ;
     padding-top: 24px;
 }
 
@@ -353,6 +354,7 @@
 
 #questionModal .form-hint {
     color: #64748b !important;
+    margin: 0px 0px 5px 0px;
 }
 
 /* ОПЦИИ ВОПРОСОВ */
@@ -405,7 +407,7 @@
 
 .cover-placeholder {
     font-size: 48px;
-    color: var(--text-gray);
+    color: #e5e7eb69;
 }
 
 .cover-image {
@@ -447,7 +449,7 @@
     margin-bottom: 20px;
 }
 .questions-header h4 {
-    color: #1F2937 !important;
+    color: #ffffffcc !important;
     font-size: 24px;
     font-weight: 700;
     margin: 0;
@@ -459,7 +461,7 @@
     border: none;
     border-radius: 40px;
     padding: 12px 28px;
-    color: white;
+    color: #ffffffcc;
     font-weight: 600;
     font-size: 16px;
     box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
@@ -471,7 +473,7 @@
 }
 
 #backToSettingsBtn {
-    color: white;
+    color: #ffffffcc;
     border-color: white;
     background: transparent;
     padding: 10px 24px;
@@ -485,15 +487,17 @@
 
 /* Карточки вопросов (общие и переопределённые) */
 .question-item {
-    background: #f5f5f5;
-    border-radius: 12px;
-    padding: 15px;
+    background: rgba(255, 255, 255, 0.92) !important;
+    backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.45) !important;
+    border-radius: 16px;
+    padding: 16px 20px;
     margin-bottom: 12px;
+    color: #1e293b !important;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border: 1px solid #e2e8f0;
-    transition: all 0.2s;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 .question-item:hover {
     border-color: #1e40af;
@@ -518,12 +522,19 @@
     display: flex;
     gap: 8px;
 }
-
+.question-item button {
+    background: rgba(255, 255, 255, 0.95) !important;
+    color: #1e293b !important;
+    border: 1px solid #cbd5e1 !important;
+    padding: 6px 14px;
+    border-radius: 8px;
+    margin-left: 8px;
+}
 /* Кнопки в карточках вопросов */
 #questionsList button,
 .question-item button,
 .question-item__actions button {
-    background: #e2e8f0 !important;
+    background: #ffffff85  !important;
     border: none !important;
     border-radius: 8px !important;
     padding: 6px 12px !important;
@@ -548,14 +559,14 @@
 
 /* Контейнер списка вопросов и карточки */
 #questionsTab {
-    background: rgba(0,0,0,0.1);
+    background: rgba(255, 255, 255, 0.15);
     border-radius: 32px;
     padding: 20px;
     margin-top: 10px;
 }
 
 #questionsList > div {
-    background: rgba(255, 255, 255, 0.8) !important;
+    background: transparent !important;
     backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 24px;
@@ -567,23 +578,36 @@
 .question-item strong,
 .question-item__text,
 #questionsList .question-item div:first-child strong {
-    color: #1e40af !important;
+    color: #ffffffcc  !important;
 }
 
+
+/* Все обычные карточки вопросов (кроме пустого состояния) */
+.question-item,
+#questionsList > div:not(:first-child) {
+    background: rgba(255, 255, 255, 0.12) !important;
+    backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    color: #1e293b !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 /* Пустое состояние */
 #questionsList > div:first-child {
-    background: rgb(255 255 255 / 14%) !important;
-    backdrop-filter: blur(8px);
-    border-radius: 24px;
-    padding: 15px !important;
-    text-align: center;
+    background: rgba(255, 255, 255, 0.12) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
     color: white !important;
-    font-size: 15px;
-    border: 1px solid rgba(255,255,255,0.3);
-    margin-top: 20px;
+    text-align: center;
+    padding: 60px 30px;
+    border-radius: 16px;
 }
 #questionsList > div:first-child p {
-    color: #1F2937 !important;
+    color: #ffffffcc !important;
     margin-bottom: 20px;
 }
 #questionsList .empty-questions {
@@ -641,14 +665,14 @@
 }
 .round-actions {
     display: flex;
-    gap: 5px;
-    margin-left: 10px;
+    gap: 10px;
+    margin-left: 30px;
 }
 .round-actions button {
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 17px;
 }
 .current-round-indicator {
     background: #e3f2fd;
@@ -664,7 +688,7 @@
 .section-divider {
     margin: 20px 0;
     border: none;
-    border-top: 1px solid #1F2937;
+    border-top: 1px solid #ffffffcc;
 ;
 }
 
@@ -703,8 +727,8 @@
 /* Красивый кастомный селект под тёмную тему */
 select.form-input {
     background: rgba(255, 255, 255, 0.12) !important;
-    color: #1F2937 !important;
-    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    color: #ffffffcc  !important;
+    border: 1px solid rgba(0, 2, 92, 0.35) !important;
     border-radius: 16px !important;
     padding: 12px 16px !important;
     font-size: 16px;
@@ -716,15 +740,15 @@ select.form-input {
 }
 
 select.form-input:focus {
-    border-color: #366094 !important;
-    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3) !important;
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 3px rgba(33, 97, 235, 0.219) !important;
     outline: none;
 }
 
 /* Стилизация выпадающего списка (options) */
 select.form-input option {
-    background:  #8c8bb6;
-    color: #1F2937;
+    background:  #1f2937;
+    color: #ffffffcc;
     padding: 12px 16px;
     font-size: 16px;
     font-weight: 500;
@@ -732,6 +756,264 @@ select.form-input option {
 
 select.form-input option:hover,
 select.form-input option:checked {
-    background: #7c7ba1;
-    color: #1F2937;
+    background: #304563;
+    color: #ffffffcc;
+}
+
+/* Общий контейнер календаря */
+.flatpickr-calendar {
+    background: rgba(30, 30, 60, 0.95) !important;
+    backdrop-filter: blur(12px);
+    border-radius: 24px !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 20px 35px rgba(0, 0, 0, 0.3) !important;
+    font-family: inherit;
+    z-index: 100 !important;
+
+
+}
+.flatpickr-calendar.open {
+    z-index: 100 !important;
+}
+/* Заголовок (месяц/год) */
+.flatpickr-month {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-radius: 20px 20px 0 0 !important;
+    color: #f0f0f0 !important;
+}
+.flatpickr-current-month {
+    color: white !important;
+    background: rgba(255,255,255,0.1) !important;
+    border-radius: 12px;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 12px !important;
+    position: relative !important;
+    height: 30px !important;
+    padding: 17px 0 !important;
+    z-index: 5 !important;
+    font-size: 14px !important;
+}
+/* Выпадающий список месяцев (селект) */
+.flatpickr-monthDropdown-months {
+    background: #1f2937 !important;
+    color: white !important;
+    border-radius: 12px !important;
+    padding: 4px 8px !important;
+    font-weight: 500;
+    width: auto !important;
+    min-width: 100px !important;
+    display: inline-block !important;
+    position: relative !important;
+    
+}
+.flatpickr-current-month input.cur-year {
+    background: #1f2937 !important;
+    color: white !important;
+    border-radius: 12px !important;
+    padding: 6px 8px !important;
+    width: 70px !important;
+    font-weight: 500;
+    border: 1px !important;
+    display: inline-block !important;
+    position: relative !important;
+    margin: 0 !important;
+    font-size: 13px !important;
+    text-align: center !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+.flatpickr-current-month .numInputWrapper {
+    display: inline-block !important;
+    width: auto !important;
+}
+
+.flatpickr-months, .flatpickr-month {
+    height: 50px;
+}
+/* Стрелки не перекрывают год */
+.flatpickr-prev-month, .flatpickr-next-month {
+    z-index: 10 !important;
+}
+/* Сами опции внутри выпадающего списка */
+.flatpickr-monthDropdown-months option {
+    background: #1f2937 !important;
+    color: white !important;
+}
+.flatpickr-weekdays {
+    background: transparent !important;
+}
+.flatpickr-weekday {
+    color: #cbd5e1 !important;
+}
+/* Дни недели и числа */
+.flatpickr-day {
+    color: #e2e8f0 !important;
+    border-radius: 40px !important;
+    transition: 0.2s;
+}
+.flatpickr-day:hover {
+    background: rgba(37, 99, 235, 0.6) !important;
+    color: white !important;
+}
+.flatpickr-day.selected,
+.flatpickr-day.selected:hover {
+    background: #2563eb !important;
+    border-color: #2563eb !important;
+    color: white !important;
+}
+.flatpickr-day.today {
+    border-color: #d54841 !important;
+    color: #d54841  !important;
+}
+/* Стрелки навигации */
+.flatpickr-prev-month,
+.flatpickr-next-month {
+    fill: #f0f0f0 !important;
+}
+.flatpickr-prev-month:hover,
+.flatpickr-next-month:hover {
+    fill: #fbbf24 !important;
+}
+/* Стилизация time picker */
+.flatpickr-time {
+    border-top: 1px solid rgba(255,255,255,0.2) !important;
+}
+.flatpickr-time input,
+.flatpickr-time .flatpickr-am-pm {
+    color: white !important;
+    background: transparent !important;
+}
+.flatpickr-time .numInputWrapper:hover {
+    background: rgba(255,255,255,0.1) !important;
+}
+
+
+/* 1. Выпадающий список в модальном окне (Тип вопроса) */
+#questionModal select.form-input {
+    color: #1e293b !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 1px solid rgba(0, 2, 92, 0.35) !important;
+}
+
+#questionModal select.form-input option {
+    background: white;
+    color: #1e293b;
+}
+
+#questionModal select.form-input option:hover,
+#questionModal select.form-input option:checked {
+    background: #e0f2fe;
+    color: #1e293b;
+}
+
+.question-item strong,
+.question-item .question-text {
+    color: #1e40af !important;
+}
+
+/* Кнопки внутри карточек вопросов */
+#questionsList button,
+.question-item button {
+    background: rgb(255 255 255 / 31%) !important;
+    color: #ffffff !important;
+}
+
+#questionsList button:hover,
+.question-item button:hover {
+    background: #2563eb !important;
+    color: white !important;
+}
+
+/* 4. Улучшение читаемости в модальном окне */
+#questionModal .form-group label,
+#questionModal .modal-body label {
+    color: #1e293b !important;
+}
+
+#questionModal .form-input,
+#questionModal .form-textarea {
+    color: #1e293b !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* ====================== ВОПРОСЫ ====================== */
+
+/* Единый стиль для всех карточек и пустого состояния */
+.question-item {
+    background: rgba(255, 255, 255, 0.85) !important;
+
+}
+
+.question-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+
+/* ====================== КРАСИВОЕ МОДАЛЬНОЕ ОКНО (confirm / prompt) ====================== */
+.custom-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    z-index: 30000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.custom-modal-content {
+    background: #1f2937;
+    color: white;
+    width: 420px;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    text-align: center;
+}
+
+.custom-modal-title {
+    font-size: 18px;
+    margin-bottom: 16px;
+    font-weight: 600;
+}
+
+.custom-modal-text {
+    margin-bottom: 24px;
+    opacity: 0.9;
+    line-height: 1.5;
+}
+
+.custom-modal-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.custom-modal-btn {
+    padding: 10px 24px;
+    border-radius: 50px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    min-width: 120px;
+}
+
+.custom-modal-btn.confirm {
+    background: #ef4444;
+    color: white;
+}
+
+.custom-modal-btn.cancel {
+    background: #4b5563;
+    color: white;
+}
+
+.custom-modal-btn.ok {
+    background: #dc2626;
+    color: white;
 }
