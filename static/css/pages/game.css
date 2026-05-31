@@ -1,5 +1,5 @@
 /* game.css — стили для игровых страниц (solo, team, multiplayer, draw_question)*/
-/* КАРТОЧКИ ВИКТОРИН (общий компонент) */
+/* КАРТОЧКИ ВИКТОРИН */
 .quiz-card {
     display: flex;
     gap: 20px;
@@ -242,7 +242,7 @@
     border-left: 5px solid #084cea;
     font-weight: 600;
 }
-/* Дополнительный вариант таблицы лидеров (leaderboard-row) */
+/* Дополнительный вариант таблицы лидеров */
 #leaderboardList .leaderboard-row {
     display: flex;
     justify-content: space-between;
@@ -518,7 +518,7 @@
     align-items: center;
 }
 
-/* ФОРМЫ КОМАНДНОЙ ИГРЫ (создание / присоединение) */
+/* ФОРМЫ КОМАНДНОЙ ИГРЫ (создание/присоединение) */
 .team-play-form {
     background: rgba(255, 255, 255, 0.92) !important;
     backdrop-filter: blur(10px);
@@ -661,7 +661,7 @@ body:has(.team-play-container) {
     border-color: rgba(255, 255, 255, 0.5);
 }
 
-/* СТРАНИЦА РИСОВАНИЯ (draw_question.html) */
+/* СТРАНИЦА РИСОВАНИЯ*/
 .draw-container {
     max-width: 800px;
     margin: 0 auto;
@@ -723,8 +723,7 @@ body:has(.team-play-container) {
     }
 }
 
-/* ===== ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ДЛЯ КАРТОЧКИ РЕЗУЛЬТАТОВ (без изменений таблицы лидеров) ===== */
-
+/* ===== ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ДЛЯ КАРТОЧКИ РЕЗУЛЬТАТОВ ===== */
 /* Анимация появления финальной карточки */
 #resultScreen {
     animation: fadeSlideUp 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
@@ -751,14 +750,13 @@ body:has(.team-play-container) {
     box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.5);
     transition: transform 0.3s ease;
-    text-align: center; /* центрируем всё содержимое */
+    text-align: center; 
 }
 
 .player-result:hover {
     transform: scale(1.01);
 }
 
-/* Имя игрока — по центру, без дополнительной иконки */
 .player-name-large {
     font-size: 32px;
     font-weight: 800;
@@ -767,11 +765,11 @@ body:has(.team-play-container) {
     background-clip: text;
     color: transparent;
     margin-bottom: 15px;
-    display: block; /* на всю ширину */
+    display: block; 
     text-align: center;
 }
 
-/* Статистика (баллы + надпись «баллов») */
+/* Статистика */
 .player-stats {
     background: rgba(59, 130, 246, 0.08);
     padding: 12px 20px;
@@ -784,9 +782,9 @@ body:has(.team-play-container) {
     gap: 6px;
 }
 
-/* Сами баллы — размер поменьше */
+/* Сами баллы */
 .result-score-value {
-    font-size: 48px !important;   /* было 72px — уменьшил */
+    font-size: 48px !important;   
     font-weight: 900;
     background: linear-gradient(135deg, #ef4444, #dc2626);
     -webkit-background-clip: text;
@@ -796,7 +794,7 @@ body:has(.team-play-container) {
     line-height: 1;
 }
 
-/* Текст «баллов» рядом с числом */
+/* Текст «баллов» */
 .player-stats span:not(.result-score-value) {
     font-size: 20px;
     font-weight: 600;
@@ -840,7 +838,7 @@ body:has(.team-play-container) {
     border-radius: 40px;
 }
 
-/* Кнопка повтора (оставляем как есть, но без лишних переопределений) */
+/* Кнопка повтора */
 #replaySoloBtn {
     background: linear-gradient(90deg, #3b82f6, #1e40af) !important;
     border-radius: 60px !important;
@@ -867,4 +865,39 @@ body:has(.team-play-container) {
     .player-stats span:not(.result-score-value) {
         font-size: 16px;
     }
+}
+
+/* Красивые уведомления */
+.toast-notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1f2937;
+    color: white;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+    min-width: 280px;
+    text-align: center;
+    font-size: 16px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    border-left: 5px solid #3b82f6;
+}
+
+.toast-notification.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(10px);
+}
+
+.toast-notification.error {
+    border-left-color: #ef4444;
+}
+
+.toast-notification.success {
+    border-left-color: #22c55e;
 }

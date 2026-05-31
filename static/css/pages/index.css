@@ -1,5 +1,4 @@
 /* index.css — главная страница (index.html) */
-/* ГЕРОЙ-БЛОК (вход по коду) */
 .hero {
     background: linear-gradient(135deg, #1e3a8a 0%, #312e81 60%, #7f1d1d 100%);
     color: white;
@@ -470,7 +469,7 @@ h2.hero__title {
     }
 }
 
- /* Стили для красивых уведомлений (как в edit_quiz) */
+ /* Стили для красивых уведомлений */
         .custom-notification {
             position: fixed;
             top: 20px;

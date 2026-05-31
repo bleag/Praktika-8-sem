@@ -28,7 +28,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const createQuizBtn = document.getElementById('createQuizBtn');
     if (createQuizBtn) {
         createQuizBtn.addEventListener('click', function() {
-            // Проверяем, авторизован ли пользователь
             const isLoggedIn = document.querySelector('.user-greeting') !== null;
             
             if (isLoggedIn) {

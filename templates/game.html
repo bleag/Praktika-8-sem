@@ -202,7 +202,6 @@ async function sendAnswer(answer, answerType = 'text') {
     hasAnswered = true;
     selectedAnswer = answer;
 
-    // Для творческих заданий можно отправить упрощённый текст
     let payloadAnswer = answer;
     if (answerType === 'draw') payloadAnswer = 'Рисунок отправлен';
     if (answerType === 'dance') payloadAnswer = 'Танец выполнен';
@@ -215,7 +214,6 @@ async function sendAnswer(answer, answerType = 'text') {
         body: JSON.stringify({ nickname, answer: payloadAnswer })
     });
 
-    // Заблокировать интерфейс
     disableInputs();
 }
 
@@ -321,7 +319,6 @@ function renderDrawQuestion(q) {
     `;
     initCanvas();
     
-    // Исправленный обработчик для кнопки "Я нарисовал"
     document.getElementById('submitDrawBtn').onclick = () => {
         if (isCanvasBlank(canvas)) {
             showToast('Нарисуйте что-нибудь перед отправкой', 'error');
@@ -480,11 +477,10 @@ function showAnswerResult(data) {
     } else if (q.type === 'open') {
         isUserCorrect = (userAnswer && correctAnswer && userAnswer.toLowerCase().includes(correctAnswer.toLowerCase()));
     } else {
-        // poll, wordcloud, draw, dance, slide – считаем, что ответ правильный (если не пропущен)
         isUserCorrect = (userAnswer && userAnswer !== 'skipped');
     }
 
-    // Подсветка кнопок ТОЛЬКО для choice (у open нет кнопок)
+    // Подсветка кнопок ТОЛЬКО для choice 
     const buttons = document.querySelectorAll('.option-btn');
     if (q.type === 'choice') {
         buttons.forEach(btn => {
@@ -498,7 +494,6 @@ function showAnswerResult(data) {
             }
         });
     } else {
-        // Для poll, wordcloud, draw, dance, slide – сбрасываем стили кнопок
         buttons.forEach(btn => {
             btn.style.background = '';
             btn.style.color = '';
@@ -559,43 +554,5 @@ function showResults(data) {
     }
 }
 </script>
-
-<style>
-    /* Красивые уведомления */
-.toast-notification {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #1f2937;
-    color: white;
-    padding: 16px 24px;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    z-index: 10000;
-    min-width: 280px;
-    text-align: center;
-    font-size: 16px;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-    border-left: 5px solid #3b82f6;
-}
-
-.toast-notification.show {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(-50%) translateY(10px);
-}
-
-.toast-notification.error {
-    border-left-color: #ef4444;
-}
-
-.toast-notification.success {
-    border-left-color: #22c55e;
-}
-</style>
-
 
 {% endblock %}

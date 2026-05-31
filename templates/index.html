@@ -40,7 +40,7 @@
         <div id="soloForm" class="code-input" style="display: none;">
             <h3>Введите код игры</h3>
             <input type="text" id="soloCode" class="code-input__field" placeholder="КВИЗ КОД" maxlength="6">
-            <button id="joinSoloBtn" class="btn btn-green btn-large">ИГРАТЬ ОДИНОЧНО</button>
+            <button id="joinSoloBtn" class="btn btn-green btn-large" style="color: white;">ИГРАТЬ ОДИНОЧНО</button>
         </div>
         
         <div class="hero__footer">
@@ -188,7 +188,6 @@
 
 {% block extra_js %}
 <script>
-    // Функция красивого уведомления (как в edit_quiz)
     function showNotification(message, type = 'success') {
         const old = document.querySelector('.custom-notification');
         if (old) old.remove();
@@ -264,7 +263,6 @@ joinMultiplayerBtn.onclick = async () => {
         const data = await response.json();
         
         if (data.success) {
-            // Викторина существует — переходим
             window.location.href = '/play/' + code;
         } else {
             showNotification('Викторина не найдена', 'error');
@@ -309,7 +307,7 @@ teamCode.onkeypress = (e) => {
     if (e.key === 'Enter') joinTeamBtn.click();
 };
     
-    // Одиночный режим (с проверкой доступности)
+    // Одиночный режим
     const joinSoloBtn = document.getElementById('joinSoloBtn');
     const soloCode = document.getElementById('soloCode');
     

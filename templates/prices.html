@@ -6,7 +6,6 @@
     <link rel="stylesheet" href="/static/css/pages/prices.css">
     
     <style>
-        /* Лёгкий градиентный фон для страницы тарифов */
         .pricing {
             background: linear-gradient(181deg, #f8fafc 0%, #75aaff0f 50%) !important;
             background-attachment: fixed;
@@ -41,7 +40,7 @@
                 <a href="/register" class="pricing-btn btn-blue" style="color: white;">Начать бесплатно</a>
             </div>
 
-            <!-- Базовый (рекомендуемый) -->
+            <!-- Базовый -->
             <div class="pricing-card popular">
                 <div class="popular-badge">Самый популярный</div>
                 <div class="pricing-icon">🟠</div>
@@ -84,7 +83,6 @@
 
 {% block extra_js %}
 <script>
-    // Анимация появления карточек при скролле
     function animateOnScroll() {
         const cards = document.querySelectorAll('.pricing-card');
         const observer = new IntersectionObserver((entries) => {
@@ -98,7 +96,6 @@
         cards.forEach(card => observer.observe(card));
     }
 
-    // Запуск анимации после загрузки
     window.addEventListener('load', animateOnScroll);
 
 // Красивое уведомление

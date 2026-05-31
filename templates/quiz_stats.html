@@ -13,7 +13,7 @@
         <h1>Аналитика викторины</h1>
         <h2>{{ quiz.title }}</h2>
         
-        <!-- Показываем режим викторины -->
+        <!-- Режим викторины -->
         <div style="margin-top: 25px;">
             <span style="color: #e2e5fa; background: linear-gradient(90deg, #2563eb, #1e40af); opacity: 1; padding: 10px 15px; border-radius: 20px; font-size: 15px; font-weight: 600;">
                 {% set mode = quiz.settings.gameMode if quiz.settings else 'multiplayer' %}
@@ -70,7 +70,6 @@
 </style>
 
 <script>
-// Функция уведомления
 // Функция уведомления
 function showNotification(message, type = 'success') {
     const old = document.querySelector('.custom-notification');
@@ -230,7 +229,6 @@ function exportToCSV() {
     // Преобразуем в CSV строку
     const csvContent = csvRows.map(row => 
         row.map(cell => {
-            // Экранируем кавычки и оборачиваем в кавычки, если есть запятые
             const cellStr = String(cell);
             if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
                 return `"${cellStr.replace(/"/g, '""')}"`;
@@ -239,7 +237,7 @@ function exportToCSV() {
         }).join(',')
     ).join('\n');
     
-    // Создаём Blob и скачиваем
+    // Создаем Blob и скачиваем
     const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
@@ -253,7 +251,6 @@ function exportToCSV() {
     showNotification('Скачано', 'success'); 
 }
 
-// Назначаем обработчик после загрузки DOM
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('exportCSVBtn')?.addEventListener('click', exportToCSV);
 });

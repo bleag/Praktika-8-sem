@@ -4,14 +4,12 @@
     <link rel="stylesheet" href="/static/css/pages/quiz_editor.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
-        /* Полноэкранный градиент только для этой страницы */
         body {
             background: linear-gradient(135deg, #1e3a8a 0%, #312e81 60%, #7f1d1d 100%) !important;
             background-attachment: fixed;
             min-height: 100vh;
         }
 
-        /* Чтобы основной контент не сливался */
         .editor-container {
             background: transparent !important;
             min-height: 100vh;
@@ -21,7 +19,6 @@
             background: transparent !important;
         }
 
-        
     </style>
 {% endblock %}
 {% block content %}
@@ -194,7 +191,6 @@
             </form>
         </div>
         <!-- Вкладка ВОПРОСЫ -->
-                <!-- Вкладка ВОПРОСЫ -->
         <div id="questionsTab" class="editor-tab">
             <!-- Панель раундов -->
             <div id="roundsPanel" class="rounds-section" style="display: none;">
@@ -459,7 +455,7 @@ async function renderRounds() {
         });
     });
 }
-// Подсчёт количества вопросов в раунде
+// Подсчет количества вопросов в раунде
 async function getQuestionsCount(roundId) {
     if (!currentQuizId) return 0;
     try {
@@ -696,7 +692,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         };
     }
-    // Показываем/скрываем настройку "Пройти викторину заново" только для одиночного режима
+    // Показ/скрытие настройки "Пройти викторину заново" только для одиночного режима
     const gameModeSelect = document.getElementById('gameMode');
     const allowReplaySoloBlock = document.getElementById('allowReplaySoloBlock');
     function toggleReplaySoloOption() {
@@ -862,7 +858,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 text: text,
                 options: options,
                 correct_answer: correctAnswer,
-                points: parseInt(document.getElementById('questionPoints').value) || 100,   // ← НОВОЕ
+                points: parseInt(document.getElementById('questionPoints').value) || 100, 
                 order: 0,
                 round_id: currentRoundId,
                 additional_data: additionalData
@@ -918,7 +914,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (block) block.style.display = 'none';
             }
             
-            // Для раунда скрываем поле текста вопроса
             if (type === 'round') {
                 document.getElementById('textFieldGroup').style.display = 'none';
             } else {
@@ -969,7 +964,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
             
-            // Триггерим событие change для показа правильного блока
             const event = new Event('change');
             questionTypeSelect.dispatchEvent(event);
             
@@ -1038,7 +1032,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     toggleReplaySoloOption();
                     
-                    // Загружаем раунды после загрузки данных
                     loadRounds();
                     loadQuestions();
                 }
@@ -1048,7 +1041,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Универсальная центрированная функция уведомления
 function showNotification(message, type = 'success') {
-    // Удаляем старое, если есть
     const old = document.querySelector('.custom-notification');
     if (old) old.remove();
 
@@ -1065,10 +1057,8 @@ function showNotification(message, type = 'success') {
 
     document.body.appendChild(notif);
 
-    // Показываем
     setTimeout(() => notif.classList.add('show'), 10);
 
-    // Автоскрытие
     setTimeout(() => {
         notif.classList.remove('show');
         setTimeout(() => notif.remove(), 400);
@@ -1102,11 +1092,9 @@ if (saveQuestionsBtn) {
             allowInput: true,
             theme: "dark",  // базовый тёмный стиль
             onChange: function(selectedDates, dateStr, instance) {
-                // при желании можно синхронизировать с временем
             }
         });
         
-        // Для времени можно использовать time picker, но он тоже поддерживает время
         flatpickr("#startTime", {
             enableTime: true,
             noCalendar: true,
@@ -1167,47 +1155,4 @@ function showPrompt(message, defaultValue = '', callback) {
 }
 </script>
 
-
-<style>
-/* Красивое центрированное уведомление */
-.custom-notification {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    min-width: 380px;
-    padding: 16px 24px;
-    border-radius: 14px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    z-index: 10000;
-    font-weight: 500;
-    color: white;
-    opacity: 0;
-    transform: translate(-50%, -20px);
-    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.custom-notification.show {
-    opacity: 1;
-    transform: translate(-50%, 0);
-}
-
-.custom-notification.success {
-    background: #1f2937;
-    border-left: 6px solid #22c55e;
-}
-
-.custom-notification.error {
-    background: #1f2937;
-    border-left: 6px solid #ef4444;
-}
-
-.custom-notification .icon {
-    font-size: 22px;
-}
-
-</style>
 {% endblock %}

@@ -724,7 +724,7 @@
     }
 }
 
-/* Красивый кастомный селект под тёмную тему */
+
 select.form-input {
     background: rgba(255, 255, 255, 0.12) !important;
     color: #ffffffcc  !important;
@@ -832,11 +832,11 @@ select.form-input option:checked {
 .flatpickr-months, .flatpickr-month {
     height: 50px;
 }
-/* Стрелки не перекрывают год */
+
 .flatpickr-prev-month, .flatpickr-next-month {
     z-index: 10 !important;
 }
-/* Сами опции внутри выпадающего списка */
+
 .flatpickr-monthDropdown-months option {
     background: #1f2937 !important;
     color: white !important;
@@ -890,7 +890,7 @@ select.form-input option:checked {
 }
 
 
-/* 1. Выпадающий список в модальном окне (Тип вопроса) */
+/* Выпадающий список в модальном окне (Тип вопроса) */
 #questionModal select.form-input {
     color: #1e293b !important;
     background: rgba(255, 255, 255, 0.95) !important;
@@ -926,7 +926,7 @@ select.form-input option:checked {
     color: white !important;
 }
 
-/* 4. Улучшение читаемости в модальном окне */
+/* Улучшение читаемости в модальном окне */
 #questionModal .form-group label,
 #questionModal .modal-body label {
     color: #1e293b !important;
@@ -939,8 +939,6 @@ select.form-input option:checked {
 }
 
 /* ====================== ВОПРОСЫ ====================== */
-
-/* Единый стиль для всех карточек и пустого состояния */
 .question-item {
     background: rgba(255, 255, 255, 0.85) !important;
 
@@ -1057,3 +1055,4 @@ select.form-input option:checked {
             margin-bottom: 20px;
             font-size: 16px;
         }
+        

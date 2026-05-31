@@ -250,7 +250,7 @@ def get_questions(quiz_id):
             'correct_answer': q.correct_answer,
             'media_url': q.media_url,
             'order': q.order,
-            'round_id': q.round_id  # ← ДОБАВЛЕНО
+            'round_id': q.round_id
         } for q in questions]
     })
 
@@ -303,7 +303,7 @@ def save_question(quiz_id):
     question.correct_answer = data.get('correct_answer')
     question.media_url = data.get('media_url')
     question.order = data.get('order', 0)
-    question.round_id = data.get('round_id')  # ← ДОБАВЛЕНО
+    question.round_id = data.get('round_id')
     question.additional_data = data.get('additional_data', {})
     
     db.session.commit()
@@ -575,9 +575,9 @@ def api_quizmaster_stop(code):
             )
             db.session.add(new_result)
             saved_count += 1
-            print(f"    ✅ Добавлен в сессию БД")
+            print(f"    Добавлен в сессию БД")
         except Exception as e:
-            print(f"    ❌ Ошибка: {e}")
+            print(f"    Ошибка: {e}")
     
     try:
         db.session.commit()
@@ -669,7 +669,6 @@ def api_quizmaster_status(code):
                                 if correct_any:
                                     player['score'] += points_per_question
                             elif current_q.type in ('poll', 'wordcloud', 'draw', 'dance', 'slide'):
-                                # Нормализуем ответ
                                 norm_answer = answer.strip().lower() if answer else ''
                                 if norm_answer and norm_answer != 'skipped':
                                     player['score'] += points_per_question
@@ -964,8 +963,8 @@ def public_quiz_status(quiz_id):
 # ========== СОЛО РЕЖИМ ==========
 
 # Хранилище статусов соло игр (в памяти)
-solo_games_status = {}  # quiz_id: {'is_closed': bool}
-solo_active_games = {}  # quiz_id: {'active': bool, 'paused': bool, 'current_q': int, 'questions': list, 'show_answer': bool, 'start_time': float}
+solo_games_status = {}
+solo_active_games = {}
 
 @app.route('/api/solo/<int:quiz_id>/save', methods=['POST'])
 def solo_save_result(quiz_id):
@@ -1075,7 +1074,7 @@ def solo_close_access(quiz_id):
         return jsonify({'success': False, 'error': 'Нет доступа'}), 403
     
     solo_games_status[quiz_id] = {'is_closed': True}
-    print(f"🔒 Викторина {quiz_id} ЗАКРЫТА")
+    print(f"Викторина {quiz_id} ЗАКРЫТА")
     
     return jsonify({'success': True})
 
@@ -1089,7 +1088,7 @@ def solo_open_access(quiz_id):
         return jsonify({'success': False, 'error': 'Нет доступа'}), 403
     
     solo_games_status[quiz_id] = {'is_closed': False}
-    print(f"🔓 Викторина {quiz_id} ОТКРЫТА")
+    print(f"Викторина {quiz_id} ОТКРЫТА")
     
     return jsonify({'success': True})
 
@@ -1107,7 +1106,7 @@ def solo_game_status(quiz_id):
         'title': quiz.title
     })
 
-# Управление активной игрой (Старт, Пауза, и т.д.)
+# Управление активной игрой
 @app.route('/api/solo/<int:quiz_id>/start-game', methods=['POST'])
 def solo_start_game(quiz_id):
     if 'user_id' not in session:
@@ -1158,7 +1157,6 @@ def solo_skip_question(quiz_id):
         solo_active_games[quiz_id]['show_answer'] = False
         solo_active_games[quiz_id]['start_time'] = time.time()
         
-        # Проверяем конец игры
         if solo_active_games[quiz_id]['current_q'] >= len(solo_active_games[quiz_id]['questions']):
             solo_active_games[quiz_id]['active'] = False
     return jsonify({'success': True})
@@ -1231,7 +1229,6 @@ def solo_game(quiz_id):
         """Одиночная игра по ID викторины"""
     quiz = Quiz.query.get_or_404(quiz_id)
     
-    # Проверяем, что это действительно одиночная викторина
     settings = quiz.settings or {}
     if settings.get('gameMode') != 'solo':
         flash('Это не одиночная викторина', 'warning')
@@ -1449,7 +1446,6 @@ def team_status():
     
     # Если запрос от ведущего (без team_name)
     if not team_name:
-        # Собираем общую информацию о всех командах
         teams_info = []
         max_current = 0
         max_total = 0
@@ -1552,12 +1548,10 @@ def team_status():
                 for member in team['members']:
                     member_answer = team['players_answers'].get(member['name'])
                     if member_answer:
-                        # Для choice/open – проверяем правильность
                         if current_q.type in ('choice', 'open') and current_q.correct_answer:
                             if member_answer in current_q.correct_answer:
                                 team_correct_count += 1
                         else:
-                            # Для остальных типов – любой непустой, не "skipped" ответ засчитывается
                             if str(member_answer).strip().lower() != 'skipped':
                                 team_correct_count += 1
                 team['score'] += team_correct_count * game['points_per_question']
@@ -1600,11 +1594,11 @@ def team_status():
         
         current_question = {
             'text': q.text,
-            'type': q.type,                      # <--- ДОБАВЛЕНО
+            'type': q.type,
             'options': options,
             'correct_answer': q.correct_answer[0] if q.correct_answer else None,
             'round_name': round_name,
-            'additional_data': q.additional_data or {}   # <--- ДОБАВЛЕНО
+            'additional_data': q.additional_data or {}
         }
         if team.get('show_answer'):
             current_question['correct_answer'] = q.correct_answer[0] if q.correct_answer else None
@@ -1674,12 +1668,6 @@ def team_answer():
     # Сохраняем ответ
     if player_name not in team['players_answers']:
         team['players_answers'][player_name] = answer
-    
-    # === НАЧИСЛЯЕМ БАЛЛЫ ЗА ЛЮБОЙ ОТВЕТ (кроме пропуска) ===
-    # if answer and str(answer).strip().lower() != 'skipped':
-    #     # Начисляем баллы команде сразу
-    #     team['score'] += game.get('points_per_question', 100)
-    
     return jsonify({'success': True})
 
 @app.route('/api/team/start', methods=['POST'])
@@ -1845,20 +1833,15 @@ def get_question_stats_old(quiz_id):
     
     # Получаем все результаты игроков (нужны для статистики ответов)
     results = GameResult.query.filter_by(quiz_id=quiz_id, mode='solo').all()
-    
-    # Здесь нужна будет дополнительная таблица для хранения ответов игроков
-    # Пока сделаем базовую статистику
-    
+
     question_stats = []
     for q in questions:
-        # Считаем сколько раз отвечали на этот вопрос (из сохранённых ответов)
-        # Для простоты пока считаем из GameResult (но там только общее кол-во)
         stats = {
             'question_id': q.id,
             'question_text': q.text[:100],
             'correct_answer': q.correct_answer[0] if q.correct_answer else '?',
             'total_attempts': len(results),
-            'difficulty': 'medium'  # можно рассчитать позже
+            'difficulty': 'medium'
         }
         question_stats.append(stats)
     
@@ -2016,7 +1999,7 @@ def get_question_stats(quiz_id):
 
 
 # Хранилище рисунков (в реальном проекте - в БД)
-drawings = {}  # question_id: [{player_name, image_data, timestamp}]
+drawings = {}
 
 @app.route('/api/draw/submit', methods=['POST'])
 def submit_drawing():

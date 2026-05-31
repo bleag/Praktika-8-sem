@@ -29,8 +29,8 @@
         <h1>Игра окончена!</h1>
         <h2>Твой счёт: <span id="finalScore">0</span></h2>
         <div style="margin-top: 30px;">
-            <button onclick="location.reload()" style="background: #2196F3; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer;">🔄 Играть снова</button>
-            <a href="/" style="display: inline-block; margin-left: 10px; background: #666; color: white; padding: 10px 20px; text-decoration: none; border-radius: 8px;">🏠 На главную</a>
+            <button onclick="location.reload()" style="background: #2196F3; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer;">Играть снова</button>
+            <a href="/" style="display: inline-block; margin-left: 10px; background: #666; color: white; padding: 10px 20px; text-decoration: none; border-radius: 8px;">На главную</a>
         </div>
     </div>
 </div>
@@ -154,7 +154,6 @@ function showResult() {
     document.getElementById('finalScore').innerHTML = score;
 }
 
-// Запускаем загрузку
 loadQuestions();
 </script>
 {% endblock %}

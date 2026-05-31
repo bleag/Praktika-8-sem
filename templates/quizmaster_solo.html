@@ -130,11 +130,9 @@ function copyCode() {
 
 async function updateStatus() {
     try {
-        // Получаем статус доступности
         const statusRes = await fetch(`/api/solo/${quizId}/status`);
         const statusData = await statusRes.json();
         
-        // Получаем настройки викторины (для автозапуска)
         const settingsRes = await fetch(`/api/public/quiz/${quizId}/status`);
         const settingsData = await settingsRes.json();
         
@@ -144,7 +142,6 @@ async function updateStatus() {
             const now = new Date().getTime();
             
             if (now < startTime) {
-                // Доступ ещё не открыт, показываем время открытия
                 const dateStr = new Date(startTime).toLocaleString('ru-RU');
                 autoStartInfoDiv.style.display = 'block';
                 autoStartTextSpan.innerHTML = `Доступ будет открыт автоматически ${dateStr}`;
@@ -160,7 +157,6 @@ async function updateStatus() {
                 closeBtn.style.display = 'none';
                 openBtn.style.display = 'none';
                 
-                // Проверяем каждую минуту, не наступило ли время
                 if (autoStartTime !== startTime) {
                     autoStartTime = startTime;
                     const checkInterval = setInterval(async () => {
@@ -187,7 +183,6 @@ async function updateStatus() {
                 }
             }
         } else {
-            // Нет автозапуска — обычный ручной режим
             autoStartInfoDiv.style.display = 'none';
             
             if (statusData.success && statusData.is_closed) {

@@ -85,7 +85,7 @@ let timePerQuestion = 25;
 let randomQuestions = false;
 let randomOptions = false;
 let pointsPerQuestion = 100;
-// === НОВЫЕ ПЕРЕМЕННЫЕ ===
+
 let currentQuestion = null;
 
 
@@ -158,7 +158,6 @@ async function checkQuizAvailability() {
     }
 }
 
-// Показываем поле пароля, если нужно
 async function checkPasswordField() {
     try {
         const settingsRes = await fetch(`/api/public/quiz/${quizId}/status`);
@@ -171,7 +170,6 @@ async function checkPasswordField() {
     }
 }
 
-// Вызвать функции при загрузке страницы
 checkQuizAvailability();
 checkPasswordField();
 
@@ -293,7 +291,7 @@ function renderChoiceQuestion() {
 
 function renderOpenQuestion() {
     const html = `
-        <input type="text" id="openInput" class="form-input open-input" placeholder="Ваш ответ...">
+        <input type="text" id="openInput" class="form-input open-input" placeholder="Ваш ответ..." style="width:100%; padding:12px; font-size:16px;">
         <button onclick="submitOpenAnswer()" class="btn btn-blue" style="width:100%; margin-top:15px; padding:14px;">Ответить</button>
     `;
     document.getElementById('optionsDiv').innerHTML = html;
@@ -416,7 +414,7 @@ window.clearCanvas = () => {
     if (ctx && canvas) ctx.clearRect(0, 0, canvas.width, canvas.height);
 };
 
-window.submitDrawing = () => handleAnswerResult(true, "Нарисовано", null);  // null = использовать баллы вопроса
+window.submitDrawing = () => handleAnswerResult(true, "Нарисовано", null);
 window.submitDance = () => handleAnswerResult(true, "Танец выполнен", null);
 
 function renderDanceQuestion() {
@@ -457,7 +455,7 @@ function renderSlideQuestion() {
 }
 
 window.submitSlide = () => {
-    handleAnswerResult(true, "Слайд просмотрен", null);  // ← начисляем баллы за слайд
+    handleAnswerResult(true, "Слайд просмотрен", null);
 };
 
 // ==================== ОБРАБОТКА ОТВЕТОВ ====================
@@ -465,10 +463,6 @@ window.submitSlide = () => {
 function handleAnswerResult(isCorrect, userAnswer, customPoints = null) {
     if (timerInterval) clearInterval(timerInterval);
 
-    // Приоритет баллов:
-    // 1. customPoints (из dance/draw и т.д.)
-    // 2. баллы конкретного вопроса (если заданы)
-    // 3. глобальная настройка из викторины
     let pointsToAdd = customPoints !== null 
         ? customPoints 
         : (currentQuestion.points || pointsPerQuestion);

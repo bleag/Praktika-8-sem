@@ -21,10 +21,10 @@ body {
 
 /* КОРПОРАТИВНЫЕ ЦВЕТА СОВКОМБАНКА */
 :root {
-    --sovcombank-blue: #013791;    /* ТЕМНО-СИНИЙ - основной */
-    --sovcombank-red: #FF4963;     /* ЯРКО-РОЗОВО-КРАСНЫЙ - акцентный */
-    --blue-light: #0a4bb5;         /* светлее синего для ховера */
-    --red-dark: #e63e56;           /* темнее красного для ховера */
+    --sovcombank-blue: #013791;
+    --sovcombank-red: #FF4963;
+    --blue-light: #0a4bb5;
+    --red-dark: #e63e56;           
     --gray-light: #F9FAFB;
     --gray-border: #E5E7EB;
     --text-dark: #1F2937;
