@@ -340,6 +340,23 @@ currentQuizId = {{ quiz.id }};
 {% endif %}
 let currentRoundId = null;
 let rounds = [];
+
+// ==================== УНИВЕРСАЛЬНЫЕ ФУНКЦИИ УВЕДОМЛЕНИЙ ====================
+function showNotification(message, type = 'success') {
+    const old = document.querySelector('.custom-notification');
+    if (old) old.remove();
+    const notif = document.createElement('div');
+    notif.className = `custom-notification ${type}`;
+    const icon = type === 'success' ? '✓' : '✕';
+    notif.innerHTML = `<span class="icon">${icon}</span><span>${message}</span>`;
+    document.body.appendChild(notif);
+    setTimeout(() => notif.classList.add('show'), 10);
+    setTimeout(() => {
+        notif.classList.remove('show');
+        setTimeout(() => notif.remove(), 400);
+    }, 3200);
+}
+
 function escapeHtml(text) {
     if (!text) return '';
     const div = document.createElement('div');
@@ -461,16 +478,18 @@ async function getQuestionsCount(roundId) {
     return 0;
 }
 // Кнопка добавления раунда
-document.getElementById('addRoundBtn').onclick = async () => {
-    const title = prompt('Введите название раунда:');
-    if (title && title.trim()) {
-        await fetch(`/api/quiz/${currentQuizId}/round`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ title: title.trim() })
-        });
-        await loadRounds();
-    }
+document.getElementById('addRoundBtn').onclick = () => {
+    showPrompt('Введите название раунда:', '', (title) => {
+        if (title && title.trim()) {
+            fetch(`/api/quiz/${currentQuizId}/round`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ title: title.trim() })
+            }).then(() => {
+                loadRounds();
+            }).catch(err => showNotification('Ошибка при создании раунда', 'error'));
+        }
+    });
 };
 // Кнопка сброса раунда
 const resetRoundBtn = document.getElementById('resetRoundBtn');
@@ -659,9 +678,9 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             
             if (!data.title) {
-                alert('Введите название викторины');
-                return;
-            }
+                        showNotification('Введите название викторины', 'error');
+                        return;
+                    }
             
             const response = await fetch('/api/quiz/save', {
                 method: 'POST',
@@ -673,7 +692,7 @@ document.addEventListener('DOMContentLoaded', function() {
             showNotification('Настройки викторины успешно сохранены!', 'success');
             if (!currentQuizId && result.quiz_id) currentQuizId = result.quiz_id;
             } else {
-                showNotification('✕' + (result.error || 'Ошибка сохранения'), 'error');
+                showNotification('✕ ' + (result.error || 'Ошибка сохранения'), 'error');
             }
         };
     }
@@ -760,21 +779,17 @@ document.addEventListener('DOMContentLoaded', function() {
     if (saveQuestionBtn) {
         saveQuestionBtn.addEventListener('click', async () => {
             if (!currentQuizId) {
-                alert('Сначала сохраните настройки викторины');
+                showNotification('Сначала сохраните настройки викторины', 'error');
                 return;
             }
-            
             const type = document.getElementById('questionType').value;
             const text = document.getElementById('questionText').value;
-            
-            // Блок для создания раунда
             if (type === 'round') {
                 const roundTitle = document.getElementById('roundTitle').value.trim();
                 if (!roundTitle) {
-                    alert('Введите название раунда');
+                    showNotification('Введите название раунда', 'error');
                     return;
                 }
-                
                 const response = await fetch(`/api/quiz/${currentQuizId}/round`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -786,14 +801,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     await loadRounds();
                     await loadQuestions();
                 } else {
-                    alert('Ошибка: ' + result.error);
+                    showNotification('Ошибка: ' + result.error, 'error');
                 }
                 return;
             }
-            
-            // Для обычных вопросов проверяем текст
             if (!text) {
-                alert('Введите текст вопроса');
+                showNotification('Введите текст вопроса', 'error');
                 return;
             }
             
@@ -858,12 +871,12 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const result = await response.json();
             if (result.success) {
-                closeModal();
-                await loadQuestions();
-                await loadRounds();
-            } else {
-                alert('Ошибка: ' + result.error);
-            }
+                        closeModal();
+                        await loadQuestions();
+                        await loadRounds();
+                    } else {
+                        showNotification('Ошибка: ' + result.error, 'error');
+                    }
         });
     }
     
@@ -967,12 +980,15 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     
     window.deleteQuestion = async function(questionId) {
-        if (confirm('Удалить вопрос?')) {
+    showConfirm('Удалить вопрос?', async (confirmed) => {
+        if (confirmed) {
             await fetch(`/api/question/${questionId}`, { method: 'DELETE' });
             await loadQuestions();
             await loadRounds();
+            showNotification('Вопрос удалён', 'success');
         }
-    };
+    });
+};
     
     // Загрузка данных при редактировании
     if (currentQuizId) {
@@ -1039,8 +1055,8 @@ function showNotification(message, type = 'success') {
     const notif = document.createElement('div');
     notif.className = `custom-notification ${type}`;
 
-    const icon = type === 'success' ? '✅' : 
-                 type === 'error' ? '❌' : '⚠️';
+    const icon = type === 'success' ? '✓' : 
+                 type === 'error' ? '✕' : '';
 
     notif.innerHTML = `
         <span class="icon">${icon}</span>
@@ -1102,7 +1118,7 @@ if (saveQuestionsBtn) {
     });
 
     // Красивое подтверждение (confirm)
-function showConfirm(message, callback) {
+function showConfirm(message, callback, confirmText = 'Удалить', cancelText = 'Отмена') {
     const modal = document.createElement('div');
     modal.className = 'custom-modal';
     modal.innerHTML = `
@@ -1110,14 +1126,13 @@ function showConfirm(message, callback) {
             <div class="custom-modal-title">Подтвердите действие</div>
             <div class="custom-modal-text">${message}</div>
             <div class="custom-modal-buttons">
-                <button class="custom-modal-btn cancel">Отмена</button>
-                <button class="custom-modal-btn confirm">Удалить</button>
+                <button class="custom-modal-btn cancel">${cancelText}</button>
+                <button class="custom-modal-btn confirm">${confirmText}</button>
             </div>
         </div>
     `;
     document.body.appendChild(modal);
     modal.style.display = 'flex';
-
     modal.querySelector('.cancel').onclick = () => modal.remove();
     modal.querySelector('.confirm').onclick = () => {
         modal.remove();
@@ -1125,7 +1140,6 @@ function showConfirm(message, callback) {
     };
 }
 
-// Красивое prompt (ввод текста)
 function showPrompt(message, defaultValue = '', callback) {
     const modal = document.createElement('div');
     modal.className = 'custom-modal';
@@ -1133,8 +1147,7 @@ function showPrompt(message, defaultValue = '', callback) {
         <div class="custom-modal-content">
             <div class="custom-modal-title">Введите данные</div>
             <div class="custom-modal-text">${message}</div>
-            <input type="text" class="form-input" id="promptInput" value="${defaultValue}" 
-                   style="width: 100%; margin-bottom: 20px; background: #374151; color: white; border: 1px solid #4b5563;">
+            <input type="text" id="promptInput" value="${escapeHtml(defaultValue)}" placeholder="...">
             <div class="custom-modal-buttons">
                 <button class="custom-modal-btn cancel">Отмена</button>
                 <button class="custom-modal-btn ok">OK</button>
@@ -1143,10 +1156,8 @@ function showPrompt(message, defaultValue = '', callback) {
     `;
     document.body.appendChild(modal);
     modal.style.display = 'flex';
-
     const input = modal.querySelector('#promptInput');
     input.focus();
-
     modal.querySelector('.cancel').onclick = () => modal.remove();
     modal.querySelector('.ok').onclick = () => {
         const value = input.value.trim();
@@ -1159,7 +1170,7 @@ function showPrompt(message, defaultValue = '', callback) {
 
 <style>
 /* Красивое центрированное уведомление */
-.notification {
+.custom-notification {
     position: fixed;
     top: 20px;
     left: 50%;
@@ -1179,23 +1190,24 @@ function showPrompt(message, defaultValue = '', callback) {
     transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.notification.show {
+.custom-notification.show {
     opacity: 1;
     transform: translate(-50%, 0);
 }
 
-.notification.success {
+.custom-notification.success {
     background: #1f2937;
     border-left: 6px solid #22c55e;
 }
 
-.notification.error {
+.custom-notification.error {
     background: #1f2937;
     border-left: 6px solid #ef4444;
 }
 
-.notification .icon {
+.custom-notification .icon {
     font-size: 22px;
 }
+
 </style>
 {% endblock %}

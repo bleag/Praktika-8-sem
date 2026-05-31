@@ -70,7 +70,23 @@
 </style>
 
 <script>
-// Твой оригинальный JavaScript (оставил без изменений)
+// Функция уведомления
+// Функция уведомления
+function showNotification(message, type = 'success') {
+    const old = document.querySelector('.custom-notification');
+    if (old) old.remove();
+    const notif = document.createElement('div');
+    notif.className = `custom-notification ${type}`;
+    const icon = type === 'success' ? '✓' : '✕';
+    notif.innerHTML = `<span class="icon">${icon}</span><span>${message}</span>`;
+    document.body.appendChild(notif);
+    setTimeout(() => notif.classList.add('show'), 10);
+    setTimeout(() => {
+        notif.classList.remove('show');
+        setTimeout(() => notif.remove(), 400);
+    }, 3200);
+}
+
 const quizId = {{ quiz.id }};
 const quizMode = '{{ quiz.settings.gameMode if quiz.settings else "multiplayer" }}';
 let allResults = [];
@@ -131,7 +147,7 @@ function renderPlayersTab() {
         let rankStyle = '';
         if (i === 0) rankStyle = 'background: linear-gradient(0deg, #6488ff14, #263fa97a); color: #1f2937; font-weight: 500;';
         else if (i === 1) rankStyle = 'background: linear-gradient(0deg, #6488ff14, #263fa91f); color: #1f2937; font-weight: 500;';
-        else if (i === 2) rankStyle = 'background: linear-gradient(0deg, #6488ff0a, #263fa908); color: #1f2937; font-weight: 500; ';
+        else if (i === 2) rankStyle = 'background: linear-gradient(0deg, #6488ff0a, #263fa908); color: #1f2937; font-weight: 500;';
         
         topHtml += `
             <div style="display: flex; align-items: center; padding: 16px 20px; margin-bottom: 8px; border-radius: 12px; font-weight: 500; ${rankStyle}">
@@ -142,10 +158,9 @@ function renderPlayersTab() {
                 <div style="width: 160px; text-align: right; color: #64748b;">${p.finished_at}</div>
             </div>`;
     });
-
     document.getElementById('topPlayersList').innerHTML = topHtml;
     
-    // Все результаты (оставил как было)
+    // Все результаты
     const allHtml = `
         <table style="width: 100%; border-collapse: collapse;">
             <thead>
@@ -177,6 +192,71 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// ========== ЭКСПОРТ В CSV ==========
+function exportToCSV() {
+    if (!allResults.length) {
+        showNotification('Нет данных для экспорта', 'error');
+        return;
+    }
+    
+    const isTeamMode = quizMode === 'team';
+    let csvRows = [];
+    
+    // Заголовки
+    if (isTeamMode) {
+        csvRows.push(['Команда', 'Счёт', 'Количество игроков', 'Последняя игра']);
+    } else {
+        csvRows.push(['Игрок', 'Счёт', 'Дата и время']);
+    }
+    
+    // Данные
+    allResults.forEach(row => {
+        if (isTeamMode) {
+            csvRows.push([
+                row.player_name,
+                row.score,
+                row.games_count,
+                row.finished_at
+            ]);
+        } else {
+            csvRows.push([
+                row.player_name,
+                row.score,
+                row.finished_at
+            ]);
+        }
+    });
+    
+    // Преобразуем в CSV строку
+    const csvContent = csvRows.map(row => 
+        row.map(cell => {
+            // Экранируем кавычки и оборачиваем в кавычки, если есть запятые
+            const cellStr = String(cell);
+            if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
+                return `"${cellStr.replace(/"/g, '""')}"`;
+            }
+            return cellStr;
+        }).join(',')
+    ).join('\n');
+    
+    // Создаём Blob и скачиваем
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.setAttribute('download', `quiz_stats_${quizId}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    showNotification('Скачано', 'success'); 
+}
+
+// Назначаем обработчик после загрузки DOM
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('exportCSVBtn')?.addEventListener('click', exportToCSV);
+});
 loadData();
 </script>
 {% endblock %}

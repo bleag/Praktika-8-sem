@@ -188,6 +188,27 @@
 
 {% block extra_js %}
 <script>
+    // Функция красивого уведомления (как в edit_quiz)
+    function showNotification(message, type = 'success') {
+        const old = document.querySelector('.custom-notification');
+        if (old) old.remove();
+
+        const notif = document.createElement('div');
+        notif.className = `custom-notification ${type}`;
+        const icon = type === 'success' ? '✓' : 
+                     type === 'error' ? '✕' : '';
+        notif.innerHTML = `
+            <span class="icon">${icon}</span>
+            <span>${message}</span>
+        `;
+        document.body.appendChild(notif);
+        setTimeout(() => notif.classList.add('show'), 10);
+        setTimeout(() => {
+            notif.classList.remove('show');
+            setTimeout(() => notif.remove(), 400);
+        }, 3200);
+    }
+
     // Переключение между режимами
     const multiplayerForm = document.getElementById('multiplayerForm');
     const teamForm = document.getElementById('teamForm');
@@ -227,48 +248,75 @@
         soloForm.style.display = 'block';
     };
     
-    // Мультиплеер
-    const joinMultiplayerBtn = document.getElementById('joinMultiplayerBtn');
-    const multiplayerCode = document.getElementById('multiplayerCode');
+    // ========== МУЛЬТИПЛЕЕР с проверкой ==========
+const joinMultiplayerBtn = document.getElementById('joinMultiplayerBtn');
+const multiplayerCode = document.getElementById('multiplayerCode');
+
+joinMultiplayerBtn.onclick = async () => {
+    const code = multiplayerCode.value.trim().toUpperCase();
+    if (code.length !== 6) {
+        showNotification('Введите 6-значный код', 'error');
+        return;
+    }
     
-    joinMultiplayerBtn.onclick = () => {
-        const code = multiplayerCode.value.trim().toUpperCase();
-        if (code.length === 6) {
+    try {
+        const response = await fetch(`/api/quiz/by-code/${code}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            // Викторина существует — переходим
             window.location.href = '/play/' + code;
         } else {
-            alert('Введите 6-значный код');
+            showNotification('Викторина не найдена', 'error');
         }
-    };
+    } catch (error) {
+        console.error('Ошибка:', error);
+        showNotification('Ошибка подключения к серверу', 'error');
+    }
+};
+
+multiplayerCode.onkeypress = (e) => {
+    if (e.key === 'Enter') joinMultiplayerBtn.click();
+};
+
+// ========== КОМАНДНЫЙ РЕЖИМ с проверкой ==========
+const joinTeamBtn = document.getElementById('joinTeamBtn');
+const teamCode = document.getElementById('teamCode');
+
+joinTeamBtn.onclick = async () => {
+    const code = teamCode.value.trim().toUpperCase();
+    if (code.length !== 6) {
+        showNotification('Введите 6-значный код', 'error');
+        return;
+    }
     
-    multiplayerCode.onkeypress = (e) => {
-        if (e.key === 'Enter') joinMultiplayerBtn.click();
-    };
-    
-    // Командный режим
-    const joinTeamBtn = document.getElementById('joinTeamBtn');
-    const teamCode = document.getElementById('teamCode');
-    
-    joinTeamBtn.onclick = () => {
-        const code = teamCode.value.trim().toUpperCase();
-        if (code.length === 6) {
+    try {
+        const response = await fetch(`/api/quiz/by-code/${code}`);
+        const data = await response.json();
+        
+        if (data.success) {
             window.location.href = '/team/play/' + code;
         } else {
-            alert('Введите 6-значный код');
+            showNotification('Викторина не найдена', 'error');
         }
-    };
+    } catch (error) {
+        console.error('Ошибка:', error);
+        showNotification('Ошибка подключения к серверу', 'error');
+    }
+};
+
+teamCode.onkeypress = (e) => {
+    if (e.key === 'Enter') joinTeamBtn.click();
+};
     
-    teamCode.onkeypress = (e) => {
-        if (e.key === 'Enter') joinTeamBtn.click();
-    };
-    
-    // Одиночный режим (С ПРОВЕРКОЙ ДОСТУПНОСТИ)
+    // Одиночный режим (с проверкой доступности)
     const joinSoloBtn = document.getElementById('joinSoloBtn');
     const soloCode = document.getElementById('soloCode');
     
     joinSoloBtn.onclick = async () => {
         const code = soloCode.value.trim().toUpperCase();
         if (code.length !== 6) {
-            alert('Введите 6-значный код');
+            showNotification('Введите 6-значный код', 'error');
             return;
         }
         
@@ -277,22 +325,21 @@
             const data = await response.json();
             
             if (data.success) {
-                // Проверяем доступность викторины
                 const statusRes = await fetch(`/api/solo/${data.quiz_id}/status`);
                 const statusData = await statusRes.json();
                 
                 if (statusData.success && statusData.is_closed) {
-                    alert('Эта викторина неактивна! Организатор закрыл доступ.');
+                    showNotification('Эта викторина неактивна! Организатор закрыл доступ.', 'error');
                     return;
                 }
                 
                 window.location.href = '/solo/code/' + code;
             } else {
-                alert('Викторина не найдена');
+                showNotification('Викторина не найдена', 'error');
             }
         } catch (error) {
             console.error('Ошибка:', error);
-            alert('Ошибка подключения к серверу');
+            showNotification('Ошибка подключения к серверу', 'error');
         }
     };
     

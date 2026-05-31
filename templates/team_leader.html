@@ -43,7 +43,7 @@
             <div class="quizmaster-players">
                 <div class="players-card">
                     <h3>Команды <span id="teamsCount">0</span></h3>
-                    <div id="teamsList" class="players-list">
+                    <div id="teamsList" class="players-list" >
                         <div class="empty-players">Ожидание подключения команд...</div>
                     </div>
                 </div>
@@ -57,12 +57,54 @@
 </div>
 
 <script>
+// ==================== УНИВЕРСАЛЬНЫЕ ФУНКЦИИ УВЕДОМЛЕНИЙ ====================
+function showNotification(message, type = 'success') {
+    const old = document.querySelector('.custom-notification');
+    if (old) old.remove();
+
+    const notif = document.createElement('div');
+    notif.className = `custom-notification ${type}`;
+    const icon = type === 'success' ? '✓' : '✕';
+    notif.innerHTML = `<span class="icon">${icon}</span><span>${message}</span>`;
+    document.body.appendChild(notif);
+    setTimeout(() => notif.classList.add('show'), 10);
+    setTimeout(() => {
+        notif.classList.remove('show');
+        setTimeout(() => notif.remove(), 400);
+    }, 3200);
+}
+
+function showConfirm(message, onConfirm, confirmText = 'Подтвердить', cancelText = 'Отмена') {
+    const modal = document.createElement('div');
+    modal.className = 'custom-confirm';
+    modal.innerHTML = `
+        <div class="custom-confirm-content">
+            <div class="custom-confirm-title">Подтвердите действие</div>
+            <div class="custom-confirm-text">${message}</div>
+            <div class="custom-confirm-buttons">
+                <button class="custom-confirm-btn cancel">${cancelText}</button>
+                <button class="custom-confirm-btn confirm">${confirmText}</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    modal.style.display = 'flex';
+
+    modal.querySelector('.cancel').onclick = () => modal.remove();
+    modal.querySelector('.confirm').onclick = () => {
+        modal.remove();
+        onConfirm();
+    };
+}
+
+// ==================== КОД СТРАНИЦЫ ====================
 const gameCode = '{{ quiz.quiz_code }}';
+const allowReplay = {{ quiz.settings.allowReplay|default('false')|lower }};
 
 function copyCode() {
     const code = document.getElementById('gameCodeDisplay').innerText;
     navigator.clipboard.writeText(code);
-    alert('Код скопирован: ' + code);
+    showNotification('Код скопирован: ' + code, 'success');
 }
 
 async function updateTeams() {
@@ -111,34 +153,38 @@ async function updateGameStatus() {
             statusSpan.textContent = statusText[data.status] || data.status;
             statusSpan.className = `status-badge ${data.status}`;
             
+            // Управление кнопками
             if (data.status === 'waiting') {
                 startBtn.disabled = false;
                 pauseBtn.disabled = true;
-                resumeBtn.style.display = 'none';
+                resumeBtn.disabled = true;
                 stopBtn.disabled = false;
-                // replayBtn всегда видна, не меняем display
+                replayBtn.disabled = false;
             } 
             else if (data.status === 'active') {
                 startBtn.disabled = true;
                 pauseBtn.disabled = false;
-                resumeBtn.style.display = 'none';
+                resumeBtn.disabled = true;
                 stopBtn.disabled = false;
-                // replayBtn всегда видна
+                replayBtn.disabled = true;
             } 
             else if (data.status === 'paused') {
                 startBtn.disabled = true;
-                pauseBtn.style.display = 'none';
+                pauseBtn.disabled = true;
                 resumeBtn.disabled = false;
-                resumeBtn.style.display = 'inline-block';
                 stopBtn.disabled = false;
-                // replayBtn всегда видна
+                replayBtn.disabled = true;
             } 
             else if (data.status === 'finished') {
                 startBtn.disabled = true;
                 pauseBtn.disabled = true;
-                resumeBtn.style.display = 'none';
+                resumeBtn.disabled = true;
                 stopBtn.disabled = true;
-                // replayBtn всегда видна, можно оставить как есть
+                if (allowReplay) {
+                    replayBtn.style.display = 'inline-block';
+                } else {
+                    replayBtn.style.display = 'none';
+                }
             }
             
             if (data.teams && data.teams.length > 0) {
@@ -157,6 +203,7 @@ async function updateGameStatus() {
     }
 }
 
+// Обработчики кнопок с красивыми уведомлениями
 document.getElementById('startBtn').onclick = async () => {
     const response = await fetch('/api/team/start', {
         method: 'POST',
@@ -164,8 +211,11 @@ document.getElementById('startBtn').onclick = async () => {
         body: JSON.stringify({ game_code: gameCode })
     });
     const data = await response.json();
-    if (data.success) alert('Игра начата!');
-    else alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+    if (data.success) {
+        showNotification('Игра начата!', 'success');
+    } else {
+        showNotification('Ошибка: ' + (data.error || 'Неизвестная ошибка'), 'error');
+    }
 };
 
 document.getElementById('pauseBtn').onclick = async () => {
@@ -175,7 +225,11 @@ document.getElementById('pauseBtn').onclick = async () => {
         body: JSON.stringify({ game_code: gameCode })
     });
     const data = await response.json();
-    if (data.success) alert('Игра на паузе');
+    if (data.success) {
+        showNotification('Игра на паузе', 'success');
+    } else {
+        showNotification('Ошибка при паузе', 'error');
+    }
 };
 
 document.getElementById('resumeBtn').onclick = async () => {
@@ -185,11 +239,15 @@ document.getElementById('resumeBtn').onclick = async () => {
         body: JSON.stringify({ game_code: gameCode })
     });
     const data = await response.json();
-    if (data.success) alert('Игра возобновлена');
+    if (data.success) {
+        showNotification('Игра возобновлена', 'success');
+    } else {
+        showNotification('Ошибка при возобновлении', 'error');
+    }
 };
 
-document.getElementById('stopBtn').onclick = async () => {
-    if (confirm('Завершить игру? Результаты будут сохранены.')) {
+document.getElementById('stopBtn').onclick = () => {
+    showConfirm('Завершить игру? Результаты будут сохранены.', async () => {
         const response = await fetch('/api/team/stop', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -197,17 +255,17 @@ document.getElementById('stopBtn').onclick = async () => {
         });
         const data = await response.json();
         if (data.success) {
-            alert('Игра завершена, результаты сохранены!');
+            showNotification('Игра завершена, результаты сохранены!', 'success');
             updateGameStatus();
             updateTeams();
         } else {
-            alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+            showNotification('Ошибка: ' + (data.error || 'Неизвестная ошибка'), 'error');
         }
-    }
+    }, 'Завершить', 'Отмена');
 };
 
-document.getElementById('replayBtn').onclick = async () => {
-    if (confirm('Перезапустить игру? Все команды и результаты будут удалены. Игроки смогут подключиться заново.')) {
+document.getElementById('replayBtn').onclick = () => {
+    showConfirm('Перезапустить игру? Все команды и результаты будут удалены. Игроки смогут подключиться заново.', async () => {
         const response = await fetch('/api/team/replay', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -215,14 +273,13 @@ document.getElementById('replayBtn').onclick = async () => {
         });
         const data = await response.json();
         if (data.success) {
-            alert('Игра перезапущена! Команды могут подключаться заново.');
-            // После перезапуска обновляем статус, кнопка останется видимой
+            showNotification('Игра перезапущена! Команды могут подключаться заново.', 'success');
             updateGameStatus();
             updateTeams();
         } else {
-            alert('Ошибка перезапуска: ' + (data.error || 'Неизвестная ошибка'));
+            showNotification('Ошибка перезапуска: ' + (data.error || 'Неизвестная ошибка'), 'error');
         }
-    }
+    }, 'Перезапустить', 'Отмена');
 };
 
 function escapeHtml(text) {
@@ -232,6 +289,7 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// Автообновление
 updateTeams();
 updateGameStatus();
 setInterval(updateTeams, 2000);

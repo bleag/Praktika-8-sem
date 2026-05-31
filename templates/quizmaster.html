@@ -72,6 +72,47 @@
 </div>
 
 <script>
+// ==================== УНИВЕРСАЛЬНЫЕ ФУНКЦИИ УВЕДОМЛЕНИЙ ====================
+function showNotification(message, type = 'success') {
+    const old = document.querySelector('.custom-notification');
+    if (old) old.remove();
+
+    const notif = document.createElement('div');
+    notif.className = `custom-notification ${type}`;
+    const icon = type === 'success' ? '✓' : '✕';
+    notif.innerHTML = `<span class="icon">${icon}</span><span>${message}</span>`;
+    document.body.appendChild(notif);
+    setTimeout(() => notif.classList.add('show'), 10);
+    setTimeout(() => {
+        notif.classList.remove('show');
+        setTimeout(() => notif.remove(), 400);
+    }, 3200);
+}
+
+function showConfirm(message, onConfirm, confirmText = 'Подтвердить', cancelText = 'Отмена') {
+    const modal = document.createElement('div');
+    modal.className = 'custom-confirm';
+    modal.innerHTML = `
+        <div class="custom-confirm-content">
+            <div class="custom-confirm-title">Подтвердите действие</div>
+            <div class="custom-confirm-text">${message}</div>
+            <div class="custom-confirm-buttons">
+                <button class="custom-confirm-btn cancel">${cancelText}</button>
+                <button class="custom-confirm-btn confirm">${confirmText}</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    modal.style.display = 'flex';
+
+    modal.querySelector('.cancel').onclick = () => modal.remove();
+    modal.querySelector('.confirm').onclick = () => {
+        modal.remove();
+        onConfirm();
+    };
+}
+
+// ==================== КОД СТРАНИЦЫ ====================
 const quizCode = '{{ code }}';
 let updateInterval = null;
 let allowReplay = false;
@@ -92,6 +133,12 @@ const currentQuestionOptions = document.getElementById('currentQuestionOptions')
 const currentQuestionTimer = document.getElementById('currentQuestionTimer');
 const questionsListPanel = document.getElementById('questionsListPanel');
 const allQuestionsList = document.getElementById('allQuestionsList');
+
+function copyCode() {
+    const code = document.getElementById('quizCode').innerText;
+    navigator.clipboard.writeText(code);
+    showNotification('Код скопирован: ' + code, 'success');
+}
 
 function escapeHtml(text) {
     if (!text) return '';
@@ -176,7 +223,6 @@ async function updateStatus() {
             } 
             else if (data.status === 'active') {
                 if (randomQuestions && data.all_questions && data.all_questions.length) {
-                    // Случайный режим - показываем все вопросы
                     questionHeader.style.display = 'block';
                     questionHeader.innerHTML = 'Все вопросы (случайный порядок)<br><small style="font-size: 12px; color: #666;">Игрокам может попасться любой вопрос из представленных ниже</small>';
                     currentQuestionDisplay.style.display = 'none';
@@ -188,16 +234,15 @@ async function updateStatus() {
                             <div class="options-list">
                                 ${q.options ? q.options.map(opt => `
                                     <div class="option ${opt === q.correct_answer ? 'correct' : ''}">
-                                        ${escapeHtml(opt)} ${opt === q.correct_answer ? '✅' : ''}
+                                        ${escapeHtml(opt)} ${opt === q.correct_answer ? '' : ''}
                                     </div>
                                 `).join('') : ''}
                             </div>
-                            ${q.correct_answer ? `<div style="margin-top: 8px; color: #4caf50; font-size: 13px;">✅ Правильный ответ: ${escapeHtml(q.correct_answer)}</div>` : ''}
+                            ${q.correct_answer ? `<div style="margin-top: 8px; color: #4caf50; font-size: 13px;">Правильный ответ: ${escapeHtml(q.correct_answer)}</div>` : ''}
                         </div>
                     `).join('');
                 } 
                 else if (data.current_question) {
-                    // Обычный режим - показываем текущий вопрос с вариантами
                     questionHeader.style.display = 'block';
                     questionHeader.innerHTML = `Текущий вопрос (Вопрос ${data.question_index + 1}/${data.total_questions})`;
                     currentQuestionDisplay.style.display = 'block';
@@ -209,7 +254,7 @@ async function updateStatus() {
                         const correctAnswer = data.current_question.correct_answer;
                         currentQuestionOptions.innerHTML = data.current_question.options.map(opt => `
                             <div class="option-item ${opt === correctAnswer ? 'correct' : ''}">
-                                ${escapeHtml(opt)} ${opt === correctAnswer ? '✅ Правильный ответ' : ''}
+                                ${escapeHtml(opt)} ${opt === correctAnswer ? 'Правильный ответ' : ''}
                             </div>
                         `).join('');
                     } else {
@@ -235,7 +280,7 @@ async function updateStatus() {
                 questionHeader.innerHTML = 'Текущий вопрос';
                 currentQuestionDisplay.style.display = 'block';
                 questionsListPanel.style.display = 'none';
-                currentQuestionText.innerHTML = '⏸ Игра на паузе';
+                currentQuestionText.innerHTML = 'Игра на паузе';
                 currentQuestionOptions.innerHTML = '';
                 currentQuestionTimer.innerHTML = '';
             } 
@@ -254,36 +299,60 @@ async function updateStatus() {
     }
 }
 
+// Обработчики кнопок с красивыми уведомлениями
 startBtn.onclick = async () => {
     const response = await fetch(`/api/quizmaster/${quizCode}/start`, { method: 'POST' });
     const data = await response.json();
-    if (!data.success) alert(data.error);
+    if (data.success) {
+        showNotification('Игра успешно запущена!', 'success');
+    } else {
+        showNotification(data.error || 'Ошибка запуска игры', 'error');
+    }
 };
 
 pauseBtn.onclick = async () => {
-    await fetch(`/api/quizmaster/${quizCode}/pause`, { method: 'POST' });
+    const response = await fetch(`/api/quizmaster/${quizCode}/pause`, { method: 'POST' });
+    const data = await response.json();
+    if (data.success) {
+        showNotification('Игра на паузе', 'success');
+    } else {
+        showNotification('Ошибка при паузе', 'error');
+    }
 };
 
 resumeBtn.onclick = async () => {
-    await fetch(`/api/quizmaster/${quizCode}/resume`, { method: 'POST' });
-};
-
-stopBtn.onclick = async () => {
-    if (confirm('Завершить игру и показать результаты?')) {
-        await fetch(`/api/quizmaster/${quizCode}/stop`, { method: 'POST' });
+    const response = await fetch(`/api/quizmaster/${quizCode}/resume`, { method: 'POST' });
+    const data = await response.json();
+    if (data.success) {
+        showNotification('Игра возобновлена', 'success');
+    } else {
+        showNotification('Ошибка при возобновлении', 'error');
     }
 };
 
-replayBtn.onclick = async () => {
-    if (confirm('Перезапустить игру? Все результаты будут сброшены. Игроки смогут подключиться заново.')) {
+stopBtn.onclick = () => {
+    showConfirm('Завершить игру и показать результаты?', async () => {
+        const response = await fetch(`/api/quizmaster/${quizCode}/stop`, { method: 'POST' });
+        const data = await response.json();
+        if (data.success) {
+            showNotification('Игра завершена, результаты сохранены!', 'success');
+        } else {
+            showNotification('Ошибка при завершении игры', 'error');
+        }
+    }, 'Завершить', 'Отмена');
+};
+
+replayBtn.onclick = () => {
+    showConfirm('Перезапустить игру? Все результаты будут сброшены. Игроки смогут подключиться заново.', async () => {
         const response = await fetch(`/api/quizmaster/${quizCode}/replay`, { method: 'POST' });
         const data = await response.json();
         if (data.success) {
-            location.reload();
+            showNotification('Игра перезапущена!', 'success');
+            setTimeout(() => location.reload(), 1500);
         } else {
-            alert('Ошибка перезапуска');
+            showNotification(data.error || 'Ошибка перезапуска', 'error');
         }
-    }
+    }, 'Перезапустить', 'Отмена');
 };
 
 updateStatus();

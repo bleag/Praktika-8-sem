@@ -69,6 +69,47 @@
 </div>
 
 <script>
+// ==================== УНИВЕРСАЛЬНЫЕ ФУНКЦИИ УВЕДОМЛЕНИЙ ====================
+function showNotification(message, type = 'success') {
+    const old = document.querySelector('.custom-notification');
+    if (old) old.remove();
+
+    const notif = document.createElement('div');
+    notif.className = `custom-notification ${type}`;
+    const icon = type === 'success' ? '✓' : '✕';
+    notif.innerHTML = `<span class="icon">${icon}</span><span>${message}</span>`;
+    document.body.appendChild(notif);
+    setTimeout(() => notif.classList.add('show'), 10);
+    setTimeout(() => {
+        notif.classList.remove('show');
+        setTimeout(() => notif.remove(), 400);
+    }, 3200);
+}
+
+function showConfirm(message, onConfirm, confirmText = 'Подтвердить', cancelText = 'Отмена') {
+    const modal = document.createElement('div');
+    modal.className = 'custom-confirm';
+    modal.innerHTML = `
+        <div class="custom-confirm-content">
+            <div class="custom-confirm-title">Подтвердите действие</div>
+            <div class="custom-confirm-text">${message}</div>
+            <div class="custom-confirm-buttons">
+                <button class="custom-confirm-btn cancel">${cancelText}</button>
+                <button class="custom-confirm-btn confirm">${confirmText}</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    modal.style.display = 'flex';
+
+    modal.querySelector('.cancel').onclick = () => modal.remove();
+    modal.querySelector('.confirm').onclick = () => {
+        modal.remove();
+        onConfirm();
+    };
+}
+
+// ==================== КОД СТРАНИЦЫ ====================
 const quizId = {{ quiz.id }};
 let updateInterval = null;
 let autoStartTime = null;
@@ -84,7 +125,7 @@ const autoStartTextSpan = document.getElementById('autoStartText');
 function copyCode() {
     const code = '{{ quiz.quiz_code }}';
     navigator.clipboard.writeText(code);
-    alert('Код скопирован: ' + code);
+    showNotification('Код скопирован: ' + code, 'success');
 }
 
 async function updateStatus() {
@@ -184,30 +225,30 @@ async function updateStatus() {
     }
 }
 
-closeBtn.onclick = async () => {
-    if (confirm('Закрыть доступ к викторине? Игроки больше не смогут начать новую игру.')) {
+closeBtn.onclick = () => {
+    showConfirm('Закрыть доступ к викторине? Игроки больше не смогут начать новую игру.', async () => {
         const response = await fetch(`/api/solo/${quizId}/close`, { method: 'POST' });
         const data = await response.json();
         if (data.success) {
-            alert('Доступ закрыт');
+            showNotification('Доступ закрыт', 'success');
             updateStatus();
         } else {
-            alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+            showNotification('Ошибка: ' + (data.error || 'Неизвестная ошибка'), 'error');
         }
-    }
+    }, 'Закрыть доступ', 'Отмена');
 };
 
-openBtn.onclick = async () => {
-    if (confirm('Открыть доступ к викторине? Игроки снова смогут играть.')) {
+openBtn.onclick = () => {
+    showConfirm('Открыть доступ к викторине? Игроки снова смогут играть.', async () => {
         const response = await fetch(`/api/solo/${quizId}/open`, { method: 'POST' });
         const data = await response.json();
         if (data.success) {
-            alert('Доступ открыт');
+            showNotification('Доступ открыт', 'success');
             updateStatus();
         } else {
-            alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+            showNotification('Ошибка: ' + (data.error || 'Неизвестная ошибка'), 'error');
         }
-    }
+    }, 'Открыть доступ', 'Отмена');
 };
 
 function escapeHtml(text) {

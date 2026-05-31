@@ -289,7 +289,6 @@ function startPolling() {
         if (data.status === 'active') {
             showScreen('gameScreen');
 
-            // === ИСПРАВЛЕНИЕ 1: Всегда обновляем счёт и количество вопросов ===
             document.getElementById('totalQ').innerText = totalQuestions;
             if (data.team_score !== undefined) {
                 totalScore = data.team_score;
@@ -347,10 +346,10 @@ async function sendAnswer(answer, answerType = 'text') {
     selectedAnswer = answer;
 
     let payloadAnswer = answer;
-    if (answerType === 'draw') payloadAnswer = '🎨 Рисунок отправлен';
-    if (answerType === 'dance') payloadAnswer = '💃 Танец выполнен';
-    if (answerType === 'slide') payloadAnswer = '📄 Слайд просмотрен';
-    if (answerType === 'wordcloud') payloadAnswer = '☁️ Облако слов';
+    if (answerType === 'draw') payloadAnswer = 'Рисунок отправлен';
+    if (answerType === 'dance') payloadAnswer = 'Танец выполнен';
+    if (answerType === 'slide') payloadAnswer = 'Слайд просмотрен';
+    if (answerType === 'wordcloud') payloadAnswer = 'Облако слов';
 
     await fetch(`/api/team/answer`, {
         method: 'POST',
@@ -364,7 +363,6 @@ async function sendAnswer(answer, answerType = 'text') {
     });
 
     disableInputs();
-    // Баллы теперь обновляются ТОЛЬКО через polling, когда сервер покажет результат
 }
 
 function disableInputs() {
@@ -375,7 +373,6 @@ function disableInputs() {
 }
 
 // === РЕНДЕРЫ РАЗНЫХ ТИПОВ ВОПРОСОВ ===
-
 function renderChoiceQuestion(q) {
     let opts = [...(q.options || [])];
     if (randomOptions) opts.sort(() => Math.random() - 0.5);
@@ -555,7 +552,6 @@ function renderDanceQuestion(q) {
     container.innerHTML = `
         <p style="font-size:18px; font-weight:500;">${escapeHtml(task)}</p>
         <div style="background:#f8fafc; padding:40px; border-radius:16px; text-align:center; margin:20px 0; border:2px dashed #cbd5e1;">
-            🕺💃
         </div>
         <button id="submitDanceBtn" class="btn btn-blue" style="width:100%;">Я выполнил(а)</button>
         <button id="skipDanceBtn" class="btn-outline-new" style="width:100%; margin-top:10px;">Пропустить</button>
@@ -616,7 +612,6 @@ function renderQuestion(data) {
     const optionsDiv = document.getElementById('optionsDiv');
     optionsDiv.innerHTML = '';
     
-    // В зависимости от типа вопроса вызываем разные рендеры
     switch (q.type) {
         case 'choice':
             renderChoiceQuestion(q);
@@ -649,46 +644,94 @@ function showAnswerResult(data) {
     const q = data.current_question;
     if (!q) return;
 
-    let correctAnswer = q.correct_answer;
-    if (Array.isArray(correctAnswer)) correctAnswer = correctAnswer[0];
     const userAnswer = selectedAnswer;
-
     let isUserCorrect = false;
+    let correctAnswerText = '—';
+    let hasCorrectAnswer = false;
+
     if (q.type === 'choice') {
-        isUserCorrect = (userAnswer === correctAnswer);
-    } else if (q.type === 'open') {
-        isUserCorrect = (userAnswer && correctAnswer && userAnswer.toLowerCase().includes(correctAnswer.toLowerCase()));
-    } else {
-        isUserCorrect = (userAnswer && userAnswer !== 'skipped' && userAnswer !== null);
+        const correctAnswer = q.correct_answer && q.correct_answer[0];
+        if (correctAnswer && correctAnswer.trim() !== '') {
+            hasCorrectAnswer = true;
+            correctAnswerText = correctAnswer;
+            isUserCorrect = (userAnswer === correctAnswer);
+        } else {
+            isUserCorrect = true;
+        }
+    } 
+    else if (q.type === 'open') {
+        let correctKeywords = q.correct_answer;
+        if (correctKeywords) {
+            if (typeof correctKeywords === 'string') {
+                correctKeywords = [correctKeywords];
+            }
+
+            const nonEmptyKeywords = correctKeywords.filter(kw => kw && kw.trim() !== '');
+            if (nonEmptyKeywords.length > 0) {
+                hasCorrectAnswer = true;
+                correctAnswerText = nonEmptyKeywords.join(', ');
+                if (userAnswer) {
+                    const lowerAnswer = userAnswer.toLowerCase();
+                    isUserCorrect = nonEmptyKeywords.some(keyword => 
+                        lowerAnswer.includes(keyword.toLowerCase())
+                    );
+                }
+            } else {
+                isUserCorrect = true;
+            }
+        } else {
+            isUserCorrect = true;
+        }
+    }
+    else {
+        isUserCorrect = true;
+        hasCorrectAnswer = false;
     }
 
     // Подсветка кнопок
     const buttons = document.querySelectorAll('.option-btn');
-    buttons.forEach(btn => {
-        const opt = btn.innerText.trim();
-        if (opt === correctAnswer) {
-            btn.style.background = '#4caf50';
-            btn.style.color = 'white';
-        }
-        if (opt === userAnswer && opt !== correctAnswer) {
-            btn.style.background = '#f44336';
-            btn.style.color = 'white';
-        }
-    });
+    if (buttons.length && q.type === 'choice' && hasCorrectAnswer) {
+        buttons.forEach(btn => {
+            const opt = btn.innerText.trim();
+            if (opt === correctAnswerText) {
+                btn.style.background = '#4caf50';
+                btn.style.color = 'white';
+            } else if (opt === userAnswer && opt !== correctAnswerText) {
+                btn.style.background = '#f44336';
+                btn.style.color = 'white';
+            } else {
+                btn.style.background = '';
+                btn.style.color = '';
+                btn.style.border = '2px solid #ddd';
+            }
+        });
+    } else if (buttons.length && q.type === 'poll') {
+        buttons.forEach(btn => {
+            btn.style.background = '';
+            btn.style.color = '';
+            btn.style.border = '2px solid #ddd';
+        });
+    }
 
     const resultBlock = document.getElementById('resultBlock');
     resultBlock.style.display = 'block';
     let message = '';
+
     if (userAnswer === null) {
-        message = `⏰ Время вышло! Правильный ответ: ${correctAnswer || '—'}`;
-    } else if (isUserCorrect) {
-        message = `✅ Правильно! Команда получает ${pointsPerQuestion} баллов`;
-        // Баллы на сервере уже начислены, но для UI можно обновить счёт
-        // totalScore += pointsPerQuestion; // не нужно, баллы придут в следующем статусе
-    } else {
-        message = `❌ Неправильно! Правильный ответ: ${correctAnswer || '—'}`;
+        message = `Время вышло! Правильный ответ: ${correctAnswerText}`;
+    } 
+    else {
+        if (!hasCorrectAnswer) {
+            message = `Ответ принят! Команда получает ${pointsPerQuestion} баллов`;
+        } 
+        else if (isUserCorrect) {
+            message = `Правильно! Команда получает ${pointsPerQuestion} баллов`;
+        } 
+        else {
+            message = `Неправильно! Правильный ответ: ${correctAnswerText}`;
+        }
     }
-    
+
     const isLastQuestion = (data.question_index + 1 >= data.total_questions);
     
     if (isLastQuestion) {
@@ -755,7 +798,6 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 <style>
-    /* Красивые уведомления */
 .toast-notification {
     position: fixed;
     top: 20px;

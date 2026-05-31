@@ -951,68 +951,109 @@ select.form-input option:checked {
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
-/* ====================== КРАСИВОЕ МОДАЛЬНОЕ ОКНО (confirm / prompt) ====================== */
-.custom-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.6);
-    z-index: 30000;
-    display: none;
-    align-items: center;
-    justify-content: center;
-}
+  /* ========== КРАСИВЫЕ УВЕДОМЛЕНИЯ ========== */
+        .custom-notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            min-width: 380px;
+            padding: 16px 24px;
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 10000;
+            font-weight: 500;
+            color: white;
+            opacity: 0;
+            transform: translate(-50%, -20px);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .custom-notification.show {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+        .custom-notification.success {
+            background: #1f2937;
+            border-left: 6px solid #22c55e;
+        }
+        .custom-notification.error {
+            background: #1f2937;
+            border-left: 6px solid #ef4444;
+        }
+        .custom-notification .icon {
+            font-size: 22px;
+        }
 
-.custom-modal-content {
-    background: #1f2937;
-    color: white;
-    width: 420px;
-    border-radius: 20px;
-    padding: 24px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-    text-align: center;
-}
-
-.custom-modal-title {
-    font-size: 18px;
-    margin-bottom: 16px;
-    font-weight: 600;
-}
-
-.custom-modal-text {
-    margin-bottom: 24px;
-    opacity: 0.9;
-    line-height: 1.5;
-}
-
-.custom-modal-buttons {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-}
-
-.custom-modal-btn {
-    padding: 10px 24px;
-    border-radius: 50px;
-    font-weight: 600;
-    cursor: pointer;
-    border: none;
-    min-width: 120px;
-}
-
-.custom-modal-btn.confirm {
-    background: #ef4444;
-    color: white;
-}
-
-.custom-modal-btn.cancel {
-    background: #4b5563;
-    color: white;
-}
-
-.custom-modal-btn.ok {
-    background: #dc2626;
-    color: white;
-}
+        /* ========== МОДАЛЬНЫЕ ОКНА (CONFIRM / PROMPT) ========== */
+        .custom-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 20000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .custom-modal-content {
+            background: #1f2937;
+            color: white;
+            width: 420px;
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        .custom-modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        .custom-modal-text {
+            margin-bottom: 24px;
+            line-height: 1.5;
+            opacity: 0.9;
+        }
+        .custom-modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        .custom-modal-btn {
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: 0.2s;
+        }
+        .custom-modal-btn.cancel {
+            background: #4b5563;
+            color: white;
+        }
+        .custom-modal-btn.confirm {
+            background: #ef4444;
+            color: white;
+        }
+        .custom-modal-btn.ok {
+            background: linear-gradient(90deg, #ef4444, #dc2626);
+            color: white;
+        }
+        .custom-modal-btn:hover {
+            transform: translateY(-2px);
+        }
+        #promptInput {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid #4b5563;
+            background: #374151;
+            color: white;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }

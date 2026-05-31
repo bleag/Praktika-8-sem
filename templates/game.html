@@ -244,7 +244,7 @@ function renderChoiceQuestion(q) {
 function renderOpenQuestion(q) {
     const container = document.getElementById('optionsDiv');
     container.innerHTML = `
-        <input type="text" id="openInput" class="form-input open-input" placeholder="Ваш ответ...">
+        <input type="text" id="openInput" class="form-input open-input" placeholder="Ваш ответ..." style="width:100%; padding:12px; font-size:16px;">
         <button id="openSubmitBtn" class="btn btn-blue" style="width:100%; margin-top:15px;">Ответить</button>
     `;
     document.getElementById('openSubmitBtn').onclick = () => {
@@ -478,20 +478,33 @@ function showAnswerResult(data) {
     if (q.type === 'choice') {
         isUserCorrect = (userAnswer === correctAnswer);
     } else if (q.type === 'open') {
-        // Упрощённое сравнение: точное совпадение строки (можно улучшить)
         isUserCorrect = (userAnswer && correctAnswer && userAnswer.toLowerCase().includes(correctAnswer.toLowerCase()));
     } else {
-        // Для poll, wordcloud, draw, dance, slide – считаем, что ответ правильный (если не пропущен)
+        // poll, wordcloud, draw, dance, slide – считаем, что ответ правильный (если не пропущен)
         isUserCorrect = (userAnswer && userAnswer !== 'skipped');
     }
 
-    // Подсветка кнопок (если есть)
+    // Подсветка кнопок ТОЛЬКО для choice (у open нет кнопок)
     const buttons = document.querySelectorAll('.option-btn');
-    buttons.forEach(btn => {
-        const opt = btn.innerText.trim();
-        if (opt === correctAnswer) btn.style.background = '#4caf50';
-        if (opt === userAnswer && opt !== correctAnswer) btn.style.background = '#f44336';
-    });
+    if (q.type === 'choice') {
+        buttons.forEach(btn => {
+            const opt = btn.innerText.trim();
+            if (opt === correctAnswer) {
+                btn.style.background = '#4caf50';
+                btn.style.color = 'white';
+            } else if (opt === userAnswer && opt !== correctAnswer) {
+                btn.style.background = '#f44336';
+                btn.style.color = 'white';
+            }
+        });
+    } else {
+        // Для poll, wordcloud, draw, dance, slide – сбрасываем стили кнопок
+        buttons.forEach(btn => {
+            btn.style.background = '';
+            btn.style.color = '';
+            btn.style.border = '2px solid #ddd';
+        });
+    }
 
     const resultBlock = document.getElementById('resultBlock');
     resultBlock.style.display = 'block';

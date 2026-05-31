@@ -2405,11 +2405,6 @@ body.auth-page {
     font-weight: 500;
 }
 
-/* Список игроков */
-.players-list {
-    max-height: 500px;
-    overflow-y: auto;
-}
 
 .player-item {
     display: flex;
@@ -2846,10 +2841,6 @@ body.auth-page {
     border: none;
 }
 
-.btn-copy {
-    background: var(--gray-light);
-    border: 1px solid var(--gray-border);
-}
 
 .btn-copy:hover {
     background: var(--gray-border);
